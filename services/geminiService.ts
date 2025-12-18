@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { OklchColor } from "../types";
 
-// ✅ 初始化 Google AI (使用 Vite 環境變數)
-// 注意：這裡使用的是 GoogleGenerativeAI (穩定版 SDK)
+// ✅ 初始化 Google AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 // 定義回傳資料的格式 (Schema)
@@ -88,7 +87,6 @@ export const validateColorName = async (
   `;
 
   try {
-    // ✅ 獲取模型 (使用穩定版 gemini-1.5-flash)
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
@@ -97,7 +95,6 @@ export const validateColorName = async (
       }
     });
 
-    // ✅ 發送請求
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const jsonText = response.text();
@@ -114,4 +111,9 @@ export const validateColorName = async (
 
   } catch (error) {
     console.error("Gemini Validation Error:", error);
-    // Fallback: 避免 API 錯誤時卡住使用
+    return { 
+      isSuspicious: false,
+      feedback: "命名已收錄！" 
+    };
+  }
+};
