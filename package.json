@@ -1,0 +1,33 @@
+{
+  "name": "semantic-color-app",
+  "version": "1.0.0",
+  "description": "Semantic Color Mapper",
+  "main": "index.tsx",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "firebase": "^10.7.1",
+    "lucide-react": "^0.309.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0",
+    "d3": "^7.9.0",
+    "d3-delaunay": "^6.0.4",
+    "@google/generative-ai": "^0.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@types/d3": "^7.4.3",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10"
+  }
+}

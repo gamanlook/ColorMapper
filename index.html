@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OKLch Semantic Mapper</title>
+    
+    <!-- 為了方便，我們還是先留著 CDN 版的 Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              theme: {
+                page: 'var(--color-page-bg)',
+                card: 'var(--color-card-bg)',
+                'card-border': 'var(--color-card-border)',
+                'text-main': 'var(--color-text-main)',
+                'text-muted': 'var(--color-text-muted)',
+                input: 'var(--color-input-bg)',
+                'input-border': 'var(--color-input-border)',
+                brand: 'var(--color-brand-main)',
+                'brand-bg': 'var(--color-brand-surface)',
+                'brand-text': 'var(--color-brand-text)',
+                'toast-bg': 'var(--color-toast-bg)',
+                'toast-border': 'var(--color-toast-border)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <script>
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        if (event.matches) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      });
+    </script>
+    <style type="text/tailwindcss">
+      :root {
+        --color-page-bg: theme('colors.slate.50');
+        --color-card-bg: theme('colors.white');
+        --color-card-border: theme('colors.slate.200');
+        --color-text-main: theme('colors.slate.900');
+        --color-text-muted: color-mix(in srgb, theme('colors.slate.800') 60%, transparent);
+        --color-input-bg: theme('colors.slate.100');
+        --color-input-border: theme('colors.slate.200');
+        --color-brand-main: theme('colors.indigo.600');
+        --color-brand-surface: theme('colors.indigo.50');
+        --color-brand-text: theme('colors.indigo.700');
+        --color-toast-bg:  color-mix(in srgb, theme('colors.slate.200') 40%, transparent);
+        --color-toast-border: color-mix(in srgb, theme('colors.slate.300') 40%, transparent);
+        --color-chart-grid: theme('colors.slate.200');
+        --color-chart-axis: theme('colors.slate.400');
+        --color-chart-gamut: color-mix(in srgb, theme('colors.slate.500') 70%, transparent);
+        --color-chart-text-cell-light: color-mix(in srgb, theme('colors.slate.800') 75%, transparent);
+        --color-chart-text-cell-dark: color-mix(in srgb, theme('colors.slate.50') 90%, transparent);
+      }
+      .dark {
+        --color-page-bg: theme('colors.zinc.950');
+        --color-card-bg: theme('colors.zinc.900');
+        --color-card-border: color-mix(in srgb, theme('colors.zinc.500') 15%, transparent);
+        --color-text-main: theme('colors.zinc.100');
+        --color-text-muted: color-mix(in srgb, theme('colors.zinc.200') 65%, transparent);
+        --color-input-bg: theme('colors.zinc.800');
+        --color-input-border: color-mix(in srgb, theme('colors.zinc.700') 60%, transparent);
+        --color-brand-main: color-mix(in srgb, theme('colors.indigo.500') 70%, theme('colors.indigo.600'));
+        --color-brand-surface: color-mix(in srgb, theme('colors.indigo.600') 45%, transparent);
+        --color-brand-text: theme('colors.indigo.200');
+        --color-toast-bg: color-mix(in srgb, theme('colors.zinc.700') 60%, transparent);
+        --color-toast-border: color-mix(in srgb, theme('colors.zinc.600') 40%, transparent);
+        --color-chart-grid: theme('colors.zinc.800');
+        --color-chart-axis: theme('colors.zinc.500');
+        --color-chart-gamut: color-mix(in srgb, theme('colors.zinc.100') 30%, transparent);
+        --color-chart-text-cell-light: color-mix(in srgb, theme('colors.zinc.900') 80%, transparent);
+        --color-chart-text-cell-dark: color-mix(in srgb, theme('colors.zinc.50') 80%, transparent);
+      }
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: theme('colors.slate.300'); border-radius: 4px; }
+      .dark ::-webkit-scrollbar-thumb { background: theme('colors.slate.600'); }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "firebase/": "https://esm.sh/firebase@^12.7.0/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "d3": "https://esm.sh/d3@^7.9.0",
+    "d3-delaunay": "https://esm.sh/d3-delaunay@^6.0.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    
+    <!-- 👇 這是 Vercel 需要的關鍵，沒有這行 Vercel 會不知道程式從哪開始 -->
+    <!-- 如果你的 React 入口檔名是 main.tsx，請改成 /main.tsx -->
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
