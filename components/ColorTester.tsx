@@ -132,7 +132,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="text"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
-              placeholder="可自由替顏色取名"
+              placeholder="替顏色取名"
               className="w-full px-4 py-3 text-lg border-2 border-theme-input-border bg-theme-input text-theme-text-main rounded-xl focus:border-theme-text-main focus:ring-0 outline-none transition-all placeholder-[var(--color-text-muted)] text-center hover:border-theme-text-main"
               autoFocus
             />
