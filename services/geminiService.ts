@@ -1,10 +1,11 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { OklchColor } from "../types";
 
-// ✅ 初始化 Google AI (使用 Vite 環境變數)
+// ✅ 初始化 Google AI (使用 Vite 專用環境變數)
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 // 定義回傳資料的格式 (Schema)
+// 注意：使用 SchemaType (穩定版 SDK 寫法)
 const validationSchema = {
   type: SchemaType.OBJECT,
   properties: {
@@ -35,7 +36,6 @@ export const validateColorName = async (
   hueName: string
 ): Promise<{ isSuspicious: boolean; reason?: string; correctedPrefix?: string; feedback?: string }> => {
   
-  // ✨ 這裡換成了你想要的新版 Prompt ✨
   const prompt = `
     You are a strict moderator for a color naming crowdsourcing game.
     
@@ -64,7 +64,6 @@ export const validateColorName = async (
        - **EXCEPTION**: Biological waste (Poop, Pee, Vomit, Dirt) IS RELEVANT if the color matches.
        
     4. **VISUAL CONTRADICTION**:
-       - The name describes a color significantly different from the input.
        - e.g. Calling a Red color "Green".
 
     **ACCEPTANCE CRITERIA (isSuspicious: FALSE)**
@@ -85,7 +84,7 @@ export const validateColorName = async (
     - If SPAM/NONSENSE: "這看起來不像顏色名稱喔", "請輸入具體的命名".
     - If IRRELEVANT (e.g. 肚子痛): "這名詞好像跟顏色無關耶...", "這名字沒辦法收錄喔".
     - If CONTRADICTION: "這跟顏色差異有點大喔", "這命名不太準確耶".
-    - If GROSS/VULGAR (but valid): "雖然聽起來有點髒...", "...確實有點味道。", "這形容...太真實了。".
+    - If GROSS/VULGAR (but valid): "雖然聽起來有點髒...", "...確實有點味道。".
     - If VALID (Standard): "命名十分貼切！", "很有意境的名字！", "英雄所見略同！".
 
     **TECHNICAL RULES**:
@@ -97,16 +96,16 @@ export const validateColorName = async (
   `;
 
   try {
-    // ✅ 獲取模型 (使用 Vercel 能跑的 gemini-1.5-flash)
+    // ✅ 修正 404 錯誤：使用穩定的 gemini-1.5-flash
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: validationSchema,
-      }
+        // 注意：這裡移除了 thinkingConfig，因為 1.5-flash 不支援，加上去會報錯
+      },
     });
 
-    // ✅ 發送請求
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const jsonText = response.text();
@@ -123,10 +122,14 @@ export const validateColorName = async (
 
   } catch (error) {
     console.error("Gemini Validation Error:", error);
-    // Fallback: 避免 API 錯誤時卡住使用者，預設為通過
+    
+    // ✅ 修復 Firebase 錯誤：回傳 null 而不是 undefined
+    // 這裡使用 as any 是為了讓 TS 通過，實際上 App.tsx 會處理 null
     return { 
       isSuspicious: false,
-      feedback: "命名已收錄！" 
+      feedback: "命名已收錄！(AI連線忙碌中)",
+      reason: null as any,          // 明確給 null
+      correctedPrefix: null as any  // 明確給 null
     };
   }
 };
