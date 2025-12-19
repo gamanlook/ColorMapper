@@ -1,4 +1,4 @@
-# 🎨 Semantic Color Mapper (語意色彩映射計畫)
+## Semantic Color Mapper (語意色彩映射計畫)
 
 > 協助我們建立人類對顏色的感知地圖。
 
@@ -7,7 +7,7 @@
 透過收集使用者的命名數據，我們試圖回答一個問題：**「在人類眼中，黃色是在哪裡變成了橘色？深藍色又是在哪裡變成了黑色？」**
 
 
-# ✨ 核心功能
+## 核心功能
 
 - **🎯 隨機色彩測驗**：系統會在 OKLch 色彩空間中隨機生成顏色，邀請使用者進行命名。
 - **🤖 AI 智慧審核**：整合 **Google Gemini AI**，即時分析使用者的命名。
@@ -19,7 +19,7 @@
 - **🌓 現代化介面**：支援深色/淺色模式切換，專注於色彩體驗的 UI 設計。
 
 
-# 🛠️ 技術棧 (Tech Stack)
+## 技術棧 (Tech Stack)
 
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, clsx
