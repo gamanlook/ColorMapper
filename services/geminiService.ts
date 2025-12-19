@@ -95,10 +95,8 @@ export const validateColorName = async (
   `;
 
   try {
-    // ✅ 修正 404 錯誤：改用 gemini-1.5-flash-latest
-    // 如果這個也不行，請試試看 "gemini-1.5-flash-001" 或 "gemini-1.5-flash-002"
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
+      model: "gemini-1.5-flash-002",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: validationSchema,
