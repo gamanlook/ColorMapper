@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { HUES, SEED_DATA_POINTS } from './constants';
 import { generateRandomColor, generateSeedData } from './utils';
@@ -205,8 +204,7 @@ function App() {
       <input type="file" ref={fileInputRef} onChange={handleRestore} accept="application/json" style={{ display: 'none' }} />
       
       {/* 
-        NEW: Header Content - Scrollable, Transparent, No sticky 
-        Moved from fixed <header> to normal flow div 
+        Header Content
       */}
       <div className="max-w-6xl mx-auto px-4 pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -242,7 +240,12 @@ function App() {
                     className="appearance-none text-sm font-medium pl-4 pr-10 py-2 bg-theme-input rounded-lg text-theme-text-main border-none outline-none focus:ring-2 focus:ring-theme-brand cursor-pointer"
                   >
                     <option value="all">隨機出題</option>
-                    {HUES.map(h => <option key={h.id} value={h.angle}>{h.nameZH} {h.nameEN}</option>)}
+                    <option disabled>──────────</option>
+                    {HUES.map(h => (
+                      <option key={h.id} value={h.angle}>
+                        {h.nameZH} {h.nameEN} ({h.angle}°)
+                      </option>
+                    ))}
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-theme-text-muted">
                     <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
@@ -264,7 +267,11 @@ function App() {
                     onChange={(e) => setViewHueAngle(Number(e.target.value))} 
                     className="appearance-none text-sm font-medium pl-4 pr-10 py-2 bg-theme-input rounded-lg text-theme-text-main border-none outline-none focus:ring-2 focus:ring-theme-brand cursor-pointer"
                   >
-                    {HUES.map(h => <option key={h.id} value={h.angle}>{h.nameZH} {h.nameEN}</option>)}
+                    {HUES.map(h => (
+                      <option key={h.id} value={h.angle}>
+                        {h.nameZH} {h.nameEN} ({h.angle}°)
+                      </option>
+                    ))}
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-theme-text-muted">
                     <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
