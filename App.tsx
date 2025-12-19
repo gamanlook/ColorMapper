@@ -121,7 +121,9 @@ function App() {
       name,
       votes: 1,
       isSuspicious,
-      suspiciousReason: reason,
+      // ✨ 修正重點：加上 || null
+      // 這是告訴 Firebase：「如果 reason 是 undefined，請存成 null」，這樣就不會報錯了！
+      suspiciousReason: reason || null, 
       timestamp: Date.now(),
       isSeed: false
     };
