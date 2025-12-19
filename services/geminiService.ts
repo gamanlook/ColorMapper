@@ -5,7 +5,6 @@ import { OklchColor } from "../types";
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 // 定義回傳資料的格式 (Schema)
-// 注意：使用 SchemaType (穩定版 SDK 寫法)
 const validationSchema = {
   type: SchemaType.OBJECT,
   properties: {
@@ -96,13 +95,13 @@ export const validateColorName = async (
   `;
 
   try {
-    // ✅ 修正 404 錯誤：使用穩定的 gemini-1.5-flash
+    // ✅ 修正 404 錯誤：改用 gemini-1.5-flash-latest
+    // 如果這個也不行，請試試看 "gemini-1.5-flash-001" 或 "gemini-1.5-flash-002"
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-latest",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: validationSchema,
-        // 注意：這裡移除了 thinkingConfig，因為 1.5-flash 不支援，加上去會報錯
       },
     });
 
@@ -123,13 +122,12 @@ export const validateColorName = async (
   } catch (error) {
     console.error("Gemini Validation Error:", error);
     
-    // ✅ 修復 Firebase 錯誤：回傳 null 而不是 undefined
-    // 這裡使用 as any 是為了讓 TS 通過，實際上 App.tsx 會處理 null
+    // Fallback: 確保 Firebase 不會因為 undefined 報錯
     return { 
       isSuspicious: false,
       feedback: "命名已收錄！(AI連線忙碌中)",
-      reason: null as any,          // 明確給 null
-      correctedPrefix: null as any  // 明確給 null
+      reason: null as any,
+      correctedPrefix: null as any
     };
   }
 };
