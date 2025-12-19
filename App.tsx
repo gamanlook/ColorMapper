@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { HUES, SEED_DATA_POINTS } from './constants';
 import { generateRandomColor, generateSeedData } from './utils';
@@ -121,9 +122,7 @@ function App() {
       name,
       votes: 1,
       isSuspicious,
-      // ✨ 修正重點：加上 || null
-      // 這是告訴 Firebase：「如果 reason 是 undefined，請存成 null」，這樣就不會報錯了！
-      suspiciousReason: reason || null, 
+      suspiciousReason: reason,
       timestamp: Date.now(),
       isSeed: false
     };
@@ -200,14 +199,26 @@ function App() {
 
   const humanEntries = entries.filter(e => !e.isSeed).length;
 
+  // --- Helpers for Custom Dropdown Display ---
+  
+  // Get short label for display (e.g., "紅 (25°)")
+  const getQuizFilterLabel = () => {
+    if (quizFilter === 'all') return '隨機出題';
+    const hue = HUES.find(h => h.angle === quizFilter);
+    return hue ? `${hue.nameZH} (${hue.angle}°)` : '';
+  };
+
+  const getViewHueLabel = () => {
+    const hue = HUES.find(h => h.angle === viewHueAngle);
+    return hue ? `${hue.nameZH} (${hue.angle}°)` : '';
+  };
+
   return (
     <div className="min-h-screen bg-theme-page text-theme-text-main pb-20 relative transition-colors duration-300">
       {toast && <Toast data={toast} onClick={handleToastClick} onClose={() => setToast(null)} />}
       <input type="file" ref={fileInputRef} onChange={handleRestore} accept="application/json" style={{ display: 'none' }} />
       
-      {/* 
-        Header Content
-      */}
+      {/* Header Content */}
       <div className="max-w-6xl mx-auto px-4 pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">OK</div>
@@ -234,12 +245,21 @@ function App() {
         <div className="space-y-8">
            <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-bold text-theme-text-main">這是什麼顏色？</h2>
-                <div className="relative inline-block">
+                <h2 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">這是什麼顏色？</h2>
+                
+                {/* Custom Overlay Dropdown for Quiz Filter */}
+                <div className="relative max-w-[50%] min-w-[120px]">
+                  {/* Visual Layer (Short Text + Truncate) */}
+                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-lg text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
+                     <span className="truncate block">{getQuizFilterLabel()}</span>
+                     <svg className="h-4 w-4 fill-current text-theme-text-muted flex-shrink-0 ml-2" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                  </div>
+
+                  {/* Functional Layer (Native Select, Invisible, Long Text options) */}
                   <select 
                     value={quizFilter === 'all' ? 'all' : quizFilter} 
                     onChange={(e) => handleQuizFilterChange(e.target.value)} 
-                    className="appearance-none text-sm font-medium pl-4 pr-10 py-2 bg-theme-input rounded-lg text-theme-text-main border-none outline-none focus:ring-2 focus:ring-theme-brand cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
                   >
                     <option value="all">隨機出題</option>
                     <option disabled>──────────</option>
@@ -249,10 +269,8 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-theme-text-muted">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
-                  </div>
                 </div>
+
               </div>
               <p className="text-theme-text-muted mb-6">協助我們建立人類對顏色的感知地圖。你會如何形容這個顏色？</p>
               {currentColor && <ColorTester color={currentColor} hueDef={currentHueDef} onSubmit={handleSubmit} onSkip={handleNextColor} />}
@@ -262,12 +280,21 @@ function App() {
         <div className="flex flex-col gap-4">
            <div className="bg-theme-card p-6 rounded-3xl flex flex-col items-center transition-colors duration-300">
              <div className="w-full flex justify-between items-center mb-6">
-               <h3 className="text-2xl font-bold text-theme-text-main">色彩分布圖</h3>
-                <div className="relative inline-block">
+               <h3 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">色彩分布圖</h3>
+                
+               {/* Custom Overlay Dropdown for View Filter */}
+               <div className="relative max-w-[50%] min-w-[120px]">
+                  {/* Visual Layer */}
+                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-lg text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
+                     <span className="truncate block">{getViewHueLabel()}</span>
+                     <svg className="h-4 w-4 fill-current text-theme-text-muted flex-shrink-0 ml-2" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+                  </div>
+
+                  {/* Functional Layer */}
                   <select 
                     value={viewHueAngle} 
                     onChange={(e) => setViewHueAngle(Number(e.target.value))} 
-                    className="appearance-none text-sm font-medium pl-4 pr-10 py-2 bg-theme-input rounded-lg text-theme-text-main border-none outline-none focus:ring-2 focus:ring-theme-brand cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
                   >
                     {HUES.map(h => (
                       <option key={h.id} value={h.angle}>
@@ -275,10 +302,8 @@ function App() {
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-theme-text-muted">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
-                  </div>
                 </div>
+
              </div>
              <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={360} height={360} />
              <div className="mt-6 text-center">
@@ -296,9 +321,6 @@ function App() {
         <div className="border-t border-theme-card-border pt-8 flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-3">
-              {/* 決定把上傳跟下載資料的按鈕隱藏 */}
-              {/*<button onClick={handleBackup} className="px-4 py-2 text-xs font-bold text-theme-brand-text bg-theme-brand-bg hover:opacity-80 rounded-lg transition-colors border border-transparent">備份資料</button>*/}
-              {/*<button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 text-xs font-bold text-theme-text-main hover:bg-theme-card-border rounded-lg transition-colors border border-theme-card-border">匯入資料</button>*/}
               <button 
                 onClick={() => triggerToastTest(false)}
                 className="px-4 py-2 text-xs font-bold rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500 border border-green-200 dark:border-green-900/30 hover:opacity-80 transition-transform"
