@@ -68,22 +68,20 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
     <div 
       onClick={handleClick}
       className={`
-        fixed bottom-6 z-50 cursor-pointer 
+        /* 定位：永遠釘在右下角 */
+        fixed bottom-6 right-6 z-50 cursor-pointer 
+        
+        /* 動畫設定 (保留你的原樣) */
         will-change-transform transform 
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
+        
+        /* ✨ 寬度魔法 (這三行是重點) ✨ */
+        w-auto                          /* 1. 寬度隨內容自動撐開 (文字少時很短) */
+        max-w-[calc(100%-3rem)]         /* 2. 最大極限：螢幕總寬 - 左右留白(各1.5rem) */
+        break-words                     /* 3. 確保文字太長時會自動換行，不會撐破 */
 
-        /* ✨ 修正重點開始 ✨ */
-        
-        /* 1. 手機版 (預設)：強制左邊 6 (24px)、右邊 6 (24px) */
-        /* 這樣瀏覽器會自動把 Toast 拉撐，保證左右留白完全一樣 */
-        left-6 right-6 
-
-        /* 2. 大手機 (sm 以上)：左邊放掉 (auto)，寬度自動 (w-auto)，只靠右邊對齊 */
-        sm:left-auto sm:right-6 sm:w-auto sm:max-w-sm
-        
-        /* ✨ 修正重點結束 ✨ */
-        
+        /* 外觀設定 */
         rounded-2xl overflow-hidden
         
         ${getAnimationStyles()}
