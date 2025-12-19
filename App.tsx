@@ -245,7 +245,7 @@ function App() {
         <div className="space-y-8">
            <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
               <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">這是什麼顏色？</h2>
+                <h2 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">這是什麼顏色</h2>
                 
                 {/* Custom Overlay Dropdown for Quiz Filter */}
                 <div className="relative max-w-[50%] min-w-[120px]">
