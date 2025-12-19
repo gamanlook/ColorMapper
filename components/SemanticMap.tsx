@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { Delaunay } from 'd3-delaunay';
@@ -330,11 +331,11 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         className="bg-theme-card rounded-xl w-full h-auto max-w-[360px] transition-colors duration-300"
       />
       
-      {/* Enhanced Tooltip Overlay */}
+      {/* Enhanced Tooltip Overlay - Updated to match Toast style */}
       {hoveredCluster && (
-        <div className="absolute top-4 left-4 bg-theme-card/95 backdrop-blur-sm p-3 rounded-lg shadow-xl border border-theme-card-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[150px]">
+        <div className="absolute top-4 left-4 bg-theme-toast-bg backdrop-blur-md p-4 rounded-2xl shadow-xl shadow-slate-700/10 dark:shadow-black/50 border border-theme-toast-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[160px]">
           <div className="font-bold text-theme-text-main mb-1 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full border border-gray-200 dark:border-slate-600 shadow-sm" style={{backgroundColor: toCss({l: hoveredCluster.l, c: hoveredCluster.c, h: hue})}}></span>
+            <span className="w-3 h-3 rounded-full border border-white dark:border-white/50 shadow-sm" style={{backgroundColor: toCss({l: hoveredCluster.l, c: hoveredCluster.c, h: hue})}}></span>
             {hoveredCluster.displayLabel}
           </div>
           
@@ -349,7 +350,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
             ))}
           </div>
 
-          <div className="mt-2 pt-2 border-t border-theme-card-border text-xs text-theme-text-muted">
+          <div className="mt-3 pt-3 border-t border-theme-toast-border text-xs text-theme-text-muted">
              總票數: {hoveredCluster.totalVotes}
           </div>
         </div>
