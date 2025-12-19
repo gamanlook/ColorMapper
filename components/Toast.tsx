@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { OklchColor, HueDefinition } from '../types';
 import { toCss } from '../utils';
@@ -67,12 +68,22 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
     <div 
       onClick={handleClick}
       className={`
-        fixed bottom-6 right-6 z-50 cursor-pointer 
+        fixed bottom-6 z-50 cursor-pointer 
         will-change-transform transform 
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
+
+        /* ✨ 修正重點開始 ✨ */
         
-        /* 外層：負責裁切背景模糊，確保模糊邊緣也是圓的 */
+        /* 1. 手機版 (預設)：強制左邊 6 (24px)、右邊 6 (24px) */
+        /* 這樣瀏覽器會自動把 Toast 拉撐，保證左右留白完全一樣 */
+        left-6 right-6 
+
+        /* 2. 大手機 (sm 以上)：左邊放掉 (auto)，寬度自動 (w-auto)，只靠右邊對齊 */
+        sm:left-auto sm:right-6 sm:w-auto sm:max-w-sm
+        
+        /* ✨ 修正重點結束 ✨ */
+        
         rounded-2xl overflow-hidden
         
         ${getAnimationStyles()}
@@ -109,14 +120,14 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
         </div>
 
         {/* Text Content */}
-        <div className="flex flex-col min-w-[140px]">
-          <div className="font-bold text-theme-text-main text-lg leading-tight">
+        <div className="flex flex-col min-w-0">
+          <div className="font-bold text-theme-text-main text-lg leading-tight break-words">
             {data.name}
           </div>
-          <div className="text-xs text-theme-text-muted font-medium mb-1">
+          <div className="text-xs text-theme-text-muted font-medium mb-1 truncate">
             {data.hueDef.nameZH} {data.hueDef.nameEN} ({data.hueDef.angle}°)
           </div>
-          <div className="text-sm text-theme-text-main font-medium">
+          <div className="text-sm text-theme-text-main font-medium break-words">
             {data.feedback}
           </div>
         </div>
