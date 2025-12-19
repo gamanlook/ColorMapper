@@ -244,11 +244,13 @@ function App() {
       <main className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <div className="space-y-8">
            <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">形容顏色</h2>
+              
+              {/* Header with Adaptive Layout */}
+              <div className="flex justify-between items-center mb-2 gap-4">
+                <h2 className="text-2xl font-bold text-theme-text-main line-clamp-2 min-w-0">形容顏色</h2>
                 
                 {/* Custom Overlay Dropdown for Quiz Filter */}
-                <div className="relative max-w-[50%] min-w-[120px]">
+                <div className="relative max-w-[50%] min-w-[120px] flex-shrink-0">
                   {/* Visual Layer (Short Text + Truncate) */}
                   <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-lg text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
                      <span className="truncate block">{getQuizFilterLabel()}</span>
@@ -262,7 +264,7 @@ function App() {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none"
                   >
                     <option value="all">隨機出題</option>
-                    <option disabled>──────────</option>
+                    {/* Separator Removed */}
                     {HUES.map(h => (
                       <option key={h.id} value={h.angle}>
                         {h.nameZH} {h.nameEN} ({h.angle}°)
@@ -270,8 +272,8 @@ function App() {
                     ))}
                   </select>
                 </div>
-
               </div>
+
               <p className="text-theme-text-muted mb-6">協助我們建立人類對顏色的感知地圖。你會如何形容這個顏色？</p>
               {currentColor && <ColorTester color={currentColor} hueDef={currentHueDef} onSubmit={handleSubmit} onSkip={handleNextColor} />}
            </div>
@@ -279,11 +281,13 @@ function App() {
 
         <div className="flex flex-col gap-4">
            <div className="bg-theme-card p-6 rounded-3xl flex flex-col items-center transition-colors duration-300">
-             <div className="w-full flex justify-between items-center mb-6">
-               <h3 className="text-2xl font-bold text-theme-text-main whitespace-nowrap mr-4">色彩分布</h3>
+             
+             {/* Header with Adaptive Layout */}
+             <div className="w-full flex justify-between items-center mb-6 gap-4">
+               <h3 className="text-2xl font-bold text-theme-text-main line-clamp-2 min-w-0">色彩分布</h3>
                 
                {/* Custom Overlay Dropdown for View Filter */}
-               <div className="relative max-w-[50%] min-w-[120px]">
+               <div className="relative max-w-[50%] min-w-[120px] flex-shrink-0">
                   {/* Visual Layer */}
                   <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-lg text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
                      <span className="truncate block">{getViewHueLabel()}</span>
@@ -303,8 +307,8 @@ function App() {
                     ))}
                   </select>
                 </div>
-
              </div>
+
              <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={360} height={360} />
              <div className="mt-6 text-center">
                 <p className="text-xs text-theme-text-muted max-w-xs mx-auto">
