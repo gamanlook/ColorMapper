@@ -221,7 +221,30 @@ function App() {
       {/* Header Content */}
       <div className="max-w-6xl mx-auto px-4 pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">OK</div>
+
+             {/* 父層：拿掉 rounded-xl 和 overflow-hidden，讓 SVG 自己負責圓角 */}
+             <div className="relative w-10 h-10 flex-shrink-0">
+               <svg width="100%" height="100%" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 {/* 內容群組：套用下方的遮罩 ID */}
+                 <g clipPath="url(#clip0_7305_18028)">
+                   <rect width="36" height="36" rx="9" fill="#CAE0E8"/>
+                   <path d="M32 38C32 44.0751 25.0604 45 16.5 45C7.93959 45 1 44.0751 1 38C1 30.4 5.7 23 16.5 23C27.3 23 32 30.4 32 38Z" fill="#314146"/>
+                   <ellipse cx="17" cy="26" rx="5" ry="4" fill="#93A7AE"/>
+                   <circle cx="18" cy="16" r="11" fill="#FAFDFF"/>
+                   <circle cx="20" cy="15" r="6" fill="#CAE0E8"/>
+                   <circle cx="20" cy="15" r="4" fill="#516166"/>
+                   <circle cx="19" cy="15" r="3" fill="#314146"/>
+                 </g>
+                
+                 {/* 定義遮罩：rx="9" 就是圓角大小 */}
+                 <defs>
+                   <clipPath id="clip0_7305_18028">
+                     <rect width="36" height="36" rx="9" fill="white"/>
+                   </clipPath>
+                 </defs>
+               </svg>
+             </div>
+
              <div className="flex flex-col">
                <h1 className="text-xl font-bold tracking-tight text-theme-text-main hidden sm:block leading-none">
                  Semantic<span className="text-theme-brand">Color</span>Mapper
