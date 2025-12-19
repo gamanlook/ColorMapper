@@ -141,11 +141,22 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     // --- 0. GAMUT BOUNDARY (Background Layer) ---
     const gamutPoints: [number, number][] = [];
-    for (let l = 0; l <= 1.0; l += 0.01) {
+    
+    // VISUAL OPTIMIZATION:
+    // Start explicitly at Black (0,0).
+    gamutPoints.push([0, 0]);
+
+    // Start detailed calculation from L=0.10 (10%).
+    // This intentionally skips the irregular/hook-shaped gamut boundary at very low lightness (0-0.09).
+    // Connecting Black (0,0) directly to L(0.10) creates a cleaner, more aesthetic "triangular" base.
+    for (let l = 0.10; l <= 1.0; l += 0.01) {
       const maxC = findMaxChroma(l, hue);
       gamutPoints.push([maxC, l]);
     }
-    gamutPoints.push([0, 1]);
+    
+    // Ensure we close nicely at White
+    gamutPoints.push([0, 1]); 
+    // Close the loop back to bottom
     gamutPoints.push([0, 0]);
 
     const lineGenerator = d3.line()
