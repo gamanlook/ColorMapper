@@ -252,22 +252,16 @@ function App() {
              </a>
 
              <div className="flex flex-col">
-               {/* 移除 hidden sm:block，改為預設顯示 */}
                <h1 className="text-xl font-bold tracking-tight text-theme-text-main leading-none">
                  Semantic<span className="text-theme-brand">Color</span>Mapper
                </h1>
                <div className="flex items-center gap-1.5 mt-1">
                  <span className={`w-2 h-2 rounded-full ${isCloudMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
                  <span className="text-[10px] font-medium text-theme-text-muted uppercase tracking-wide">
-                   {isCloudMode ? 'Online' : 'Local'}
+                   {isCloudMode ? 'Online' : 'Local'} · 已蒐集 {humanEntries} 組
                  </span>
                </div>
              </div>
-        </div>
-        <div className="flex items-center gap-4">
-            <div className="text-xs sm:text-sm font-medium text-theme-text-muted">
-              已蒐集 <span className="font-bold text-theme-text-main">{humanEntries}</span> 組
-            </div>
         </div>
       </div>
 
