@@ -252,7 +252,8 @@ function App() {
              </a>
 
              <div className="flex flex-col">
-               <h1 className="text-xl font-bold tracking-tight text-theme-text-main hidden sm:block leading-none">
+               {/* 移除 hidden sm:block，改為預設顯示 */}
+               <h1 className="text-xl font-bold tracking-tight text-theme-text-main leading-none">
                  Semantic<span className="text-theme-brand">Color</span>Mapper
                </h1>
                <div className="flex items-center gap-1.5 mt-1">
