@@ -43,22 +43,17 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     }
   }, [inputName, showSuffixHint]);
 
-  // ✨ 核心捲動邏輯：簡單暴力，多補幾槍 ✨
+  // 捲動邏輯
   const scrollToBottom = () => {
-    // 定義捲動動作
     const doScroll = () => {
-      // 使用 "smooth" 會有動畫，如果覺得還是會亂跳，可以改 "auto" (瞬間)
-      // block: "end" 確保底部對齊（也就是貼齊鍵盤上方）
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-
-    // 時間差戰術：
-    // 100ms: 應付反應快的手機
-    // 400ms: 應付比較慢的鍵盤 (確保最後一定會校正回來)
     setTimeout(doScroll, 100);
-    setTimeout(doScroll, 400);
+    setTimeout(doScroll, 300);
+    setTimeout(doScroll, 500);
   };
 
+  // ✨ 關鍵修改：handlePrefixClick ✨
   const handlePrefixClick = (prefix: string) => {
     const currentName = inputName;
     let newName = prefix;
@@ -76,17 +71,24 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       return;
     }
     
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus({ preventScroll: true });
-        
-        const len = newName.length;
-        inputRef.current.setSelectionRange(len, len);
+    if (inputRef.current) {
+      // 1. iOS 關鍵：必須在事件觸發當下「立刻」Focus，不能等 setTimeout
+      // 這樣 iOS 才會認定這是「使用者行為」，允許彈出鍵盤
+      inputRef.current.focus({ preventScroll: true });
+      
+      // 2. 游標位置修正：
+      // 因為 React 的 setInputName 是非同步的，雖然我們上面先 Focus 了，
+      // 但為了確保游標在文字更新後能跑到最後面，我們還是需要一個微小的延遲來設定 Range
+      setTimeout(() => {
+        if (inputRef.current) {
+          const len = newName.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
 
-        // 點按鈕也要觸發捲動
-        scrollToBottom();
-      }
-    }, 10);
+      // 3. 觸發捲動校正
+      scrollToBottom();
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,7 +196,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form */}
+        {/* Form - 綁定 ref 以控制捲動 */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
             
@@ -228,12 +230,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="text"
               value={inputName}
               onChange={handleInputChange}
-              
-              // ✨ 關鍵 1：正常聚焦時觸發捲動
+              // 統一的捲動邏輯：點擊或聚焦都觸發
               onFocus={scrollToBottom}
-              
-              // ✨ 關鍵 2：如果已經聚焦，再次點擊時也觸發捲動
-              // 這樣解決了「鍵盤收起但焦點還在 -> 再次點擊」的情況
               onClick={scrollToBottom}
               
               placeholder="" 
