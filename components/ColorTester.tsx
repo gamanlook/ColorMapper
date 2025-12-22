@@ -24,9 +24,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const hintRef = useRef<HTMLSpanElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
-  // 使用 Ref 紀錄「沒有鍵盤時的原始高度」
-  // 這樣無論網址列收合或展開，我們都有一個基準值
+  // 記錄基準高度
   const baseHeightRef = useRef(window.innerHeight);
+  // ✨ 關鍵修正：記錄鍵盤是否曾經打開過
+  const hasKeyboardOpened = useRef(false);
   
   const [offsetX, setOffsetX] = useState(0);
 
@@ -35,30 +36,34 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
 
-  // ✨ 修正版：簡單暴力的鍵盤偵測邏輯 (包含時間差) ✨
+  // ✨ 修正版：嚴謹的鍵盤偵測邏輯 ✨
   useEffect(() => {
-    // 初始化基準高度 (如果有變大，更新基準，確保我們抓到的是「最大可用高度」)
+    // 確保基準高度是最大值 (避免一開始載入就有網址列干擾)
     if (window.innerHeight > baseHeightRef.current) {
       baseHeightRef.current = window.innerHeight;
     }
 
     const handleResize = () => {
       const currentHeight = window.innerHeight;
-      const threshold = baseHeightRef.current * 0.85; // 設定門檻：原始高度的 85%
+      const threshold = baseHeightRef.current * 0.85; 
 
-      // 判斷邏輯：
-      // 1. 如果現在高度 > 原始高度的 85% (代表鍵盤肯定收起來了)
-      // 2. 且 輸入框目前是被選取 (Focus) 的狀態
-      if (currentHeight > threshold && document.activeElement === inputRef.current) {
-        
-        // ✨ 這就是你要的時間差 ✨
-        // 延遲 100ms 再失焦，讓鍵盤動畫先跑完，避免畫面跳動太突兀
-        setTimeout(() => {
-          // 再次檢查焦點 (怕這 100ms 內使用者又點了別的地方)
-          if (document.activeElement === inputRef.current) {
-            inputRef.current?.blur(); // 強制收起游標 (Unfocus)
-          }
-        }, 100);
+      // 狀態 1: 畫面顯著變矮 -> 代表鍵盤「已經」打開了
+      if (currentHeight < threshold) {
+        hasKeyboardOpened.current = true;
+      }
+
+      // 狀態 2: 畫面回到正常高度 -> 代表鍵盤收起來了
+      // ⚠️ 關鍵：只有在 hasKeyboardOpened 為 true 時才執行，
+      // 這樣可以避免「剛點擊輸入框、畫面還沒變矮」時的誤判。
+      if (currentHeight > threshold && hasKeyboardOpened.current) {
+        if (document.activeElement === inputRef.current) {
+          // 延遲一下再失焦，體驗比較滑順
+          setTimeout(() => {
+             inputRef.current?.blur(); 
+          }, 50);
+        }
+        // 重置狀態
+        hasKeyboardOpened.current = false;
       }
     };
 
@@ -83,7 +88,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
 
-    // 雙重校正捲動
     setTimeout(doScroll, 100);
     setTimeout(doScroll, 400);
   };
