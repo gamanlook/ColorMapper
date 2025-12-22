@@ -12,6 +12,7 @@ interface ColorTesterProps {
 }
 
 const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
+const MAX_CHARS = 23; // 最大字數限制
 
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
@@ -30,9 +31,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
 
-  // 這裡是用來判斷是否要顯示 "什麼色？" 的邏輯
-  // 我們在這裡做一次轉換，是為了讓 "艷" (還沒送出) 也能觸發 "豔" 的提示邏輯
-  // 但這不會影響使用者正在打的字
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
 
@@ -46,7 +44,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   }, [inputName, showSuffixHint]);
 
   const handlePrefixClick = (prefix: string) => {
-    // 判斷是否已經聚焦
     const wasAlreadyFocused = document.activeElement === inputRef.current;
 
     const currentName = inputName;
@@ -59,7 +56,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
        newName = prefix + currentName;
     }
     
-    setInputName(newName);
+    // 檢查字數限制 (雖然前綴通常很短，但加上去後可能會爆，這裡也防一下)
+    if (newName.replace(/\s/g, '').length <= MAX_CHARS) {
+      setInputName(newName);
+    } else {
+      // 如果加上前綴會爆字數，就只取前面合法的長度 (選用邏輯，通常不會發生)
+      // 這裡簡單處理：如果爆了就不加
+      return;
+    }
     
     setTimeout(() => {
       if (inputRef.current) {
@@ -77,10 +81,15 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ✨ 關鍵修改：輸入當下「不做」任何取代 ✨
-    // 讓使用者可以順利選字，不會因為程式修改值而打斷注音輸入法
     const val = e.target.value;
-    setInputName(val);
+    
+    // ✨ 字數限制邏輯 (忽略空白) ✨
+    const nonSpaceCount = val.replace(/\s/g, '').length;
+
+    // 只有在「字數未滿」或是「正在刪除文字(長度變短)」時才更新
+    if (nonSpaceCount <= MAX_CHARS || val.length < inputName.length) {
+      setInputName(val);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,12 +98,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     setIsSubmitting(true);
 
-    // ✨ 關鍵修改：在「送出前」才統一進行清洗與轉換 ✨
-    // 1. 去除空白
-    // 2. 把 '艷' 轉成 '豔'
     let cleanedName = inputName.trim().replace(/艷/g, '豔');
-    
-    // 3. 去除結尾的 '色'
     if (cleanedName.endsWith('色') && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
@@ -113,7 +117,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus({ preventScroll: true });
-          // 注意：這裡我們用 inputName (使用者原本打的)，避免突然變字嚇到使用者
           const len = inputName.length;
           inputRef.current.setSelectionRange(len, len);
         }
@@ -177,7 +180,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
-              // 防止按鈕搶焦點
               onMouseDown={(e) => e.preventDefault()}
               className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
             >
@@ -204,10 +206,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                    這裡不需要 normalize，因為我們希望視覺上跟使用者打的一模一樣，
                    這樣游標才會對齊。
                 */}
+                {/* 主文字 */}
                 <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
                   {inputName || '試試自己取名'}
                 </span>
                 
+                {/* 提示後綴 */}
                 {showSuffixHint && (
                   <span 
                     ref={hintRef}
