@@ -48,7 +48,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    setTimeout(doScroll, 400);
+    setTimeout(doScroll, 350);
   };
 
   // ✨ 關鍵修改：handlePrefixClick ✨
