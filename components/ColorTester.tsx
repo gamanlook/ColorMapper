@@ -30,6 +30,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
 
+  // 這裡是用來判斷是否要顯示 "什麼色？" 的邏輯
+  // 我們在這裡做一次轉換，是為了讓 "艷" (還沒送出) 也能觸發 "豔" 的提示邏輯
+  // 但這不會影響使用者正在打的字
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
 
@@ -43,8 +46,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   }, [inputName, showSuffixHint]);
 
   const handlePrefixClick = (prefix: string) => {
-    // ✨ 關鍵判斷 1：點擊當下，輸入框是否已經聚焦？
-    // 如果已經是 inputRef.current，代表鍵盤已經升起來了
+    // 判斷是否已經聚焦
     const wasAlreadyFocused = document.activeElement === inputRef.current;
 
     const currentName = inputName;
@@ -61,15 +63,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     
     setTimeout(() => {
       if (inputRef.current) {
-        // 確保焦點在輸入框 (即使我們用了 preventDefault，這行還是留著保險)
         inputRef.current.focus({ preventScroll: true });
-        
-        // 移動游標到最後
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
 
-        // ✨ 關鍵判斷 2：只有在「原本沒聚焦」的情況下，才執行捲動
-        // 這樣如果鍵盤已經開著，就不會重新跳動畫面
         if (!wasAlreadyFocused) {
           setTimeout(() => {
             formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -80,7 +77,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/艷/g, '豔');
+    // ✨ 關鍵修改：輸入當下「不做」任何取代 ✨
+    // 讓使用者可以順利選字，不會因為程式修改值而打斷注音輸入法
+    const val = e.target.value;
     setInputName(val);
   };
 
@@ -90,7 +89,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     setIsSubmitting(true);
 
+    // ✨ 關鍵修改：在「送出前」才統一進行清洗與轉換 ✨
+    // 1. 去除空白
+    // 2. 把 '艷' 轉成 '豔'
     let cleanedName = inputName.trim().replace(/艷/g, '豔');
+    
+    // 3. 去除結尾的 '色'
     if (cleanedName.endsWith('色') && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
@@ -109,6 +113,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus({ preventScroll: true });
+          // 注意：這裡我們用 inputName (使用者原本打的)，避免突然變字嚇到使用者
           const len = inputName.length;
           inputRef.current.setSelectionRange(len, len);
         }
@@ -172,9 +177,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
-              // ✨ 關鍵修改 3：防止按鈕搶焦點
-              // 加上 onMouseDown={(e) => e.preventDefault()}
-              // 這樣點擊按鈕時，焦點會繼續留在 Input 上，黑框就不會閃爍了
+              // 防止按鈕搶焦點
               onMouseDown={(e) => e.preventDefault()}
               className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
             >
@@ -183,7 +186,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form */}
+        {/* Form - 綁定 ref 以控制捲動 */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="relative w-full group">
             
@@ -196,6 +199,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               style={{ transform: `translateX(${offsetX}px)` }}
             >
               <div className="relative flex items-center">
+                {/* 
+                   Ghost 文字：顯示 inputName
+                   這裡不需要 normalize，因為我們希望視覺上跟使用者打的一模一樣，
+                   這樣游標才會對齊。
+                */}
                 <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
                   {inputName || '試試自己取名'}
                 </span>
