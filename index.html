@@ -91,6 +91,15 @@
         margin: 0;
       }
 
+      /* ✨ 新增：隱藏 Chrome/Safari search input 預設的 "X" 按鈕 ✨ */
+      input[type="search"]::-webkit-search-decoration,
+      input[type="search"]::-webkit-search-cancel-button,
+      input[type="search"]::-webkit-search-results-button,
+      input[type="search"]::-webkit-search-results-decoration {
+        -webkit-appearance: none;
+        display: none;
+      }
+
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: theme('colors.slate.300'); border-radius: 4px; }
