@@ -105,11 +105,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
       {/* Input Section */}
       <div className="flex flex-col gap-4">
-        
-        {/* Hue Indicator */}
-        <div className="text-center text-sm font-medium text-theme-text-muted uppercase tracking-wider">
-           目前色相：{hueDef.nameZH} ({hueDef.nameEN})
-        </div>
 
         {/* Suggested Prefixes */}
         <div className="flex flex-wrap justify-center gap-2">
