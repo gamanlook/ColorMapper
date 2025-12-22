@@ -26,10 +26,32 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   
   const [offsetX, setOffsetX] = useState(0);
 
+  // 用來記錄原本的視窗高度，判斷鍵盤是否收起
+  const originalHeight = useRef(window.innerHeight);
+
   useEffect(() => {
     setInputName('');
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
+
+  // ✨ 新增：監聽鍵盤收起事件，自動 Unfocus ✨
+  useEffect(() => {
+    if (!window.visualViewport) return;
+
+    const handleResize = () => {
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      // 如果目前高度接近原始高度 (容許一點誤差)，代表鍵盤收起來了
+      if (currentHeight >= originalHeight.current * 0.9) {
+        // 如果目前焦點還在 input 上，就強制讓它失去焦點
+        if (document.activeElement === inputRef.current) {
+          inputRef.current?.blur();
+        }
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, []);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
@@ -43,27 +65,28 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     }
   }, [inputName, showSuffixHint]);
 
-  // ✨ 新增：統一處理聚焦後的捲動邏輯 ✨
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // 防止某些瀏覽器預設的瘋狂捲動
-    // e.preventDefault(); // 視情況，有時候這行反而會阻礙鍵盤彈出，先註解掉
-
-    const doScroll = () => {
-      // behavior: "smooth" 看起來比較舒服，但在某些 Android 上可能會有衝突
-      // 如果覺得還是會跳，可以改回 "auto" (瞬間跳轉)
+  // ✨ 優化：捲動邏輯 ✨
+  const scrollToBottom = () => {
+    // 使用 requestAnimationFrame 確保在畫面渲染後執行，更滑順
+    requestAnimationFrame(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    };
+    });
+  };
 
-    // 策略：雙重校正 (Double-tap)
-    // 第一發：針對反應快的鍵盤 (100ms)
-    setTimeout(doScroll, 100);
-    
-    // 第二發：針對反應慢、動畫久的鍵盤 (400ms)
-    // 這能解決「第一次升起鍵盤時畫面被推太高」的問題
-    setTimeout(doScroll, 400);
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // 解決頓挫感：只在 300ms 後執行一次捲動 (等待鍵盤升起動畫結束)
+    // 這樣視覺上會比較像是一次到位的動作
+    setTimeout(scrollToBottom, 300);
+  };
+
+  // 額外保險：如果已經 Focus 了但位置跑掉，點擊時也再校正一次
+  const handleInputClick = () => {
+    setTimeout(scrollToBottom, 300);
   };
 
   const handlePrefixClick = (prefix: string) => {
+    const wasAlreadyFocused = document.activeElement === inputRef.current;
+
     const currentName = inputName;
     let newName = prefix;
     
@@ -82,12 +105,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     
     setTimeout(() => {
       if (inputRef.current) {
-        // 這裡只要負責「給焦點」和「選取文字範圍」就好
-        // 「捲動畫面」的工作交給 onFocus 事件統一處理
         inputRef.current.focus({ preventScroll: true });
-        
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
+
+        if (!wasAlreadyFocused) {
+          // 這裡也統一延遲 300ms，保持體驗一致
+          setTimeout(scrollToBottom, 300);
+        }
       }
     }, 10);
   };
@@ -189,7 +214,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
-              onMouseDown={(e) => e.preventDefault()} // 防止搶焦點
+              onMouseDown={(e) => e.preventDefault()}
               className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
             >
               {prefix}
@@ -197,7 +222,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form - 綁定 ref 以控制捲動 */}
+        {/* Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
             
@@ -231,8 +256,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="text"
               value={inputName}
               onChange={handleInputChange}
-              // ✨ 關鍵修改：綁定 onFocus 事件 ✨
               onFocus={handleInputFocus}
+              // ✨ 點擊輸入框也觸發校正 (針對 Case 3 沒收鍵盤的情況)
+              onClick={handleInputClick}
               placeholder="" 
               className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
               style={{ transform: `translateX(${offsetX}px)` }}
