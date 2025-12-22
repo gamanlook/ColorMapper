@@ -21,7 +21,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   
   const inputRef = useRef<HTMLInputElement>(null);
   const hintRef = useRef<HTMLSpanElement>(null);
-  // ✨ 新增：用來抓取表單底部的 Ref，控制手機版捲動位置
   const formRef = useRef<HTMLFormElement>(null);
   
   const [offsetX, setOffsetX] = useState(0);
@@ -44,6 +43,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   }, [inputName, showSuffixHint]);
 
   const handlePrefixClick = (prefix: string) => {
+    // ✨ 關鍵判斷 1：點擊當下，輸入框是否已經聚焦？
+    // 如果已經是 inputRef.current，代表鍵盤已經升起來了
+    const wasAlreadyFocused = document.activeElement === inputRef.current;
+
     const currentName = inputName;
     let newName = prefix;
     
@@ -56,23 +59,22 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     
     setInputName(newName);
     
-    // ✨ 關鍵修改：解決閃爍與手機版定位問題 ✨
     setTimeout(() => {
       if (inputRef.current) {
-        // 1. preventScroll: true -> 解決電腦版「閃一下」的問題
-        // 告訴瀏覽器：「你只要聚焦就好，不要自己亂捲動畫面」
+        // 確保焦點在輸入框 (即使我們用了 preventDefault，這行還是留著保險)
         inputRef.current.focus({ preventScroll: true });
         
+        // 移動游標到最後
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
 
-        // 2. 手機版定位優化：
-        // 延遲一點點（等鍵盤彈起吃掉畫面高度後），再手動捲動
-        setTimeout(() => {
-          // 讓「整個表單區域」捲動到可視範圍的「最近處 (nearest)」
-          // 這通常會讓「送出按鈕」剛好貼在鍵盤上方，而不是讓輸入框置中
-          formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }, 100); 
+        // ✨ 關鍵判斷 2：只有在「原本沒聚焦」的情況下，才執行捲動
+        // 這樣如果鍵盤已經開著，就不會重新跳動畫面
+        if (!wasAlreadyFocused) {
+          setTimeout(() => {
+            formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }, 100); 
+        }
       }
     }, 10);
   };
@@ -106,7 +108,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       
       setTimeout(() => {
         if (inputRef.current) {
-          inputRef.current.focus({ preventScroll: true }); // 這裡也加上防閃爍
+          inputRef.current.focus({ preventScroll: true });
           const len = inputName.length;
           inputRef.current.setSelectionRange(len, len);
         }
@@ -170,6 +172,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
+              // ✨ 關鍵修改 3：防止按鈕搶焦點
+              // 加上 onMouseDown={(e) => e.preventDefault()}
+              // 這樣點擊按鈕時，焦點會繼續留在 Input 上，黑框就不會閃爍了
+              onMouseDown={(e) => e.preventDefault()}
               className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
             >
               {prefix}
@@ -177,7 +183,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form - 綁定 ref 以控制捲動 */}
+        {/* Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="relative w-full group">
             
@@ -214,7 +220,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               placeholder="" 
               className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
               style={{ transform: `translateX(${offsetX}px)` }}
-              // 移除 autoFocus，避免一進來就跳鍵盤遮住畫面
             />
           </div>
 
