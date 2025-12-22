@@ -48,10 +48,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    setTimeout(doScroll, 120);
+    setTimeout(doScroll, 200);
   };
 
-  // ✨ 關鍵修改：handlePrefixClick ✨
   const handlePrefixClick = (prefix: string) => {
     const currentName = inputName;
     let newName = prefix;
@@ -69,24 +68,16 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       return;
     }
     
-    if (inputRef.current) {
-      // 1. iOS 關鍵：必須在事件觸發當下「立刻」Focus，不能等 setTimeout
-      // 這樣 iOS 才會認定這是「使用者行為」，允許彈出鍵盤
-      inputRef.current.focus({ preventScroll: true });
-      
-      // 2. 游標位置修正：
-      // 因為 React 的 setInputName 是非同步的，雖然我們上面先 Focus 了，
-      // 但為了確保游標在文字更新後能跑到最後面，我們還是需要一個微小的延遲來設定 Range
-      setTimeout(() => {
-        if (inputRef.current) {
-          const len = newName.length;
-          inputRef.current.setSelectionRange(len, len);
-        }
-      }, 0);
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus({ preventScroll: true });
+        
+        const len = newName.length;
+        inputRef.current.setSelectionRange(len, len);
 
-      // 3. 觸發捲動校正
-      scrollToBottom();
-    }
+        scrollToBottom();
+      }
+    }, 10); // 這裡的延遲保留給 React 更新 State
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,7 +185,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form - 綁定 ref 以控制捲動 */}
+        {/* Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
             
@@ -226,9 +217,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             <input
               ref={inputRef}
               type="text"
+              name="color-name-input" // ✨ 防止 Chrome 把這當成地址或信用卡
+              autoComplete="off"      // ✨ 關閉自動完成
+              autoCorrect="off"       // ✨ 關閉自動更正
+              spellCheck="false"      // ✨ 關閉拼字檢查
               value={inputName}
               onChange={handleInputChange}
-              // 統一的捲動邏輯：點擊或聚焦都觸發
               onFocus={scrollToBottom}
               onClick={scrollToBottom}
               
