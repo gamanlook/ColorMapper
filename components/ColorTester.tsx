@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { OklchColor, HueDefinition } from '../types';
 import { toCss, suggestPrefixes } from '../utils';
 import { PREFIXES } from '../constants';
@@ -11,27 +11,61 @@ interface ColorTesterProps {
   onSkip: () => void;
 }
 
+const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
+
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
   const [inputName, setInputName] = useState('');
   const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hintRef = useRef<HTMLSpanElement>(null);
+  
+  const [offsetX, setOffsetX] = useState(0);
 
   useEffect(() => {
-    // Reset on new color
     setInputName('');
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
 
+  const normalizedInput = inputName.replace(/艷/g, '豔');
+  const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
+
+  useEffect(() => {
+    if (showSuffixHint && hintRef.current) {
+      const hintWidth = hintRef.current.offsetWidth;
+      setOffsetX(-(hintWidth / 2));
+    } else {
+      setOffsetX(0);
+    }
+  }, [inputName, showSuffixHint]);
+
   const handlePrefixClick = (prefix: string) => {
-    setInputName(prev => {
-      // Check if starts with any known prefix to replace it, or just append
-      const existingPrefix = PREFIXES.find(p => prev.startsWith(p));
-      if (existingPrefix) {
-         return prefix + prev.substring(existingPrefix.length);
+    const currentName = inputName;
+    let newName = prefix;
+    
+    const existingPrefix = PREFIXES.find(p => currentName.startsWith(p));
+    if (existingPrefix) {
+       newName = prefix + currentName.substring(existingPrefix.length);
+    } else {
+       newName = prefix + currentName;
+    }
+    
+    setInputName(newName);
+    
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        const len = newName.length;
+        inputRef.current.setSelectionRange(len, len);
       }
-      return prefix + prev;
-    });
+    }, 10);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/艷/g, '豔');
+    setInputName(val);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,19 +74,37 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     setIsSubmitting(true);
 
-    // 1. Clean input (Rule: remove trailing "色")
-    let cleanedName = inputName.trim();
+    let cleanedName = inputName.trim().replace(/艷/g, '豔');
     if (cleanedName.endsWith('色') && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
 
-    // 2. AI Validation
+    const isPrefixOnly = PREFIXES.includes(cleanedName) && !STANDALONE_ALLOWED.includes(cleanedName);
+
+    if (isPrefixOnly) {
+      onSubmit(
+        cleanedName, 
+        true, 
+        "PREFIX_ONLY", 
+        `後面好像少了顏色？試試看：${cleanedName}紅、${cleanedName}藍...`
+      );
+      setIsSubmitting(false);
+      
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          const len = inputName.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return; 
+    }
+
     try {
       const validation = await validateColorName(color, cleanedName, hueDef.nameEN);
       onSubmit(cleanedName, validation.isSuspicious, validation.reason, validation.feedback);
     } catch (err) {
       console.error(err);
-      // Proceed even if AI fails
       onSubmit(cleanedName, false, undefined, "命名已收錄！");
     } finally {
       setIsSubmitting(false);
@@ -60,20 +112,17 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const currentColorCss = toCss(color);
-  
-  // Text contrast depends on the color itself, not the background container
   const textColorClass = color.l > 0.65 ? 'text-black/70' : 'text-white/90';
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
       
-      {/* Visual Stage - IMPORTANT: Background must remain absolute white/black for color reference, ignoring global theme */}
+      {/* Visual Stage */}
       <div className={`
         relative aspect-square rounded-3xl border border-theme-card-border overflow-hidden transition-colors duration-500
         flex items-center justify-center
         ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
-        {/* Toggle BG Button */}
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-4 right-4 p-2 rounded-full border backdrop-blur-md transition-all z-10 
@@ -82,28 +131,22 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           title="切換背景顏色"
         >
           {bgBlack ? (
-             // Sun Icon (Switch to Light)
              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           ) : (
-             // Moon Icon (Switch to Dark)
              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           )}
         </button>
 
-        {/* The Color Swatch */}
         <div 
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
           style={{ backgroundColor: currentColorCss }}
         >
-           {/* Values Overlay - On the color */}
            <div className={`text-xs font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
               OKLch({(color.l*100).toFixed(0)}% {color.c.toFixed(3)} {color.h}°)
            </div>
         </div>
-        
       </div>
 
-      {/* Input Section */}
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
@@ -122,13 +165,51 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <div className="relative">
+          <div className="relative w-full group">
+            
+            {/* 
+               ✨ 層級 1 (最底層 z-0): 靜態背景框 
+               移除了 -z-10，改用 z-0 確保它不會掉到網頁背景後面。
+            */}
+            <div className="absolute inset-0 z-0 border-2 border-theme-input-border bg-theme-input rounded-xl group-focus-within:border-theme-text-main transition-colors"></div>
+
+            {/* 
+               ✨ 層級 2 (中層 z-10): Ghost 文字層 (會移動)
+            */}
+            <div 
+              className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none px-4 py-3 transition-transform duration-100 ease-out"
+              style={{ transform: `translateX(${offsetX}px)` }}
+            >
+              <div className="relative flex items-center">
+                {/* 主文字 */}
+                <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
+                  {inputName || '試試自己取名'}
+                </span>
+                
+                {/* 提示後綴 */}
+                {showSuffixHint && (
+                  <span 
+                    ref={hintRef}
+                    className="absolute left-full top-0 h-full flex items-center text-theme-text-muted whitespace-nowrap pl-0.5 text-lg font-sans"
+                  >
+                    什麼色？
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* 
+               ✨ 層級 3 (最上層 z-20): 透明 Input (會移動)
+               負責游標與點擊。
+            */}
             <input
+              ref={inputRef}
               type="text"
               value={inputName}
-              onChange={(e) => setInputName(e.target.value)}
-              placeholder="試試自己取名"
-              className="w-full px-4 py-3 text-lg border-2 border-theme-input-border bg-theme-input text-theme-text-main rounded-xl focus:border-theme-text-main focus:ring-0 outline-none transition-all placeholder-[var(--color-text-muted)] text-center hover:border-theme-text-main"
+              onChange={handleInputChange}
+              placeholder="" 
+              className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
+              style={{ transform: `translateX(${offsetX}px)` }}
               autoFocus
             />
           </div>
