@@ -1,3 +1,4 @@
+
 import { HueDefinition } from './types';
 
 export const HUES: HueDefinition[] = [
@@ -60,7 +61,7 @@ export const SEMANTIC_SPECS = [
   // --- Mid Lightness (L 0.4 - 0.7) ---
   { prefix: '明', l: 0.65, c: 0.12, desc: 'Luminous/Clear' },
   { prefix: '鮮', l: 0.65, c: 0.22, desc: 'Strong (S)' },
-  { prefix: '艷', l: 0.60, c: 0.28, desc: 'Vivid (V)' },
+  { prefix: '豔', l: 0.60, c: 0.28, desc: 'Vivid (V)' },
   { prefix: '純', l: 0.50, c: 0.30, desc: 'Pure' },
   { prefix: '正', l: 0.50, c: 0.28, desc: 'Standard/Base' },
 
