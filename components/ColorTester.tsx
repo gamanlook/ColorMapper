@@ -54,11 +54,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     // 時間差戰術：
     // 100ms: 應付反應快的手機
-    // 300ms: 應付普通鍵盤動畫
-    // 500ms: 應付比較慢的 Android 鍵盤 (確保最後一定會校正回來)
+    // 400ms: 應付比較慢的鍵盤 (確保最後一定會校正回來)
     setTimeout(doScroll, 100);
-    setTimeout(doScroll, 300);
-    setTimeout(doScroll, 500);
+    setTimeout(doScroll, 400);
   };
 
   const handlePrefixClick = (prefix: string) => {
