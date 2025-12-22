@@ -12,7 +12,7 @@ interface ColorTesterProps {
 }
 
 const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
-const MAX_CHARS = 23; // 最大字數限制
+const MAX_CHARS = 23;
 
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
@@ -56,24 +56,25 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
        newName = prefix + currentName;
     }
     
-    // 檢查字數限制 (雖然前綴通常很短，但加上去後可能會爆，這裡也防一下)
     if (newName.replace(/\s/g, '').length <= MAX_CHARS) {
       setInputName(newName);
     } else {
-      // 如果加上前綴會爆字數，就只取前面合法的長度 (選用邏輯，通常不會發生)
-      // 這裡簡單處理：如果爆了就不加
       return;
     }
     
     setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus({ preventScroll: true });
+        
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
 
         if (!wasAlreadyFocused) {
+          // ✨ 修改 1：手機版捲動邏輯 ✨
           setTimeout(() => {
-            formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            // block: "end" -> 強制把表單底部對齊可視區域底部 (鍵盤上方)
+            // 配合 form 的 class 'scroll-mb-4' 產生緩衝距離
+            formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
           }, 100); 
         }
       }
@@ -82,11 +83,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    
-    // ✨ 字數限制邏輯 (忽略空白) ✨
     const nonSpaceCount = val.replace(/\s/g, '').length;
 
-    // 只有在「字數未滿」或是「正在刪除文字(長度變短)」時才更新
     if (nonSpaceCount <= MAX_CHARS || val.length < inputName.length) {
       setInputName(val);
     }
@@ -161,11 +159,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           )}
         </button>
 
+        {/* The Color Swatch */}
         <div 
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
           style={{ backgroundColor: currentColorCss }}
         >
-           <div className={`text-xs font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
+           {/* ✨ 修改 2：字體縮小至 text-[10px] (約 0.625rem) ✨ */}
+           <div className={`text-[10px] font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
               OKLch({(color.l*100).toFixed(0)}% {color.c.toFixed(3)} {color.h}°)
            </div>
         </div>
@@ -188,8 +188,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form - 綁定 ref 以控制捲動 */}
-        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/* 
+           Form
+           ✨ 修改 3：加入 scroll-mb-4 ✨
+           這會告訴瀏覽器：當執行 scrollIntoView 時，請在底部多留 1rem (4 * 4px) 的緩衝空間，
+           所以送出按鈕不會緊貼著鍵盤邊緣。
+        */}
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
             
             {/* Background Layer */}
@@ -201,17 +206,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               style={{ transform: `translateX(${offsetX}px)` }}
             >
               <div className="relative flex items-center">
-                {/* 
-                   Ghost 文字：顯示 inputName
-                   這裡不需要 normalize，因為我們希望視覺上跟使用者打的一模一樣，
-                   這樣游標才會對齊。
-                */}
-                {/* 主文字 */}
                 <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
                   {inputName || '試試自己取名'}
                 </span>
                 
-                {/* 提示後綴 */}
                 {showSuffixHint && (
                   <span 
                     ref={hintRef}
