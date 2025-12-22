@@ -48,7 +48,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    setTimeout(doScroll, 200);
+    // 只留一槍 120ms
+    setTimeout(doScroll, 120);
   };
 
   const handlePrefixClick = (prefix: string) => {
@@ -77,7 +78,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
         scrollToBottom();
       }
-    }, 10); // 這裡的延遲保留給 React 更新 State
+    }, 10);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,7 +155,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           {bgBlack ? (
              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           ) : (
-             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+             <svg width="18" height="18" viewBox="0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           )}
         </button>
 
@@ -216,11 +217,15 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             {/* Input Layer */}
             <input
               ref={inputRef}
-              type="text"
-              name="color-name-input" // ✨ 防止 Chrome 把這當成地址或信用卡
-              autoComplete="off"      // ✨ 關閉自動完成
-              autoCorrect="off"       // ✨ 關閉自動更正
-              spellCheck="false"      // ✨ 關閉拼字檢查
+              // ✨ 修正重點：改成 search，且改了 name, 加上 role ✨
+              type="search" 
+              name="color-input" 
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
+              role="presentation" 
+              aria-autocomplete="none"
+              
               value={inputName}
               onChange={handleInputChange}
               onFocus={scrollToBottom}
