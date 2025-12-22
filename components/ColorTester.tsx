@@ -24,52 +24,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const hintRef = useRef<HTMLSpanElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
-  // 記錄基準高度
-  const baseHeightRef = useRef(window.innerHeight);
-  // ✨ 關鍵修正：記錄鍵盤是否曾經打開過
-  const hasKeyboardOpened = useRef(false);
-  
   const [offsetX, setOffsetX] = useState(0);
 
   useEffect(() => {
     setInputName('');
     setSuggestedPrefixesList(suggestPrefixes(color));
   }, [color]);
-
-  // ✨ 修正版：嚴謹的鍵盤偵測邏輯 ✨
-  useEffect(() => {
-    // 確保基準高度是最大值 (避免一開始載入就有網址列干擾)
-    if (window.innerHeight > baseHeightRef.current) {
-      baseHeightRef.current = window.innerHeight;
-    }
-
-    const handleResize = () => {
-      const currentHeight = window.innerHeight;
-      const threshold = baseHeightRef.current * 0.85; 
-
-      // 狀態 1: 畫面顯著變矮 -> 代表鍵盤「已經」打開了
-      if (currentHeight < threshold) {
-        hasKeyboardOpened.current = true;
-      }
-
-      // 狀態 2: 畫面回到正常高度 -> 代表鍵盤收起來了
-      // ⚠️ 關鍵：只有在 hasKeyboardOpened 為 true 時才執行，
-      // 這樣可以避免「剛點擊輸入框、畫面還沒變矮」時的誤判。
-      if (currentHeight > threshold && hasKeyboardOpened.current) {
-        if (document.activeElement === inputRef.current) {
-          // 延遲一下再失焦，體驗比較滑順
-          setTimeout(() => {
-             inputRef.current?.blur(); 
-          }, 50);
-        }
-        // 重置狀態
-        hasKeyboardOpened.current = false;
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
@@ -83,13 +43,22 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     }
   }, [inputName, showSuffixHint]);
 
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  // ✨ 核心捲動邏輯：簡單暴力，多補幾槍 ✨
+  const scrollToBottom = () => {
+    // 定義捲動動作
     const doScroll = () => {
+      // 使用 "smooth" 會有動畫，如果覺得還是會亂跳，可以改 "auto" (瞬間)
+      // block: "end" 確保底部對齊（也就是貼齊鍵盤上方）
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
 
+    // 時間差戰術：
+    // 100ms: 應付反應快的手機
+    // 300ms: 應付普通鍵盤動畫
+    // 500ms: 應付比較慢的 Android 鍵盤 (確保最後一定會校正回來)
     setTimeout(doScroll, 100);
-    setTimeout(doScroll, 400);
+    setTimeout(doScroll, 300);
+    setTimeout(doScroll, 500);
   };
 
   const handlePrefixClick = (prefix: string) => {
@@ -115,6 +84,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
+
+        // 點按鈕也要觸發捲動
+        scrollToBottom();
       }
     }, 10);
   };
@@ -258,7 +230,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="text"
               value={inputName}
               onChange={handleInputChange}
-              onFocus={handleInputFocus}
+              
+              // ✨ 關鍵 1：正常聚焦時觸發捲動
+              onFocus={scrollToBottom}
+              
+              // ✨ 關鍵 2：如果已經聚焦，再次點擊時也觸發捲動
+              // 這樣解決了「鍵盤收起但焦點還在 -> 再次點擊」的情況
+              onClick={scrollToBottom}
+              
               placeholder="" 
               className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
               style={{ transform: `translateX(${offsetX}px)` }}
