@@ -82,7 +82,15 @@
         --color-chart-text-cell-light: color-mix(in srgb, theme('colors.zinc.900') 80%, transparent);
         --color-chart-text-cell-dark: color-mix(in srgb, theme('colors.zinc.50') 80%, transparent);
       }
-      body { font-family: 'Inter', system-ui, sans-serif; }
+      
+      /* ✨ 關鍵修改：強制網頁底色，避免鍵盤彈起時露出白底 ✨ */
+      html, body { 
+        font-family: 'Inter', system-ui, sans-serif;
+        background-color: var(--color-page-bg);
+        height: 100%;
+        margin: 0;
+      }
+
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: theme('colors.slate.300'); border-radius: 4px; }
