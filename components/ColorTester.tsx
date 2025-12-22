@@ -21,6 +21,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   
   const inputRef = useRef<HTMLInputElement>(null);
   const hintRef = useRef<HTMLSpanElement>(null);
+  // ✨ 新增：用來抓取表單底部的 Ref，控制手機版捲動位置
+  const formRef = useRef<HTMLFormElement>(null);
   
   const [offsetX, setOffsetX] = useState(0);
 
@@ -54,11 +56,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     
     setInputName(newName);
     
+    // ✨ 關鍵修改：解決閃爍與手機版定位問題 ✨
     setTimeout(() => {
       if (inputRef.current) {
-        inputRef.current.focus();
+        // 1. preventScroll: true -> 解決電腦版「閃一下」的問題
+        // 告訴瀏覽器：「你只要聚焦就好，不要自己亂捲動畫面」
+        inputRef.current.focus({ preventScroll: true });
+        
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
+
+        // 2. 手機版定位優化：
+        // 延遲一點點（等鍵盤彈起吃掉畫面高度後），再手動捲動
+        setTimeout(() => {
+          // 讓「整個表單區域」捲動到可視範圍的「最近處 (nearest)」
+          // 這通常會讓「送出按鈕」剛好貼在鍵盤上方，而不是讓輸入框置中
+          formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100); 
       }
     }, 10);
   };
@@ -92,7 +106,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       
       setTimeout(() => {
         if (inputRef.current) {
-          inputRef.current.focus();
+          inputRef.current.focus({ preventScroll: true }); // 這裡也加上防閃爍
           const len = inputName.length;
           inputRef.current.setSelectionRange(len, len);
         }
@@ -163,30 +177,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/* Form - 綁定 ref 以控制捲動 */}
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="relative w-full group">
             
-            {/* 
-               ✨ 層級 1 (最底層 z-0): 靜態背景框 
-               移除了 -z-10，改用 z-0 確保它不會掉到網頁背景後面。
-            */}
+            {/* Background Layer */}
             <div className="absolute inset-0 z-0 border-2 border-theme-input-border bg-theme-input rounded-xl group-focus-within:border-theme-text-main transition-colors"></div>
 
-            {/* 
-               ✨ 層級 2 (中層 z-10): Ghost 文字層 (會移動)
-            */}
+            {/* Ghost Layer */}
             <div 
               className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none px-4 py-3 transition-transform duration-100 ease-out"
               style={{ transform: `translateX(${offsetX}px)` }}
             >
               <div className="relative flex items-center">
-                {/* 主文字 */}
                 <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
                   {inputName || '試試自己取名'}
                 </span>
                 
-                {/* 提示後綴 */}
                 {showSuffixHint && (
                   <span 
                     ref={hintRef}
@@ -198,10 +205,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               </div>
             </div>
 
-            {/* 
-               ✨ 層級 3 (最上層 z-20): 透明 Input (會移動)
-               負責游標與點擊。
-            */}
+            {/* Input Layer */}
             <input
               ref={inputRef}
               type="text"
@@ -210,7 +214,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               placeholder="" 
               className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
               style={{ transform: `translateX(${offsetX}px)` }}
-              autoFocus
+              // 移除 autoFocus，避免一進來就跳鍵盤遮住畫面
             />
           </div>
 
