@@ -48,7 +48,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    // 只留一槍 120ms
     setTimeout(doScroll, 120);
   };
 
@@ -69,16 +68,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       return;
     }
     
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus({ preventScroll: true });
-        
-        const len = newName.length;
-        inputRef.current.setSelectionRange(len, len);
+    if (inputRef.current) {
+      inputRef.current.focus({ preventScroll: true });
+      
+      setTimeout(() => {
+        if (inputRef.current) {
+          const len = newName.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
 
-        scrollToBottom();
-      }
-    }, 10);
+      scrollToBottom();
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,6 +146,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         flex items-center justify-center
         ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
+        {/* Toggle BG Button */}
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-4 right-4 p-2 rounded-full border backdrop-blur-md transition-all z-10 
@@ -153,22 +155,28 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           title="切換背景顏色"
         >
           {bgBlack ? (
-             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+             // Sun Icon
+             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           ) : (
-             <svg width="18" height="18" viewBox="0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+             // Moon Icon - 使用 Tailwind class w-[18px] h-[18px] 固定大小
+             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           )}
         </button>
 
+        {/* The Color Swatch */}
         <div 
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
           style={{ backgroundColor: currentColorCss }}
         >
+           {/* Values Overlay */}
            <div className={`text-[10px] font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
               OKLch({(color.l*100).toFixed(0)}% {color.c.toFixed(3)} {color.h}°)
            </div>
         </div>
+        
       </div>
 
+      {/* Input Section */}
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
@@ -217,9 +225,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             {/* Input Layer */}
             <input
               ref={inputRef}
-              // ✨ 修正重點：改成 search，且改了 name, 加上 role ✨
               type="search" 
-              name="color-input" 
+              name="color-input"
               autoComplete="off"
               autoCorrect="off"
               spellCheck="false"
