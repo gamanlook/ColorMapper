@@ -44,7 +44,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   }, [inputName, showSuffixHint]);
 
   const handlePrefixClick = (prefix: string) => {
-    // 檢查點擊當下，鍵盤是否已經是升起狀態 (已聚焦)
     const wasAlreadyFocused = document.activeElement === inputRef.current;
 
     const currentName = inputName;
@@ -65,28 +64,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     
     setTimeout(() => {
       if (inputRef.current) {
-        // 1. 聚焦但不捲動 (防止電腦版閃爍)
         inputRef.current.focus({ preventScroll: true });
         
-        // 2. 移動游標
         const len = newName.length;
         inputRef.current.setSelectionRange(len, len);
 
-        // 3. 處理手機版鍵盤升起的捲動
         if (!wasAlreadyFocused) {
-          // ✨ 策略修改：雙重鎖定 + 瞬間跳轉 ✨
-          
-          // 第一發 (100ms)：鍵盤剛開始動，先嘗試定位
+          // ✨ 修改 1：手機版捲動邏輯 ✨
           setTimeout(() => {
-            formRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-          }, 100);
-
-          // 第二發 (400ms)：Android 鍵盤動畫通常約 300ms，
-          // 等它完全定格後，再強制校正一次，覆蓋瀏覽器的預設行為。
-          // 使用 "auto" (瞬間) 而非 "smooth" (平滑)，權重較高，不會被中斷。
-          setTimeout(() => {
-            formRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-          }, 400);
+            // block: "end" -> 強制把表單底部對齊可視區域底部 (鍵盤上方)
+            // 配合 form 的 class 'scroll-mb-4' 產生緩衝距離
+            formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+          }, 100); 
         }
       }
     }, 10);
@@ -170,10 +159,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           )}
         </button>
 
+        {/* The Color Swatch */}
         <div 
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
           style={{ backgroundColor: currentColorCss }}
         >
+           {/* ✨ 修改 2：字體縮小至 text-[10px] (約 0.625rem) ✨ */}
            <div className={`text-[10px] font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
               OKLch({(color.l*100).toFixed(0)}% {color.c.toFixed(3)} {color.h}°)
            </div>
@@ -197,7 +188,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Form - 綁定 ref 以控制捲動 */}
+        {/* 
+           Form
+           ✨ 修改 3：加入 scroll-mb-4 ✨
+           這會告訴瀏覽器：當執行 scrollIntoView 時，請在底部多留 1rem (4 * 4px) 的緩衝空間，
+           所以送出按鈕不會緊貼著鍵盤邊緣。
+        */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
             
