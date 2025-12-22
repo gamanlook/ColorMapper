@@ -46,7 +46,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // 捲動邏輯
   const scrollToBottom = () => {
     const doScroll = () => {
-      formRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
     setTimeout(doScroll, 400);
   };
