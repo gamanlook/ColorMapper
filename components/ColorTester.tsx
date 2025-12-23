@@ -48,7 +48,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    setTimeout(doScroll, 30);
+    setTimeout(doScroll, 10);
     setTimeout(doScroll, 150);
   };
 
