@@ -218,56 +218,61 @@ function App() {
       {toast && <Toast data={toast} onClick={handleToastClick} onClose={() => setToast(null)} />}
       <input type="file" ref={fileInputRef} onChange={handleRestore} accept="application/json" style={{ display: 'none' }} />
       
-      {/* Header Content */}
-      <div className="max-w-6xl mx-auto px-4 pt-8 pb-2 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      {/* Header Container */}
+      {/* 使用與 Main 相同的 Grid 設定，確保左右邊緣與卡片對齊 */}
+      <div className="w-full mx-auto px-4 pt-8 pb-2 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12">
+        {/* Header Content: 跨越兩欄 (col-span-2) */}
+        <div className="col-span-1 lg:col-span-2 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
 
-             {/* 改為連結 (a tag) */}
-             <a 
-               href="https://github.com/gamanlook/ColorMapper" 
-               target="_blank" 
-               rel="noopener noreferrer"
-               className="relative w-10 h-10 flex-shrink-0 hover:opacity-80 transition-opacity"
-               title="View Source on GitHub"
-             >
-               <svg width="100%" height="100%" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                 {/* 內容群組：套用下方的遮罩 ID */}
-                 <g clipPath="url(#clip0_7305_18028)">
-                   <rect width="36" height="36" rx="9" fill="#CAE0E8"/>
-                   <path d="M32 38C32 44.0751 25.0604 45 16.5 45C7.93959 45 1 44.0751 1 38C1 30.4 5.7 23 16.5 23C27.3 23 32 30.4 32 38Z" fill="#314146"/>
-                   <ellipse cx="17" cy="26" rx="5" ry="4" fill="#93A7AE"/>
-                   <circle cx="18" cy="16" r="11" fill="#FAFDFF"/>
-                   <circle cx="20" cy="15" r="6" fill="#CAE0E8"/>
-                   <circle cx="20" cy="15" r="4" fill="#516166"/>
-                   <circle cx="19" cy="15" r="3" fill="#314146"/>
-                 </g>
-                
-                 {/* 定義遮罩：rx="9" 就是圓角大小 */}
-                 <defs>
-                   <clipPath id="clip0_7305_18028">
-                     <rect width="36" height="36" rx="9" fill="white"/>
-                   </clipPath>
-                 </defs>
-               </svg>
-             </a>
+               {/* 改為連結 (a tag) */}
+               <a 
+                 href="https://github.com/gamanlook/ColorMapper" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="relative w-10 h-10 flex-shrink-0 hover:opacity-80 transition-opacity"
+                 title="View Source on GitHub"
+               >
+                 <svg width="100%" height="100%" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   {/* 內容群組：套用下方的遮罩 ID */}
+                   <g clipPath="url(#clip0_7305_18028)">
+                     <rect width="36" height="36" rx="9" fill="#CAE0E8"/>
+                     <path d="M32 38C32 44.0751 25.0604 45 16.5 45C7.93959 45 1 44.0751 1 38C1 30.4 5.7 23 16.5 23C27.3 23 32 30.4 32 38Z" fill="#314146"/>
+                     <ellipse cx="17" cy="26" rx="5" ry="4" fill="#93A7AE"/>
+                     <circle cx="18" cy="16" r="11" fill="#FAFDFF"/>
+                     <circle cx="20" cy="15" r="6" fill="#CAE0E8"/>
+                     <circle cx="20" cy="15" r="4" fill="#516166"/>
+                     <circle cx="19" cy="15" r="3" fill="#314146"/>
+                   </g>
+                  
+                   {/* 定義遮罩：rx="9" 就是圓角大小 */}
+                   <defs>
+                     <clipPath id="clip0_7305_18028">
+                       <rect width="36" height="36" rx="9" fill="white"/>
+                     </clipPath>
+                   </defs>
+                 </svg>
+               </a>
 
-             <div className="flex flex-col">
-               <h1 className="text-xl font-bold tracking-tight text-theme-text-main leading-none">
-                 Semantic<span className="text-theme-brand">Color</span>Mapper
-               </h1>
-               <div className="flex items-center gap-1.5 mt-1">
-                 <span className={`w-2 h-2 rounded-full ${isCloudMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-                 <span className="text-[10px] font-medium text-theme-text-muted uppercase tracking-wide">
-                   {isCloudMode ? 'Online' : 'Local'} · 已蒐集 {humanEntries} 組
-                 </span>
+               <div className="flex flex-col">
+                 <h1 className="text-xl font-bold tracking-tight text-theme-text-main leading-none">
+                   Semantic<span className="text-theme-brand">Color</span>Mapper
+                 </h1>
+                 <div className="flex items-center gap-1.5 mt-1">
+                   <span className={`w-2 h-2 rounded-full ${isCloudMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                   <span className="text-[10px] font-medium text-theme-text-muted uppercase tracking-wide">
+                     {isCloudMode ? 'Online' : 'Local'} · 已蒐集 {humanEntries} 組
+                   </span>
+                 </div>
                </div>
-             </div>
+          </div>
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* 左側容器：設定 w-full lg:max-w-[496px] mx-auto */}
-        <div className="space-y-8 w-full lg:max-w-[496px] mx-auto">
+      <main className="w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12 items-start">
+        
+        {/* 左側容器 */}
+        <div className="space-y-8 w-full">
            <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
               
               {/* Header with Adaptive Layout */}
@@ -304,8 +309,8 @@ function App() {
            </div>
         </div>
 
-        {/* 右側容器：設定 w-full lg:max-w-[496px] mx-auto */}
-        <div className="flex flex-col gap-4 w-full lg:max-w-[496px] mx-auto">
+        {/* 右側容器 */}
+        <div className="flex flex-col gap-4 w-full">
            <div className="bg-theme-card p-6 rounded-3xl flex flex-col items-center transition-colors duration-300">
              
              {/* Header with Adaptive Layout */}
@@ -347,8 +352,10 @@ function App() {
       </main>
 
       {/* 底部功能與資訊區 */}
-      <footer className="max-w-6xl mx-auto px-4 mt-12 pb-24">
-        <div className="border-t border-theme-card-border pt-8 flex flex-col md:flex-row justify-between items-start gap-8">
+      {/* 同樣套用 Grid 設定 */}
+      <footer className="w-full mx-auto px-4 mt-12 pb-24 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12">
+        {/* 內容跨越兩欄 (col-span-2) */}
+        <div className="col-span-1 lg:col-span-2 border-t border-theme-card-border pt-8 flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-3">
               <button 
