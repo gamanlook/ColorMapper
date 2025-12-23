@@ -57,7 +57,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       // 策略：雙重補槍。
       // 150ms: 為了攔截掉 Android 預設的置中輸入框位置這行為。
       // 151ms: 為了接住 Android 第一次彈出時的 Layout 變化。
-      setTimeout(doScroll, 10);
+      setTimeout(doScroll, 1);
       setTimeout(doScroll, 300);
       
       // 標記為已互動
