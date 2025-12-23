@@ -198,14 +198,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-1.5">
           {suggestedPrefixesList.map(prefix => (
             <button
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              className="px-4 py-1.5 text-xs bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="px-3 py-1.5 text-xs bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
