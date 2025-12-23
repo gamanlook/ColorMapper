@@ -335,7 +335,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       {hoveredCluster && (
         <div className="absolute top-4 left-4 bg-theme-toast-bg backdrop-blur-md p-4 rounded-2xl shadow-xl shadow-slate-700/10 dark:shadow-black/50 border border-theme-toast-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[160px]">
           <div className="font-bold text-theme-text-main mb-1 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full border border-white dark:border-white/50 shadow-sm" style={{backgroundColor: toCss({l: hoveredCluster.l, c: hoveredCluster.c, h: hue})}}></span>
+            <span className="w-5 h-5 rounded-full border border-white dark:border-white/50 shadow-sm" style={{backgroundColor: toCss({l: hoveredCluster.l, c: hoveredCluster.c, h: hue})}}></span>
             {hoveredCluster.displayLabel}
           </div>
           
