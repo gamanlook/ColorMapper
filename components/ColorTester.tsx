@@ -204,16 +204,24 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           1. -mx-6: 負邊距 24px (1.5rem)，對應 App.tsx 卡片的 p-6。
           2. px-6: 內距 24px，把內容推回對齊線。
           3. w-[calc(100%+3rem)]: 總寬度 = 100% + 左負邊距 + 右負邊距 (1.5rem * 2)。
-          4. 移除 sm:mx-0 等限制，確保全尺寸都生效。
+          4. Mask Image: 使用 mask-image 做出左右 24px (px-6) 的漸層消失效果。
         */}
-        <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]">
+        <div 
+          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
+          style={{
+            // 定義遮罩：從左側 0px (透明) 到 24px (不透明)，然後到右側倒數 24px (不透明) 再到結尾 (透明)
+            // 24px 正好對應 px-6 的寬度
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+            maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)'
+          }}
+        >
           {suggestedPrefixesList.map(prefix => (
             <button
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-1.5 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
