@@ -202,17 +202,16 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         {/* 
           修正重點：
           1. -mx-6: 負邊距 24px (1.5rem)，對應 App.tsx 卡片的 p-6。
-          2. px-6: 內距 24px，把內容推回對齊線。
+          2. px: 把內容推回對齊線。(px-6 = 24px，的話能剛好切齊其餘物件左右側。但我最後使用px-4)
           3. w-[calc(100%+3rem)]: 總寬度 = 100% + 左負邊距 + 右負邊距 (1.5rem * 2)。
-          4. Mask Image: 使用 mask-image 做出左右 24px (px-6) 的漸層消失效果。
+          4. Mask Image: 使用 mask-image 做出漸層消失效果。
         */}
         <div 
-          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
+          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-4 w-[calc(100%+3rem)]"
           style={{
-            // 定義遮罩：從左側 0px (透明) 到 24px (不透明)，然後到右側倒數 24px (不透明) 再到結尾 (透明)
-            // 24px 正好對應 px-6 的寬度
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
-            maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)'
+            // 定義遮罩：從左側 0px (透明) 到 16px (不透明)，然後到右側倒數 16px (不透明) 再到結尾 (透明)
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)',
+            maskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)'
           }}
         >
           {suggestedPrefixesList.map(prefix => (
