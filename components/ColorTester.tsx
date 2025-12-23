@@ -179,21 +179,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       {/* Input Section */}
       <div className="flex flex-col gap-4">
 
-        {/* Suggested Prefixes */}
-        <div className="flex flex-wrap justify-center gap-2">
-          {suggestedPrefixesList.map(prefix => (
-            <button
-              key={prefix}
-              type="button"
-              onClick={() => handlePrefixClick(prefix)}
-              onMouseDown={(e) => e.preventDefault()}
-              className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
-            >
-              {prefix}
-            </button>
-          ))}
-        </div>
-
         {/* Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3 scroll-mb-4">
           <div className="relative w-full group">
@@ -266,6 +251,22 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             </button>
           </div>
         </form>
+
+        {/* Suggested Prefixes */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {suggestedPrefixesList.map(prefix => (
+            <button
+              key={prefix}
+              type="button"
+              onClick={() => handlePrefixClick(prefix)}
+              onMouseDown={(e) => e.preventDefault()}
+              className="px-3 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-lg transition-colors border border-transparent"
+            >
+              {prefix}
+            </button>
+          ))}
+        </div>
+        
       </div>
     </div>
   );
