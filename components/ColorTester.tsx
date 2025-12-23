@@ -64,9 +64,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       hasInteractedRef.current = true;
     } else {
       // 情況 B：後續互動 (鍵盤熱啟動 / 已經在打字)
-      // 策略：單發 1ms。
+      // 策略：單發 150ms。
       // 既然瀏覽器已經穩定了，我們就不要多做一次動作，這樣可以避免畫面抖動。
-      setTimeout(doScroll, 1);
+      // 但時間數字也不能設定太小，因為 Android 還是需要一點慢半拍時間。
+      setTimeout(doScroll, 150);
     }
   };
 
