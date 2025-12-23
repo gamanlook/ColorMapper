@@ -83,7 +83,7 @@
         --color-chart-text-cell-dark: color-mix(in srgb, theme('colors.zinc.50') 80%, transparent);
       }
       
-      /* ✨ 關鍵修改：強制網頁底色，避免鍵盤彈起時露出白底 ✨ */
+      /* 強制網頁底色 */
       html, body { 
         font-family: 'Inter', system-ui, sans-serif;
         background-color: var(--color-page-bg);
@@ -91,13 +91,24 @@
         margin: 0;
       }
 
-      /* ✨ 新增：隱藏 Chrome/Safari search input 預設的 "X" 按鈕 ✨ */
+      /* 隱藏 Chrome/Safari search input 預設的 "X" 按鈕 */
       input[type="search"]::-webkit-search-decoration,
       input[type="search"]::-webkit-search-cancel-button,
       input[type="search"]::-webkit-search-results-button,
       input[type="search"]::-webkit-search-results-decoration {
         -webkit-appearance: none;
         display: none;
+      }
+
+      /* ✨ 隱藏捲動條 (No Scrollbar) Utility ✨ */
+      /* Chrome, Safari, Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* IE, Edge, Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
       }
     </style>
   <script type="importmap">
