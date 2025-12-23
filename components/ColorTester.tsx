@@ -74,11 +74,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   // 捲動邏輯
   const scrollToBottom = () => {
-    // 使用自定義動畫，設定 200ms (你可以改成 100ms 更快，或是 500ms 更慢)
+    // 使用自定義動畫，設定 100ms
     if (formRef.current) {
       setTimeout(() => {
-        animateScrollToBottom(formRef.current!, 200);
-      }, 120);
+        animateScrollToBottom(formRef.current!, 100);
+      }, 250);
     }
   };
 
