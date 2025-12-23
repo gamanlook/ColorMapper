@@ -47,7 +47,7 @@
       :root {
         --color-page-bg: theme('colors.slate.50');
         --color-card-bg: theme('colors.white');
-        --color-card-border: theme('colors.slate.200');
+        --color-card-border: color-mix(in srgb, theme('colors.slate.600') 20%, transparent);
         --color-text-main: theme('colors.slate.900');
         --color-text-muted: color-mix(in srgb, theme('colors.slate.800') 55%, transparent);
         --color-input-bg: theme('colors.slate.100');
@@ -66,7 +66,7 @@
       .dark {
         --color-page-bg: theme('colors.zinc.950');
         --color-card-bg: theme('colors.zinc.900');
-        --color-card-border: color-mix(in srgb, theme('colors.zinc.500') 15%, transparent);
+        --color-card-border: color-mix(in srgb, theme('colors.white') 20%, transparent);
         --color-text-main: theme('colors.zinc.100');
         --color-text-muted: color-mix(in srgb, theme('colors.zinc.200') 55%, transparent);
         --color-input-bg: theme('colors.zinc.800');
