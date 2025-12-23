@@ -58,7 +58,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       // 10ms: 為了 iOS 的即時感，攔截掉 Android 預設的動畫。
       // 400ms: 為了接住 Android 第一次彈出時的 Layout 變化。
       setTimeout(doScroll, 10);
-      setTimeout(doScroll, 400);
+      setTimeout(doScroll, 11);
       
       // 標記為已互動
       hasInteractedRef.current = true;
