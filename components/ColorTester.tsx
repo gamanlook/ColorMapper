@@ -207,7 +207,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               onMouseDown={(e) => e.preventDefault()}
               // ✨ 關鍵修改：加入 first:ml-auto last:mr-auto
               // 這會讓按鈕在空間足夠時自動置中，空間不夠時自動靠左捲動
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3 py-1.5 text-xs bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
