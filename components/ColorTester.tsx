@@ -43,12 +43,29 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     }
   }, [inputName, showSuffixHint]);
 
-  // 捲動邏輯
+  // ✨ 修正版：智慧型捲動邏輯 ✨
   const scrollToBottom = () => {
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-    setTimeout(doScroll, 150);
+
+    if (!hasInteractedRef.current) {
+      // 情況 A：第一次互動 (鍵盤冷啟動)
+      // 策略：雙重補槍。
+      // 0ms: 為了 iOS 的即時感，同時要中斷「不要的預設 Android 的動畫」。
+      // 150ms: 為了接住 Android 第一次彈出時的 Layout 變化。
+      setTimeout(doScroll, 0);
+      setTimeout(doScroll, 150);
+      
+      // 標記為已互動
+      hasInteractedRef.current = true;
+    } else {
+      // 情況 B：後續互動 (鍵盤熱啟動 / 已經在打字)
+      // 策略：單發 150ms。
+      // 既然瀏覽器已經穩定了，我們就不要在 0ms 多做一次動作，
+      // 這樣可以避免「手動滑下來再點擊」時的畫面抖動。
+      setTimeout(doScroll, 150);
+    }
   };
 
   const handlePrefixClick = (prefix: string) => {
