@@ -55,7 +55,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     if (!hasInteractedRef.current) {
       // 情況 A：第一次互動 (鍵盤冷啟動)
       // 策略：雙重補槍。
-      // 1ms: 為了攔截掉 Android 預設的置中輸入框位置這行為，也為了讓靈敏的iOS先動作，就不會察覺到有第二動。
+      // 1ms: 為了攔截掉 Android 預設的置中輸入框位置這行為。也為了讓靈敏的iOS先鍵盤升起，動畫完成後，就不會察覺到有第二動500ms。
       // 500ms: 為了接住 Android 那慢半拍的鍵盤升起變化。
       setTimeout(doScroll, 1);
       setTimeout(doScroll, 500);
@@ -64,10 +64,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       hasInteractedRef.current = true;
     } else {
       // 情況 B：後續互動 (鍵盤熱啟動 / 已經在打字)
-      // 策略：單發 150ms。
-      // 既然瀏覽器已經穩定了，我們就不要在 0ms 多做一次動作，
-      // 這樣可以避免畫面抖動。
-      setTimeout(doScroll, 150);
+      // 策略：單發 1ms。
+      // 既然瀏覽器已經穩定了，我們就不要多做一次動作，這樣可以避免畫面抖動。
+      setTimeout(doScroll, 1);
     }
   };
 
