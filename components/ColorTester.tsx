@@ -48,21 +48,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     const doScroll = () => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
-
-    // 簡單的 User Agent 偵測
-    // 雖然不完全精準，但對於區分 iOS 和 Android 的鍵盤行為已經夠用了
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    if (isIOS) {
-      // iOS: 鍵盤彈出幾乎是瞬間的（或是覆蓋式的），越快捲動越好，才不會被蓋住
-      // 這裡用 50ms 稍微緩衝一下 React 的渲染，比 0ms 更穩一點
-      setTimeout(doScroll, 50); 
-    } else {
-      // Android: 鍵盤會推擠視窗 (Resize)，需要等動畫稍微跑一下
-      // 150ms 剛好讓它推到一半時介入，滑順度最好
-      setTimeout(doScroll, 150);
-    }
+    setTimeout(doScroll, 150);
   };
 
   const handlePrefixClick = (prefix: string) => {
