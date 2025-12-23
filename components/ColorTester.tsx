@@ -207,7 +207,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           4. Mask Image: 使用 mask-image 做出漸層消失效果。
         */}
         <div 
-          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-4 w-[calc(100%+3rem)]"
+          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
           style={{
             // 定義遮罩：從左側 0px (透明) 到 16px (不透明)，然後到右側倒數 16px (不透明) 再到結尾 (透明)
             WebkitMaskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)',
