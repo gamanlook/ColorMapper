@@ -173,7 +173,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-4 right-4 p-2 rounded-full border backdrop-blur-md transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/20 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
         >
@@ -232,7 +232,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           <div className="relative w-full group">
             
             {/* Background Layer */}
-            <div className="absolute inset-0 z-0 border-2 border-theme-input-border bg-theme-input rounded-xl group-focus-within:border-theme-text-main transition-colors"></div>
+            <div className="absolute inset-0 z-0 border border-theme-input-border bg-theme-input rounded-xl group-focus-within:border-theme-text-main group-focus-within:border-2 transition-colors"></div>
 
             {/* Ghost Layer */}
             <div 
