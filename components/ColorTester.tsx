@@ -161,7 +161,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const textColorClass = color.l > 0.65 ? 'text-black/70' : 'text-white/90';
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
+    <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
       
       {/* Visual Stage */}
       <div className={`
@@ -172,7 +172,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-4 right-4 p-2 rounded-full border backdrop-blur-md transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-gray-600/20 text-gray-600 hover:bg-gray-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/20 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
         >
@@ -198,7 +198,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
-        <div className="flex flex-wrap justify-center gap-1.5">
+        <div className="flex flex-nowrap justify-center gap-1.5">
           {suggestedPrefixesList.map(prefix => (
             <button
               key={prefix}
