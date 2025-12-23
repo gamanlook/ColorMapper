@@ -219,8 +219,7 @@ function App() {
       <input type="file" ref={fileInputRef} onChange={handleRestore} accept="application/json" style={{ display: 'none' }} />
       
       {/* Header Container */}
-      {/* 使用與 Main 相同的 Grid 設定，確保左右邊緣與卡片對齊 */}
-      <div className="w-full mx-auto px-4 pt-8 pb-2 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12">
+      <div className="w-full mx-auto px-4 pt-8 pb-2 grid grid-cols-1 lg:grid-cols-layout-desktop justify-center gap-12">
         {/* Header Content: 跨越兩欄 (col-span-2) */}
         <div className="col-span-1 lg:col-span-2 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -269,7 +268,7 @@ function App() {
         </div>
       </div>
 
-      <main className="w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12 items-start">
+      <main className="w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-layout-desktop justify-center gap-12 items-start">
         
         {/* 左側容器 */}
         <div className="space-y-8 w-full">
@@ -352,8 +351,7 @@ function App() {
       </main>
 
       {/* 底部功能與資訊區 */}
-      {/* 同樣套用 Grid 設定 */}
-      <footer className="w-full mx-auto px-4 mt-12 pb-24 grid grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,496px))] justify-center gap-12">
+      <footer className="w-full mx-auto px-4 mt-12 pb-24 grid grid-cols-1 lg:grid-cols-layout-desktop justify-center gap-12">
         {/* 內容跨越兩欄 (col-span-2) */}
         <div className="col-span-1 lg:col-span-2 border-t border-theme-card-border pt-8 flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="space-y-4">
