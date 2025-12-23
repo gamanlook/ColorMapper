@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { OklchColor, HueDefinition } from '../types';
 import { toCss, suggestPrefixes } from '../utils';
@@ -198,16 +199,21 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
-        <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 w-[calc(100%+2rem)] sm:w-full sm:mx-0 sm:px-0">
+        {/* 
+          修正重點：
+          1. -mx-6: 負邊距 24px (1.5rem)，對應 App.tsx 卡片的 p-6。
+          2. px-6: 內距 24px，把內容推回對齊線。
+          3. w-[calc(100%+3rem)]: 總寬度 = 100% + 左負邊距 + 右負邊距 (1.5rem * 2)。
+          4. 移除 sm:mx-0 等限制，確保全尺寸都生效。
+        */}
+        <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]">
           {suggestedPrefixesList.map(prefix => (
             <button
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              // ✨ 關鍵修改：加入 first:ml-auto last:mr-auto
-              // 這會讓按鈕在空間足夠時自動置中，空間不夠時自動靠左捲動
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
