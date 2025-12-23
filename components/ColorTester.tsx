@@ -57,8 +57,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       // 策略：雙重補槍。
       // 150ms: 為了攔截掉 Android 預設的置中輸入框位置這行為。
       // 151ms: 為了接住 Android 第一次彈出時的 Layout 變化。
-      setTimeout(doScroll, 150);
-      // setTimeout(doScroll, 151);
+      setTimeout(doScroll, 10);
+      setTimeout(doScroll, 300);
       
       // 標記為已互動
       hasInteractedRef.current = true;
@@ -66,7 +66,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       // 情況 B：後續互動 (鍵盤熱啟動 / 已經在打字)
       // 策略：單發 150ms。
       // 既然瀏覽器已經穩定了，我們就不要在 0ms 多做一次動作，
-      // 這樣可以避免「手動滑下來再點擊」時的畫面抖動。
+      // 這樣可以避免畫面抖動。
       setTimeout(doScroll, 150);
     }
   };
