@@ -210,8 +210,32 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-5 w-[calc(100%+3rem)]"
           style={{
             // 定義遮罩：從左側 0px (透明) 到 24px (不透明)，然後到右側倒數 24px (不透明) 再到結尾 (透明)
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
-            maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)'
+            WebkitMaskImage: `linear-gradient(to right, 
+              transparent, 
+              rgba(0,0,0, 0.1) 4px, 
+              rgba(0,0,0, 0.4) 10px, 
+              rgba(0,0,0, 0.8) 18px, 
+              black 24px, 
+              
+              black calc(100% - 24px), 
+              rgba(0,0,0, 0.8) calc(100% - 18px), 
+              rgba(0,0,0, 0.4) calc(100% - 10px), 
+              rgba(0,0,0, 0.1) calc(100% - 4px), 
+              transparent
+            )`,
+            maskImage: `linear-gradient(to right, 
+              transparent, 
+              rgba(0,0,0, 0.1) 4px, 
+              rgba(0,0,0, 0.4) 10px, 
+              rgba(0,0,0, 0.8) 18px, 
+              black 24px, 
+              
+              black calc(100% - 24px), 
+              rgba(0,0,0, 0.8) calc(100% - 18px), 
+              rgba(0,0,0, 0.4) calc(100% - 10px), 
+              rgba(0,0,0, 0.1) calc(100% - 4px), 
+              transparent
+            )`
           }}
         >
           {suggestedPrefixesList.map(prefix => (
