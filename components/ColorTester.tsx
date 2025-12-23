@@ -55,10 +55,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     if (!hasInteractedRef.current) {
       // 情況 A：第一次互動 (鍵盤冷啟動)
       // 策略：雙重補槍。
-      // 150ms: 為了 iOS 的即時感，攔截掉 Android 預設的動畫。
+      // 150ms: 為了攔截掉 Android 預設的置中輸入框位置這行為。
       // 151ms: 為了接住 Android 第一次彈出時的 Layout 變化。
       setTimeout(doScroll, 150);
-      setTimeout(doScroll, 151);
+      // setTimeout(doScroll, 151);
       
       // 標記為已互動
       hasInteractedRef.current = true;
