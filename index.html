@@ -12,6 +12,11 @@
         darkMode: 'class',
         theme: {
           extend: {
+            gridTemplateColumns: {
+              // ✨ 這裡定義了我們的特殊佈局：兩欄，每欄最大 496px ✨
+              // 使用方式：class="grid-cols-layout-desktop"
+              'layout-desktop': 'repeat(2, minmax(0, 496px))',
+            },
             colors: {
               theme: {
                 page: 'var(--color-page-bg)',
