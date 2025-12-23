@@ -240,14 +240,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               style={{ transform: `translateX(${offsetX}px)` }}
             >
               <div className="relative flex items-center">
-                <span className={`text-lg font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
+                <span className={`text-base font-sans whitespace-pre ${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
                   {inputName || '試試自己取名'}
                 </span>
                 
                 {showSuffixHint && (
                   <span 
                     ref={hintRef}
-                    className="absolute left-full top-0 h-full flex items-center text-theme-text-muted whitespace-nowrap pl-0.5 text-lg font-sans"
+                    className="absolute left-full top-0 h-full flex items-center text-theme-text-muted whitespace-nowrap pl-0.5 text-base font-sans"
                   >
                     什麼色？
                   </span>
@@ -272,7 +272,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               onClick={scrollToBottom}
               
               placeholder="" 
-              className="relative z-20 w-full px-4 py-3 text-lg bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
+              className="relative z-20 w-full px-4 py-3 text-base bg-transparent border-none outline-none text-transparent rounded-xl transition-all text-center hover:cursor-text caret-theme-text-main"
               style={{ transform: `translateX(${offsetX}px)` }}
             />
           </div>
