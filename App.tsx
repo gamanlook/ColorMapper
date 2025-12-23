@@ -266,8 +266,7 @@ function App() {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* 左側容器：設定 w-full lg:max-w-[496px] mx-auto */}
-        <div className="space-y-8 w-full lg:max-w-[496px] mx-auto">
+        <div className="space-y-8">
            <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
               
               {/* Header with Adaptive Layout */}
@@ -304,8 +303,7 @@ function App() {
            </div>
         </div>
 
-        {/* 右側容器：設定 w-full lg:max-w-[496px] mx-auto */}
-        <div className="flex flex-col gap-4 w-full lg:max-w-[496px] mx-auto">
+        <div className="flex flex-col gap-4">
            <div className="bg-theme-card p-6 rounded-3xl flex flex-col items-center transition-colors duration-300">
              
              {/* Header with Adaptive Layout */}
