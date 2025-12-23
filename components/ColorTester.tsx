@@ -202,16 +202,16 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         {/* 
           修正重點：
           1. -mx-6: 負邊距 24px (1.5rem)，對應 App.tsx 卡片的 p-6。
-          2. px: 把內容推回對齊線。(px-6 = 24px，的話能剛好切齊其餘物件左右側。但我最後使用px-4)
+          2. px: 把內容推回對齊線。(px-6 = 24px，的話能剛好切齊其餘物件左右側。但我最後在想要不要用 px-4 或 px-5)
           3. w-[calc(100%+3rem)]: 總寬度 = 100% + 左負邊距 + 右負邊距 (1.5rem * 2)。
           4. Mask Image: 使用 mask-image 做出漸層消失效果。
         */}
         <div 
-          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
+          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-5 w-[calc(100%+3rem)]"
           style={{
-            // 定義遮罩：從左側 0px (透明) 到 16px (不透明)，然後到右側倒數 16px (不透明) 再到結尾 (透明)
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)',
-            maskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)'
+            // 定義遮罩：從左側 0px (透明) 到 24px (不透明)，然後到右側倒數 24px (不透明) 再到結尾 (透明)
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)',
+            maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)'
           }}
         >
           {suggestedPrefixesList.map(prefix => (
@@ -220,7 +220,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-1.5 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
