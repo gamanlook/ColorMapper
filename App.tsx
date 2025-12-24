@@ -78,13 +78,40 @@ function App() {
 
   const handleNextColor = () => {
     let nextIdx: number;
+    
     if (quizFilter === 'all') {
-      nextIdx = (currentHueIndex + 1 + Math.floor(Math.random() * (HUES.length - 1))) % HUES.length;
+      const len = HUES.length;
+      
+      // 1. 定義要排除的索引 (自己、上一個、下一個)
+      // 使用 (i + len) % len 來處理陣列頭尾相接的問題
+      const forbiddenIndices = new Set([
+        currentHueIndex,
+        (currentHueIndex - 1 + len) % len,
+        (currentHueIndex + 1) % len
+      ]);
+
+      // 2. 建立候選名單 (Candidate Pool)
+      // 遍歷所有索引，只要不在排除名單內，就加入候選
+      const candidates: number[] = [];
+      for (let i = 0; i < len; i++) {
+        if (!forbiddenIndices.has(i)) {
+          candidates.push(i);
+        }
+      }
+
+      // 3. 從候選名單中隨機抽一個 (保證一次成功)
+      // HUES 有 18 個，扣掉 3 個，還有 15 個可以選，絕對安全
+      const rand = Math.floor(Math.random() * candidates.length);
+      nextIdx = candidates[rand];
+
     } else {
+      // 指定色相模式
       nextIdx = HUES.findIndex(h => h.angle === quizFilter);
       if (nextIdx === -1) nextIdx = 0; 
     }
+
     setCurrentHueIndex(nextIdx);
+    // 呼叫新的生成演算法 (記得 utils.ts 也要更新喔)
     setCurrentColor(generateRandomColor(HUES[nextIdx].angle));
   };
 
