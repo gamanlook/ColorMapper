@@ -339,7 +339,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
             {hoveredCluster.displayLabel}
           </div>
           
-          <div className="mt-2 space-y-1">
+          <div className="mt-3 space-y-1">
             {hoveredCluster.composition.map((item, idx) => (
               <div key={idx} className="flex justify-between items-center text-xs">
                 <span className={idx === 0 ? "text-theme-text-main font-medium" : "text-theme-text-muted"}>
