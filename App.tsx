@@ -372,8 +372,36 @@ function App() {
           </div>
           <div className="max-w-md">
             <p className="text-xs text-theme-text-muted leading-relaxed">
-              本工具使用 OKLch 色彩空間與 Gemini AI 模型進行語義分析。所有上傳資料均匿名儲存於 Firebase Realtime Database，用於開源色彩地圖研究。
+              使用 OKLch 色彩空間與 Gemini AI 進行語意分析。
             </p>
+            <div className="flex gap-2 text-xs text-theme-text-muted">
+              <a 
+                href="https://github.com/gamanlook/ColorMapper" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+              >
+                GitHub
+              </a>
+              <span>·</span>
+              <a 
+                href="https://www.youtube.com/@gaman_look" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+              >
+                YouTube
+              </a>
+              <span>·</span>
+              <a 
+                href="https://drive.google.com/file/d/1z5BYq5XMvQnxo-jtU_t4YVrG7uF9fCcG/view?usp=sharing" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+              >
+                Portfolio
+              </a>
+            </div>
           </div>
         </div>
       </footer>
