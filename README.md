@@ -1,4 +1,4 @@
-[查看網頁 Color Mapper](https://color-mapper.vercel.app/)
+[👉查看網頁 Color Mapper](https://color-mapper.vercel.app/)
 
 
 ## Semantic Color Mapper (顏色語感對應研究)
