@@ -67,7 +67,7 @@ export const validateColorName = async (
 
     **ACCEPTANCE CRITERIA (isSuspicious: FALSE)**
     
-    1. **DESCRIPTIVE**: Standard names (Sky Blue, Salmon).
+    1. **DESCRIPTIVE**: Standard names (Sky Blue, Salmon, Skin, Nude).
     2. **ABSTRACT / POETIC**: "First Love", "Deep Ocean", "Void".
     3. **GROSS / VULGAR BUT ACCURATE (IMPORTANT)**:
        - **ALLOW** names referencing waste or dirt IF they match visually.
