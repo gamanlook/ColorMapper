@@ -358,13 +358,13 @@ function App() {
             <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => triggerToastTest(false)}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-500 border border-green-200 dark:border-green-900/30 hover:opacity-80 transition-transform"
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-green-700/80 dark:bg-zinc-900 dark:text-green-400/70 hover:opacity-80 transition-transform"
               >
                 測試收錄
               </button>
               <button 
                 onClick={() => triggerToastTest(true)}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-500 border border-red-200 dark:border-red-900/30 hover:opacity-80 transition-transform"
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-red-700/80 dark:bg-zinc-900 dark:text-red-400/75 hover:opacity-80 transition-transform"
               >
                 測試不收錄
               </button>
@@ -372,14 +372,15 @@ function App() {
           </div>
           <div className="max-w-md">
             <p className="text-xs text-theme-text-muted leading-relaxed">
-              使用 OKLch 色彩空間與 Gemini AI 進行語意分析。
+              使用 OKLch 色彩空間與 Gemini 進行語意分析。
             </p>
-            <div className="flex gap-2 text-xs text-theme-text-muted">
+            <div className="flex gap-1.5 text-xs text-theme-text-muted underline-offset-[2px] decoration-[0.5px]">
+              作者
               <a 
                 href="https://github.com/gamanlook/ColorMapper" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+                className="underline decoration-theme-text-underline hover:text-theme-text-main hover:decoration-theme-text-main transition-colors"
               >
                 GitHub
               </a>
@@ -388,7 +389,7 @@ function App() {
                 href="https://www.youtube.com/@gaman_look" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+                className="underline decoration-theme-text-underline hover:text-theme-text-main hover:decoration-theme-text-main transition-colors"
               >
                 YouTube
               </a>
@@ -397,7 +398,7 @@ function App() {
                 href="https://drive.google.com/file/d/1z5BYq5XMvQnxo-jtU_t4YVrG7uF9fCcG/view?usp=sharing" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="underline underline-offset-[1.5px] decoration-[0.75px] hover:text-theme-text-main transition-colors"
+                className="underline decoration-theme-text-underline hover:text-theme-text-main hover:decoration-theme-text-main transition-colors"
               >
                 Portfolio
               </a>
