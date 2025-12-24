@@ -1,40 +1,46 @@
-[👉查看網頁 Color Mapper](https://color-mapper.vercel.app/)
+## Semantic Color Mapper <sub><sup>顏色與語感對應研究<sup><sub>
 
+> 你會如何形容這個顏色？
 
-## Semantic Color Mapper (顏色語感對應研究)
+這是一個研究實驗，探索「數學上的顏色數值」與「人類語言描述」之間的關聯。\
+透過蒐集使用者的命名數據，我們試圖回答一個問題：\
+「在人類眼中，黃色是在哪裡變成了橘色？深藍色又是在哪裡變成了黑色？」
 
-> 協助我們建立人類對顏色的感知地圖。
+👉 [查看網頁 Color Mapper](https://color-mapper.vercel.app/)
 
-這是一個實驗專案，旨在探索 **「數學上的顏色數值」**(OKLch) 與 **「人類語言描述」**(Semantic Name)之間的關聯。
-
-透過收集使用者的命名數據，我們試圖回答一個問題：**「在人類眼中，黃色是在哪裡變成了橘色？深藍色又是在哪裡變成了黑色？」**
-
+<br>
 
 ### 核心功能
 
-- **🎯 隨機色彩測驗**：系統會在 OKLch 色彩空間中隨機生成顏色，邀請使用者進行命名。
-- **🤖 AI 智慧審核**：整合 **Google Gemini AI**，即時分析使用者的命名。
-  - 自動過濾亂碼與無意義詞彙。
-  - 識別具創意或「有味道」的命名（如：屎色）並給予幽默回饋。
-  - 防止明顯的視覺矛盾（如把紅色說成綠色）。
-- **📊 即時數據視覺化**：使用 **D3.js** 繪製色彩分佈圖，即時顯示眾人對特定色相的定義範圍。
-- **☁️ 雲端同步**：結合 **Firebase Realtime Database**，所有數據即時上傳並同步給所有用戶。
-- **🌓 現代化介面**：支援深色/淺色模式切換，專注於色彩體驗的 UI 設計。
+- **😎 色彩測驗**：\
+  系統會在 OKLch 色彩空間中隨機生成顏色，邀請使用者進行命名
+- **🤖 智慧審核**：\
+  整合 Gemini AI，即時分析使用者的命名
+  - 自動過濾亂碼與無意義詞彙
+  - 識別具創意的命名並給予幽默回饋（如：屎色）
+  - 防止明顯的視覺矛盾（如：把紅色說成綠色）
+- **👀 數據呈現**：\
+  使用 D3.js 繪製色彩分布圖，即時顯示眾人對特定色相的定義範圍
+- **☁️ 雲端同步**：\
+  結合 Firebase，所有數據即時上傳並同步給所有用戶
+- **🌙 深淺模式**：\
+  支援深色/淺色模式切換，專注於色彩體驗的 UI 設計
 
+<br>
 
-### 技術棧 (Tech Stack)
+**技術棧（Tech Stack）**
 
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, clsx
 - **Visualization**: D3.js (d3-delaunay)
-- **AI Integration**: Google Generative AI SDK (Gemini 1.5 Flash)
+- **AI Integration**: Google Generative AI SDK (gemini-2.0-flash-exp)
 - **Backend / Database**: Firebase Realtime Database
 - **Deployment**: Vercel
 
-----
+<br>
 
-### 更新記錄（Changelog）
-
+更新記錄（Changelog）
+-
 
 
 - `2025/12/??（？）`答題後有回饋了
