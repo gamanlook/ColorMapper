@@ -78,7 +78,7 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   let isValid = false;
   let tryCount = 0;
   
-  const MAX_TRIES = 50;
+  const MAX_TRIES = 100;
 
   // 輔助函式：投點邏輯
   const trySample = (minL: number, maxL: number, minC: number, maxC: number) => {
@@ -124,7 +124,7 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   // --- MODE 3: GRAY / MUTED ---
   // 灰色區：中等機率 (30%)
   // L: 0.30 ~ 0.85 (深到亮)
-  // C: 0.00 ~ 0.10 (灰到霧)
+  // C: 0.00 ~ 0.12 (灰到霧)
   else if (mode < 0.50) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.30, 0.85, 0.00, 0.12);
@@ -137,12 +137,12 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   // --- MODE 4: STANDARD / VIVID ---
   // 鮮豔/一般區：主力題目 (50%)
   // L: 0.20 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
-  // C: 0.10 ~ 0.33 (避開霧灰，往高飽和投)
+  // C: 0.06 ~ 0.32 (避開灰，往高飽和投)
   else {
     while (!isValid && tryCount < MAX_TRIES) {
-      // 這裡 Chroma 上限給到 0.33 其實很大(超出 sRGB 很多)，
+      // 這裡 Chroma 上限給到 0.32 其實很大(超出 sRGB 很多)，
       // 但透過投點法，它會自動貼合 sRGB 的邊緣形狀，而不會死死卡在邊緣。
-      const res = trySample(0.20, 0.98, 0.12, 0.33);
+      const res = trySample(0.20, 0.98, 0.06, 0.32);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
