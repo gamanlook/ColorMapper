@@ -123,11 +123,11 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
 
   // --- MODE 3: GRAY / MUTED ---
   // 灰色區：中等機率 (30%)
-  // L: 0.30 ~ 0.85 (深到亮)
+  // L: 0.22 ~ 0.92 (深到亮)
   // C: 0.00 ~ 0.12 (灰到霧)
   else if (mode < 0.50) {
     while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.30, 0.85, 0.00, 0.12);
+      const res = trySample(0.22, 0.92, 0.00, 0.12);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
