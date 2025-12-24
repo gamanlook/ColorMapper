@@ -3,36 +3,25 @@ import { ColorEntry, OklchColor } from './types';
 
 // Generate a CSS string
 export const toCss = (color: OklchColor): string => {
-  // Use percentage for Lightness, number for Chroma, deg for Hue
   return `oklch(${color.l * 100}% ${color.c} ${color.h})`;
 };
 
 // --- GAMUT & CONVERSION LOGIC ---
 
 // Convert OKLch -> OKLab -> Linear sRGB to check gamut
-// Formulas based on CSS Color Module Level 4 / OKLab specification
 export const oklchToLinearSrgb = (l: number, c: number, h: number): [number, number, number] => {
-  // 1. OKLch to OKLab
-  // h is in degrees
   const hRad = h * (Math.PI / 180);
   const a = c * Math.cos(hRad);
   const b = c * Math.sin(hRad);
 
-  // 2. OKLab to Linear sRGB
-  // First convert to Linear LMS
-  // l_ = L + 0.3963377774 * a + 0.2158037573 * b
-  // m_ = L - 0.1055613458 * a - 0.0638541728 * b
-  // s_ = L - 0.0894841775 * a - 1.2914855480 * b
   const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
 
-  // Cube the LMS coordinates to get linear LMS
   const l3 = l_ * l_ * l_;
   const m3 = m_ * m_ * m_;
   const s3 = s_ * s_ * s_;
 
-  // Linear LMS to Linear sRGB
   const r = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
   const g = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
   const blue = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
@@ -42,22 +31,20 @@ export const oklchToLinearSrgb = (l: number, c: number, h: number): [number, num
 
 // Check if an OKLch color is within the sRGB gamut
 export const inGamut = (l: number, c: number, h: number): boolean => {
-  // We use a small epsilon tolerance
   const EPS = -0.0001;
   const MAX = 1.0001;
   const [r, g, b] = oklchToLinearSrgb(l, c, h);
   return r >= EPS && r <= MAX && g >= EPS && g <= MAX && b >= EPS && b <= MAX;
 };
 
-// Binary search to find the maximum Chroma for a given Lightness and Hue within sRGB
+// Binary search to find the maximum Chroma for a given Lightness and Hue
 export const findMaxChroma = (l: number, h: number): number => {
   if (l <= 0.001 || l >= 0.999) return 0;
   
   let low = 0;
-  let high = 0.4; // OKLch chroma rarely exceeds 0.33 for sRGB
+  let high = 0.4;
   let mid = 0;
 
-  // 10 iterations is usually enough precision for visual plotting
   for (let i = 0; i < 15; i++) {
     mid = (low + high) / 2;
     if (inGamut(l, mid, h)) {
@@ -69,11 +56,10 @@ export const findMaxChroma = (l: number, h: number): number => {
   return low;
 };
 
-// Helper to find the Lightness that allows the absolute maximum chroma for a hue (The "Elbow")
+// Helper to find the Lightness that allows the absolute maximum chroma for a hue
 export const findPeakLightnessForHue = (h: number): { l: number, maxC: number } => {
   let peakL = 0.5;
   let absMaxC = 0;
-  // Scan L from 0.1 to 0.9
   for (let l = 0.1; l <= 0.95; l += 0.05) {
     const c = findMaxChroma(l, h);
     if (c > absMaxC) {
@@ -84,68 +70,87 @@ export const findPeakLightnessForHue = (h: number): { l: number, maxC: number } 
   return { l: peakL, maxC: absMaxC };
 }
 
-// Generate a random valid OKLch color within a specific hue slice, strictly inside sRGB
+// ✨ UPDATE: 全面採用「投點法 (Rejection Sampling)」
+// 讓所有區域的顏色分佈都符合面積比例，避免「卡在邊緣」或「奇怪的髒色」。
 export const generateRandomColor = (hueAngle: number): OklchColor => {
   const mode = Math.random();
   let l: number, c: number;
+  let isValid = false;
+  let tryCount = 0;
+  
+  const MAX_TRIES = 50;
 
-  // --- MODE 1: PALE / WHITE / HIGH KEY (12% chance) ---
-  if (mode < 0.12) {
-    // Range: 0.80 ~ 0.99
-    l = 0.80 + Math.random() * 0.19; 
-    const maxC = findMaxChroma(l, hueAngle);
-    // Bias towards very low chroma for "Pastel/White" feel
-    c = Math.random() * maxC * 0.8; 
+  // 輔助函式：投點邏輯
+  const trySample = (minL: number, maxL: number, minC: number, maxC: number) => {
+    // 1. 在矩形範圍內隨機投點
+    const randL = minL + Math.random() * (maxL - minL);
+    const randC = minC + Math.random() * (maxC - minC);
+    
+    // 2. 檢查是否落在 sRGB 形狀內
+    const limitC = findMaxChroma(randL, hueAngle);
+    
+    if (randC <= limitC) {
+      return { l: randL, c: randC, success: true };
+    }
+    return { l: randL, c: randC, success: false }; // 失敗，重投
+  };
+
+  // --- MODE 1: PALE / WHITE / HIGH KEY ---
+  // 亮色區：想稍微多一點 (14%)
+  // L: 0.85 ~ 0.99 (很亮)
+  // C: 0.00 ~ 0.18 (極限)
+  if (mode < 0.14) {
+    while (!isValid && tryCount < MAX_TRIES) {
+      const res = trySample(0.85, 0.99, 0.00, 0.18);
+      if (res.success) { l = res.l; c = res.c; isValid = true; }
+      tryCount++;
+    }
+    if (!isValid) { l = 0.95; c = 0.02; } // Fallback
   } 
   
-  // --- MODE 2: DARK / BLACK / LOW KEY (8% chance) ---
-  // Threshold: 0.12 -> 0.20 (Width: 0.08)
+  // --- MODE 2: DARK / SHADOWS ---
+  // 深色區：想稍微少一點，避免一直出髒色 (6%)
+  // L: 0.05 ~ 0.30 (很暗)
+  // C: 0.00 ~ 0.18 (極限)
   else if (mode < 0.20) {
-     // Range: 0.08 ~ 0.30
-     l = 0.08 + Math.random() * 0.22;
-     const maxC = findMaxChroma(l, hueAngle);
-     c = Math.random() * maxC;
-  }
-
-  // --- MODE 3: GRAY / MUTED (20% chance) ---
-  // Threshold: 0.20 -> 0.40 (Width: 0.20)
-  else if (mode < 0.40) {
-    l = 0.20 + Math.random() * 0.70; // 0.20 to 0.90
-    
-    // Range: 0.01 ~ 0.12 (Morandi/Dusty colors)
-    const maxC = findMaxChroma(l, hueAngle);
-    // 0.01 + 0.11 = 0.12 max
-    const targetC = 0.01 + Math.random() * 0.11; 
-    
-    // Clamp to ensure it's in gamut (though 0.12 is usually safe)
-    c = Math.min(targetC, maxC);
-  }
-
-  // --- MODE 4: STANDARD / VIVID (60% chance) ---
-  // Threshold: 0.40 -> 1.00 (Width: 0.60)
-  // This covers the main body of the color space (L: 0.20 ~ 0.90)
-  else {
-    // 1. Pick a random Lightness (bias slightly towards middle-ish)
-    l = 0.20 + Math.random() * 0.70; 
-    
-    // 2. Find accurate max Chroma for this L and H
-    const maxC = findMaxChroma(l, hueAngle);
-    
-    // 3. Pick random Chroma
-    // - Uses uniform distribution to allow equal probability of medium vs high saturation.
-    // - Safe Floor of 0.12 to avoid overlap with Muted/Gray mode.
-    const minSafeC = 0.12;
-
-    if (maxC < minSafeC) {
-      // If the max possible chroma is already very low (rare, e.g. extremely dark/light), just take the max
-      c = maxC * 0.95; 
-    } else {
-      // Uniformly distribute between [0.12] and [Max]
-      c = minSafeC + Math.random() * (maxC - minSafeC);
+    while (!isValid && tryCount < MAX_TRIES) {
+      const res = trySample(0.05, 0.30, 0.00, 0.18);
+      if (res.success) { l = res.l; c = res.c; isValid = true; }
+      tryCount++;
     }
+    if (!isValid) { l = 0.15; c = 0.02; } // Fallback
   }
 
-  return { l, c, h: hueAngle };
+  // --- MODE 3: GRAY / MUTED ---
+  // 灰色區：中等機率 (30%)
+  // L: 0.30 ~ 0.85 (深到亮)
+  // C: 0.00 ~ 0.10 (灰到霧)
+  else if (mode < 0.50) {
+    while (!isValid && tryCount < MAX_TRIES) {
+      const res = trySample(0.30, 0.85, 0.00, 0.12);
+      if (res.success) { l = res.l; c = res.c; isValid = true; }
+      tryCount++;
+    }
+    if (!isValid) { l = 0.60; c = 0.06; } // Fallback
+  }
+
+  // --- MODE 4: STANDARD / VIVID ---
+  // 鮮豔/一般區：主力題目 (50%)
+  // L: 0.20 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
+  // C: 0.10 ~ 0.33 (避開霧灰，往高飽和投)
+  else {
+    while (!isValid && tryCount < MAX_TRIES) {
+      // 這裡 Chroma 上限給到 0.33 其實很大(超出 sRGB 很多)，
+      // 但透過投點法，它會自動貼合 sRGB 的邊緣形狀，而不會死死卡在邊緣。
+      const res = trySample(0.20, 0.98, 0.12, 0.33);
+      if (res.success) { l = res.l; c = res.c; isValid = true; }
+      tryCount++;
+    }
+    if (!isValid) { l = 0.60; c = 0.10; } // Fallback
+  }
+
+  // 回傳結果
+  return { l: l!, c: c!, h: hueAngle };
 };
 
 // --- SEMANTIC PREFIX LOGIC ---
@@ -169,36 +174,20 @@ export const suggestPrefixes = (color: OklchColor): string[] => {
 };
 
 // Generate seed data with strictly in-gamut colors and GEOMETRY-AWARE distribution
-// Target: ~4 clusters per hue, ~2 seeds per cluster.
 export const generateSeedData = (): ColorEntry[] => {
   const entries: ColorEntry[] = [];
   
   HUES.forEach(hue => {
-    // 1. Analyze the Gamut Shape for this Hue
     const { l: peakL, maxC: peakMaxC } = findPeakLightnessForHue(hue.angle);
 
-    // Helper to add points relative to the Hue's specific geometry
-    // relativeL: 0=Black, 0.5=Peak, 1.0=White (Mapped non-linearly to fit the shape)
-    // chromaFactor: percentage of the Max Chroma *at that specific generated L*
     const addRelativeCluster = (count: number, targetL: number, lSpread: number, chromaFactor: number, cSpread: number, prefix: string) => {
       for(let i=0; i<count; i++) {
-        
-        // Jitter L
         let l = targetL + (Math.random() - 0.5) * lSpread;
-        // Clamp L to safe visible range
         l = Math.max(0.05, Math.min(0.95, l));
 
-        // Find visual boundary for this specific L
         const boundaryC = findMaxChroma(l, hue.angle);
-        
-        // Calculate Target Chroma based on the boundary
-        // If chromaFactor is 0.9, we want 90% of the way to the edge
         let targetC = boundaryC * chromaFactor;
-        
-        // Jitter C (but don't exceed boundary)
         let finalC = targetC + (Math.random() - 0.5) * (boundaryC * cSpread);
-        
-        // Safety clamp: Ensure we are strictly inside, but allow getting close to edge
         finalC = Math.max(0, Math.min(boundaryC - 0.001, finalC));
 
         const name = `${prefix}${hue.nameZH}`;
@@ -206,33 +195,26 @@ export const generateSeedData = (): ColorEntry[] => {
       }
     };
 
-    // --- STRATEGY: 4 Specific Clusters ---
-
-    // 1. PEAK / TIP CLUSTER (Variable Prefix)
-    // Determine prefix based on the actual L and C capability of this hue
+    // 1. PEAK / TIP CLUSTER
     let tipPrefix = '正';
-    if (peakL >= 0.88) tipPrefix = '螢光'; // Very high L (like Yellow)
-    else if (peakL >= 0.80) tipPrefix = '亮'; // High L
-    else if (peakL <= 0.35) tipPrefix = '濃'; // Low L (like Blue)
-    else if (peakMaxC > 0.28) tipPrefix = '艷'; // Very high C
-    else if (peakMaxC > 0.22) tipPrefix = '鮮'; // High C
-    else tipPrefix = '正'; // Standard
+    if (peakL >= 0.88) tipPrefix = '螢光';
+    else if (peakL >= 0.80) tipPrefix = '亮';
+    else if (peakL <= 0.35) tipPrefix = '濃';
+    else if (peakMaxC > 0.28) tipPrefix = '艷';
+    else if (peakMaxC > 0.22) tipPrefix = '鮮';
+    else tipPrefix = '正';
     
-    // Place at the Peak Lightness, High Saturation (90% of max)
     addRelativeCluster(2, peakL, 0.05, 0.9, 0.05, tipPrefix);
 
     // 2. LIGHT (淺)
-    // Place roughly halfway between Peak and White
     const lightL = peakL + (0.98 - peakL) * 0.5;
     addRelativeCluster(2, lightL, 0.05, 0.4, 0.1, '淺');
 
     // 3. DEEP (深)
-    // Place roughly halfway between Peak and Black
     const deepL = peakL * 0.5; 
     addRelativeCluster(2, deepL, 0.05, 0.5, 0.1, '深');
 
     // 4. MIST (霧)
-    // Place at Peak Lightness but Low Chroma (20% of max)
     addRelativeCluster(2, peakL, 0.1, 0.20, 0.05, '霧');
 
   });
@@ -249,6 +231,6 @@ const createFakeEntry = (h: number, l: number, c: number, name: string, prefix: 
     votes: 1,
     isSuspicious: false,
     timestamp: Date.now(),
-    isSeed: true // Mark as seed
+    isSeed: true 
   }
 }
