@@ -22,7 +22,7 @@ const validationSchema = {
     },
     feedback: {
       type: SchemaType.STRING,
-      description: "A short, engaging comment in Traditional Chinese."
+      description: "A short, engaging comment in Traditional Chinese, no ending period."
     }
   },
   required: ["isSuspicious", "reason", "feedback"],
@@ -35,7 +35,7 @@ export const validateColorName = async (
 ): Promise<{ isSuspicious: boolean; reason?: string; correctedPrefix?: string; feedback?: string }> => {
   
   const prompt = `
-    You are a lenient but fair moderator for a color naming crowdsourcing game.
+    You are a lenient and open-minded moderator for a color naming crowdsourcing game.
     
     # DATA (Truth):
     - Lightness (L): ${color.l.toFixed(3)} (0=Black, 1=White)
@@ -87,41 +87,31 @@ export const validateColorName = async (
       - "Sky Color" on a Green color -> REJECT.
       - "Poop" on a Bright Pink color -> REJECT.
 
-    # ⚖️ JUDGMENT RULES (General Principles)
+    # ⚖️ JUDGMENT RULES (Philosophy: Be Lenient)
 
-    1. **Chroma Rules (Gray Zone)**:
-       - If C > 0.08 (Clearly Colorful), calling it "Gray" is SUSPICIOUS.
-       - If C < 0.08, calling it "Gray" is ACCEPTABLE.
-       - *Exception*: If L < 0.20 (Very Dark), calling it "Black" is OKAY even if C is slightly high.
+    1. **General Conflict (Critical)**
+
+       - Hue:
+         - **REJECT ONLY Strong Contradictions (Opposites)**:
+           - Red vs Green -> REJECT.
+           - Blue vs Orange/Yellow  -> REJECT.
+         - **ACCEPT All Neighbors**: 
+           - If the input is logically close to the hue, ACCEPT it. 
+           - **Use "Borderline" feedback** to gently correct them instead of rejecting.
+           - e.g. Cyan/Teal Ambiguity (H: 175-220): "Green", "Blue", "Cyan", "Teal" -> ACCEPT.
+           - e.g. Indigo/Violet Ambiguity (H: 260-305): "Blue", "Purple", "Violet" -> ACCEPT.
+           - e.g. Magenta/Pink Ambiguity (H: 295-25): "Purple", "Red", "Pink", "Magenta", "桃色" -> ACCEPT.
+           - e.g. Warm Spectrum Ambiguity (H: 335-115): "Red", "Orange", or "Yellow" -> ACCEPT.
        
-    2. **Lightness Rules**:
-       - Calling a Bright color (L > 0.7) "Dark/Deep/Abyss" is SUSPICIOUS.
-       - Calling a Dark color (L < 0.3) "Light/Pale/Snow" is SUSPICIOUS.
+       - Chroma & Lightness:
+         - Only reject extreme mismatches.
+           - e.g. Calling a colorful color (C > 0.08) "Gray". -> REJECT.
+           - e.g. Calling a Pitch Black color "White". -> REJECT.
+         - Dark color (L < 0.3, Very Dark): "Black", "Ink", or "Dark Gray" -> ACCEPT.
+           - Even if C is slightly high, Dark/Desaturated colors often lose their distinct hue identity.
 
-    3. **Hue Rules (Critical)**:
-       - **General Conflict**: 
-         - Red vs Green -> REJECT.
-         - Blue vs Orange -> REJECT.
-       
-       - **Cyan/Teal Ambiguity (H: 175-220)**: 
-         - "Green", "Blue", "Cyan", "Teal" are ALL ACCEPTABLE.
-         
-       - **Indigo/Violet Ambiguity (H: 260-305)**:
-         - "Blue", "Purple", "Violet" are ALL ACCEPTABLE.
-         
-       - **Magenta/Pink Ambiguity (H: 295-25)**:
-         - "Purple", "Red", "Pink", "Magenta", "桃色" are ALL ACCEPTABLE.
-         
-       - **Warm Spectrum Ambiguity (H: 335-115)**:
-         - This is a continuous range (Red -> Orange -> Yellow).
-         - Calling colors in this range "Red", "Orange", or "Yellow" is generally ACCEPTABLE unless it's an extreme mismatch (e.g. Pure Green-Yellow called Red).
-         
-       - *Leniency*: Adjacent hues are OKAY (e.g. Gold called Yellow is OK).
-
-    4. **Object Verification**:
-       - Do not check hard numbers. Instead, ask: "Is this object *visually similar* to the DATA?"
-       - e.g. "Poop" is valid for Dark Brown/Yellow/Green-ish colors.
-       - e.g. "Bruise" is valid for Purple/Blue/Yellow/Green.
+    2. **Object Verification**:
+       - If the user names an object (e.g., "Matcha", "Sky", "Poop"), ask: "Can this object look like this color in *some* lighting?" If yes, ACCEPT.
 
     # 💬 FEEDBACK STYLE GUIDE
     
@@ -130,16 +120,16 @@ export const validateColorName = async (
     - **Standard / Precise**:
       - "很精準的描述！"
       - "簡單明瞭"
-      - "這就是標準的顏色"
       
-    - **Generic but Correct** (e.g. "Nike Black", "Apple White"):
+    - **Generic / Broad**
       - "形容有點籠統，不過確實可以這麼說"
       - "原來還能這樣形容"
       
-    - **Borderline / Educational** (e.g. Purple called Blue, Cyan/Teal called Green/Blue, Magenta called Purple/Red):
+    - **Borderline / Educational** (Use this when the name is slightly off but acceptable):
       - "雖然偏紫色，但說是藍色也通！"
       - "顏色介於藍綠兩者之間呢，你的說法也行"
       - "確實有點紫帶紅，說是紅色還算合理"
+      - "因為飽和度低，說是灰色也挺合理的"
       
     - **Creative / Poetic**:
       - "好有詩意的名字！"
