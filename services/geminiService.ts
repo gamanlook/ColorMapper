@@ -75,6 +75,7 @@ export const validateColorName = async (
       - "Hulk" -> ACCEPT (Implies Green).
       - "Torii" (鳥居) -> ACCEPT (Implies Red/Orange).
       - "Ginkgo" (銀杏) -> ACCEPT (Implies Yellow/Green).
+      - "Skin/Nude/Foundation" (皮膚、肌膚、膚、裸、粉底) -> ACCEPT (Implies Beige/Light Orange/Light Brown).
       
     - **MATERIAL / TEXTURE / OXYMORONS**:
       - "Dark White" -> ACCEPT (Off-white is valid).
