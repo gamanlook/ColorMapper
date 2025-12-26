@@ -305,7 +305,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
              <button
               type="button"
               onClick={onSkip}
-              className="flex-1 py-3 text-theme-text-muted font-medium hover:bg-theme-input rounded-xl transition-colors"
+              className="flex-1 py-3 text-theme-text-muted font-bold hover:bg-theme-input rounded-xl transition-colors"
             >
               跳過
             </button>
