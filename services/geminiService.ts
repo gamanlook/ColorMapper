@@ -92,32 +92,41 @@ export const validateColorName = async (
       - "Sky Color" on a Green color -> REJECT.
       - "Poop" on a Bright Pink color -> REJECT.
 
-    # ⚖️ JUDGMENT RULES (Philosophy: Be Lenient)
+# ⚖️ JUDGMENT RULES (Philosophy: EXTREME LENIENCY)
 
-    1. **General Conflict (Critical)**
-
-       - Hue:
-         - **REJECT ONLY Strong Contradictions (Opposites)**:
-           - Red vs Green -> REJECT.
-           - Blue vs Orange/Yellow  -> REJECT.
-         - **ACCEPT All Neighbors**: 
-           - If the input is logically close to the hue, ACCEPT it. 
-           - **Use "Borderline" feedback** to gently correct them instead of rejecting.
-           - e.g., Cyan/Teal Ambiguity (H: 175-220): "Green", "Blue", "Cyan", "Teal" -> ACCEPT.
-           - e.g., Indigo/Violet Ambiguity (H: 260-305): "Blue", "Purple", "Violet" -> ACCEPT.
-           - e.g., Magenta/Pink Ambiguity (H: 295-25): "Purple", "Red", "Pink", "Magenta", "桃色" -> ACCEPT.
-           - e.g., Warm Spectrum Ambiguity (H: 335-115): "Red", "Orange", or "Yellow" -> ACCEPT.
+    1. **General Conflict (The "Don't be a Nazi" Rule)**
        
-       - Chroma & Lightness:
-         - Only reject extreme mismatches.
-           - e.g. Calling a colorful color (C > 0.08) "Gray". -> REJECT.
-           - e.g. Calling a Pitch Black color "White". -> REJECT.
-         - Dark color (L < 0.3, Very Dark): "Black", "Ink", or "Dark Gray" -> ACCEPT.
-           - Even if C is slightly high, Dark/Desaturated colors often lose their distinct hue identity.
+       - **Hue Strategy (Broad Acceptance)**:
+         - **Guideline**: Do not be biased by the default Hue Category name. (Ignore strict categorization).
+         - **The ±60° Rule**: Broad color categories are fluid. 
+           - e.g. "Purple" can be called "Blue" or "Pink". 
+           - e.g. "Cyan" can be "Green" or "Blue".
+         - **REJECT ONLY Strong Opposites (Complementary Colors)**:
+           - Red vs Green -> REJECT.
+           - Blue vs Orange/Yellow -> REJECT.
+           - Purple vs Yellow-Green -> REJECT.
+         - **Specific Ambiguities (ALWAYS ACCEPT)**:
+           - Cyan/Teal (H: 175-220) -> Green, Blue, Cyan, Teal.
+           - Indigo/Violet (H: 260-305) -> Blue, Purple, Violet.
+           - Magenta/Pink (H: 295-25) -> Purple, Red, Pink, Magenta, 桃色.
+           - Warm colors (H: 335-115) -> Red, Orange, Yellow are often interchangeable.
+
+       - **Chroma & Lightness Strategy**:
+         - **The "Mud/Earth" Exception**: 
+           - Warm colors (H: 335-115) with Low Chroma often look brown or dirty.
+           - Calling them "Mud", "Wood", "Earth", "Soil" is **CORRECT**, even if the Hue says "Yellow", "Gold".
+
+         - **The "Black/Dark" Exception**:
+           - If L < 0.25 (Very Dark), calling it "Black", "Ink", or "Dark Gray" is **CORRECT**, regardless of Chroma.
+         - **Rejection Criteria**:
+           - Calling a clearly colorful color (C > 0.1) "Gray" -> REJECT.
+           - Calling a Pitch Black color "White" -> REJECT.
 
     2. **Object Verification**:
-       - If the user names an object (e.g., "Matcha", "Sky", "Poop"), ask: "Can this object look like this color in *some* lighting?" If yes, ACCEPT.
-
+       - Use "Visual Possibility": Can this object look like this color in *some* lighting/condition?
+         - e.g. "Sky" can be Blue, Black (night), Orange (sunset). But "Sky" cannot be Green.
+         - e.g. "Matcha" must be Greenish.
+       - **IGNORE** standard politeness rules. ACCEPT vulgar terms if visual matches.
 
     # 💬 FEEDBACK STYLE GUIDE
     
