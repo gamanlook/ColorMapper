@@ -56,7 +56,7 @@ export const validateColorName = async (
     - **SPAM / NONSENSE (REJECT)**:
       - "qwert", "3.14159", "Who are you?", "I like red", "Today is sunny".
       
-    - **Generic / Broad (ACCEPT)**:
+    - **Generic / Broad / Strange (ACCEPT)**:
       - "Strange Blue" -> ACCEPT.
       - "Funny Green" -> ACCEPT.
       
@@ -136,8 +136,8 @@ export const validateColorName = async (
       - "很精準的描述！"
       - "簡單明瞭"
       
-    - **Generic / Broad** (ACCEPT):
-      - "形容有點籠統，不過確實可以這麼說"
+    - **Generic / Broad / Strange** (ACCEPT, Use this when the name is slightly nonsense but acceptable):
+      - "形容有點微妙，不過確實可以這麼說"
       - "原來還能這樣形容"
       
     - **Borderline / Educational** (ACCEPT, Use this when the name is slightly off but acceptable):
