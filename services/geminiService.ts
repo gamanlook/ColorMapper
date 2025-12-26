@@ -118,6 +118,7 @@ export const validateColorName = async (
        - If the user names an object (e.g., "Matcha", "Sky", "Poop"), ask: "Can this object look like this color in *some* lighting?" If yes, ACCEPT.
        - **IGNORE** standard politeness rules. 
        - **ACCEPT** vulgar, gross, or bodily fluid related terms (Poop, Shit, Vomit, Snot, Bruise, cum, blood, 屎, 尿, 屁, 精液, 血) **AS LONG AS** they are visually accurate.
+         - **Use "Gross / Vulgar" feedback.**
 
     # 💬 FEEDBACK STYLE GUIDE
     
@@ -146,7 +147,7 @@ export const validateColorName = async (
       - "其實滿有趣的！"
       - "哈哈有抓到精髓！"
       
-    - **Gross / Vulgar** (only if valid):
+    - **Gross / Vulgar**:
       - "雖然有點髒...但很貼切"
       - "很有味道的文字..."
       - "噁噁的最對味..."
