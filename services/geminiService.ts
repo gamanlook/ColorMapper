@@ -115,7 +115,6 @@ export const validateColorName = async (
          - **The "Mud/Earth" Exception**: 
            - Warm colors (H: 335-115) with Low Chroma often look brown or dirty.
            - Calling them "Mud", "Wood", "Earth", "Soil" is **CORRECT**, even if the Hue says "Yellow", "Gold".
-
          - **The "Black/Dark" Exception**:
            - If L < 0.25 (Very Dark), calling it "Black", "Ink", or "Dark Gray" is **CORRECT**, regardless of Chroma.
          - **Rejection Criteria**:
