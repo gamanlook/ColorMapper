@@ -96,12 +96,31 @@ export const validateColorName = async (
     2. **Lightness Rules**:
        - Calling a Bright color (L > 0.7) "Dark/Deep/Abyss" is SUSPICIOUS.
        - Calling a Dark color (L < 0.3) "Light/Pale/Snow" is SUSPICIOUS.
-       - "Dark White" is VALID for L < 0.95. If L=0.99 (Pure White), "Dark" is weird but acceptable (user might mean screen brightness).
 
-    3. **Hue Rules**:
-       - Red vs Green = REJECT.
-       - Blue vs Orange = REJECT.
-       - *Leniency*: Adjacent hues are OKAY (e.g. Gold called Yellow is OK. Teal called Blue/Green is OK).
+    3. **Hue Rules (Critical)**:
+       - **General Conflict**: 
+         - Red vs Green -> REJECT.
+         - Blue vs Orange -> REJECT.
+       
+       - **Cyan/Teal Ambiguity (H: 175-220)**: 
+         - "Green", "Blue", "Cyan", "Teal" are ALL ACCEPTABLE.
+         
+       - **Indigo/Violet Ambiguity (H: 260-305)**:
+         - "Blue", "Purple", "Violet" are ALL ACCEPTABLE.
+         
+       - **Magenta/Pink Ambiguity (H: 295-25)**:
+         - "Purple", "Red", "Pink", "Magenta", "桃色" are ALL ACCEPTABLE.
+         
+       - **Warm Spectrum Ambiguity (H: 335-115)**:
+         - This is a continuous range (Red -> Orange -> Yellow).
+         - Calling colors in this range "Red", "Orange", or "Yellow" is generally ACCEPTABLE unless it's an extreme mismatch (e.g. Pure Green-Yellow called Red).
+         
+       - *Leniency*: Adjacent hues are OKAY (e.g. Gold called Yellow is OK).
+
+    4. **Object Verification**:
+       - Do not check hard numbers. Instead, ask: "Is this object *visually similar* to the DATA?"
+       - e.g. "Poop" is valid for Dark Brown/Yellow/Green-ish colors.
+       - e.g. "Bruise" is valid for Purple/Blue/Yellow/Green.
 
     # 💬 FEEDBACK STYLE GUIDE
     
@@ -116,10 +135,10 @@ export const validateColorName = async (
       - "形容有點籠統，不過確實可以這麼說"
       - "原來還能這樣形容"
       
-    - **Borderline / Educational** (e.g. Purple called Blue, Teal called Green/Blue, Magenta called Purple/Red):
+    - **Borderline / Educational** (e.g. Purple called Blue, Cyan/Teal called Green/Blue, Magenta called Purple/Red):
       - "雖然偏紫色，但說是藍色也通！"
-      - "稍微偏綠了一點，但還算藍色範圍"
-      - "顏色介於紫紅兩者之間呢，你的說法也行"
+      - "顏色介於藍綠兩者之間呢，你的說法也行"
+      - "確實有點紫帶紅，說是紅色還算合理"
       
     - **Creative / Poetic**:
       - "好有詩意的名字！"
