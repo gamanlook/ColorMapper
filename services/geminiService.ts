@@ -153,7 +153,7 @@ export const validateColorName = async (
     - **Gross / Vulgar** (only if valid):
       - "雖然有點髒...但很貼切"
       - "很有味道的文字..."
-      - “噁噁的最對味...”
+      - "噁噁的最對味..."
       
     - **Reject**:
       - "這跟顏色差異有點大喔？"
