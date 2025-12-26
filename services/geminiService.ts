@@ -56,9 +56,9 @@ export const validateColorName = async (
     - **SPAM / NONSENSE (REJECT)**:
       - "qwert", "3.14159", "Who are you?", "I like red", "Today is sunny".
       
-    - **VAGUE ADJECTIVES (REJECT)**:
-      - "Strange Blue" (Subjective) -> REJECT.
-      - "Funny Green" -> REJECT.
+    - **Generic / Broad (ACCEPT)**:
+      - "Strange Blue" -> ACCEPT.
+      - "Funny Green" -> ACCEPT.
       
     - **VALID ADJECTIVES (ACCEPT)**:
       - "Energetic Blue" (Implies Vivid) -> ACCEPT.
