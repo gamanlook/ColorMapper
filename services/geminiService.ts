@@ -1,20 +1,19 @@
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { OklchColor } from "../types";
 
-// ✅ 初始化 Google AI (使用 Vite 專用環境變數)
+// ✅ 初始化 Google AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
-// 定義回傳資料的格式 (Schema)
 const validationSchema = {
   type: SchemaType.OBJECT,
   properties: {
     isSuspicious: {
       type: SchemaType.BOOLEAN,
-      description: "True if the input is spam, not a name, nonsense, irrelevant, or visually contradictory.",
+      description: "True if input is spam, gibberish, completely irrelevant, or a visual contradiction.",
     },
     reason: {
       type: SchemaType.STRING,
-      description: "Short explanation.",
+      description: "Short explanation of the judgment.",
     },
     correctedPrefix: {
       type: SchemaType.STRING,
@@ -23,7 +22,7 @@ const validationSchema = {
     },
     feedback: {
       type: SchemaType.STRING,
-      description: "A short feedback comment in Traditional Chinese."
+      description: "A short, engaging comment in Traditional Chinese."
     }
   },
   required: ["isSuspicious", "reason", "feedback"],
@@ -36,67 +35,117 @@ export const validateColorName = async (
 ): Promise<{ isSuspicious: boolean; reason?: string; correctedPrefix?: string; feedback?: string }> => {
   
   const prompt = `
-    You are a strict moderator for a color naming crowdsourcing game.
+    You are a lenient but fair moderator for a color naming crowdsourcing game.
     
-    Data:
-    - Color Values: Lightness (L)=${color.l.toFixed(3)}, Chroma (C)=${color.c.toFixed(3)}, Hue Angle=${color.h}°
-    - General Hue Category: ${hueName}
-    - User Input Name: "${inputName}"
+    # DATA (Truth):
+    - Lightness (L): ${color.l.toFixed(3)} (0=Black, 1=White)
+    - Chroma (C): ${color.c.toFixed(3)} (0=Gray, 0.3+=Vivid)
+    - Hue Angle (H): ${color.h}° (Category: ${hueName})
     
-    Your Task:
-    1. Analyze the User Input.
-    2. Determine if it is a VALID color name.
-    3. Return JSON with \`isSuspicious\`.
+    # USER INPUT:
+    - Name: "${inputName}"
 
-    **STRICT REJECTION CRITERIA (isSuspicious: TRUE)**
+    # YOUR TASK:
+    1. **DECONSTRUCT**: Analyze the input. Does it imply specific attributes?
+    2. **COMPARE**: Match against the DATA.
+    3. **VERIFY OBJECTS**: Use common sense.
+    4. **DECIDE**: Return JSON.
+
+    # 📚 REFERENCE EXAMPLES:
     
-    1. **SPAM / GIBBERISH**:
-       - Random characters (e.g., "asdf", "1234").
+    - **SPAM / NONSENSE (REJECT)**:
+      - "qwert", "3.14159", "Who are you?", "I like red", "Today is sunny".
+      
+    - **VAGUE ADJECTIVES (REJECT)**:
+      - "Strange Blue" (Subjective) -> REJECT.
+      - "Funny Green" -> REJECT.
+      
+    - **VALID ADJECTIVES (ACCEPT)**:
+      - "Energetic Blue" (Implies Vivid) -> ACCEPT.
+      - "Melancholy Blue" (Implies Dark/Grayish) -> ACCEPT.
+      - "Premium Gray" (Implies Neutral/Elegant) -> ACCEPT.
+      - "Bold Red" (Implies Vivid/Pop) -> ACCEPT.
+      
+    - **LOGIC & BRANDS**:
+      - "Muji Green" -> REJECT (Muji is typically Red/Brown, NOT Green).
+      - "Facebook Blue" -> ACCEPT (Matches Brand).
+      - "Nike Black" -> ACCEPT (If color is Black. Black/white is generic but classic).
+      - "McDonald's Red" -> ACCEPT (Implies Red/Yellow).
+      - "Trump" -> ACCEPT (Implies Orange/Red/Blond).
+      - "Hulk" -> ACCEPT (Implies Green).
+      - "Torii" (鳥居) -> ACCEPT (Implies Red/Orange).
+      - "Ginkgo" (銀杏) -> ACCEPT (Implies Yellow/Green).
+      
+    - **MATERIAL / TEXTURE / OXYMORONS**:
+      - "Dark White" -> ACCEPT (Off-white is valid).
+      - "Bright Black" -> ACCEPT (Glossy/Piano Black).
+      - "Dirty Pee" -> ACCEPT (Gross but descriptive).
+      - "Christmas Green" -> ACCEPT (Pine Green).
+      
+    - **VISUAL MISMATCH EXAMPLES**:
+      - "Sky Color" on a Green color -> REJECT.
+      - "Poop" on a Bright Pink color -> REJECT.
+
+    # ⚖️ JUDGMENT RULES (General Principles)
+
+    1. **Chroma Rules (Gray Zone)**:
+       - If C > 0.08 (Clearly Colorful), calling it "Gray" is SUSPICIOUS.
+       - If C < 0.08, calling it "Gray" is ACCEPTABLE.
+       - *Exception*: If L < 0.20 (Very Dark), calling it "Black" is OKAY even if C is slightly high.
        
-    2. **NOT A NAME / CONVERSATIONAL**:
-       - Full sentences (e.g., "天氣真好", "我喜歡這個").
-       - Questions or greetings.
-       
-    3. **IRRELEVANT OBJECTS**:
-       - Nouns that have NO color association.
-       - REJECT: "Calculator", "Chair", "Stomach ache" (肚子痛), "Happiness" (unless abstractly fitting).
-       - **EXCEPTION**: Biological waste (Poop, Pee, Vomit, Dirt) IS RELEVANT if the color matches.
-       
-    4. **VISUAL CONTRADICTION**:
-       - e.g. Calling a Red color "Green".
+    2. **Lightness Rules**:
+       - Calling a Bright color (L > 0.7) "Dark/Deep/Abyss" is SUSPICIOUS.
+       - Calling a Dark color (L < 0.3) "Light/Pale/Snow" is SUSPICIOUS.
+       - "Dark White" is VALID for L < 0.95. If L=0.99 (Pure White), "Dark" is weird but acceptable (user might mean screen brightness).
 
-    **ACCEPTANCE CRITERIA (isSuspicious: FALSE)**
+    3. **Hue Rules**:
+       - Red vs Green = REJECT.
+       - Blue vs Orange = REJECT.
+       - *Leniency*: Adjacent hues are OKAY (e.g. Gold called Yellow is OK. Teal called Blue/Green is OK).
+
+    # 💬 FEEDBACK STYLE GUIDE
     
-    1. **DESCRIPTIVE**: Standard names (Sky Blue, Salmon, Skin, Nude).
-    2. **ABSTRACT / POETIC**: "First Love", "Deep Ocean", "Void".
-    3. **GROSS / VULGAR BUT ACCURATE (IMPORTANT)**:
-       - **ALLOW** names referencing waste or dirt IF they match visually.
-       - **Examples**: 
-         - "屎色", "大便色" (Poop/Shit) -> VALID for Brown/Dark Yellow.
-         - "尿色" (Pee) -> VALID for Yellow.
-         - "嘔吐物" (Vomit) -> VALID for Murky Green/Yellow.
-         - "鼻涕" (Snot) -> VALID for Light Green/Yellow.
-         - "瘀青" (Bruise) -> VALID for Purple/Blue/Green.
-       - **Reasoning**: Even if vulgar, they are strong visual descriptors.
+    **Choose a tone based on the input (Traditional Chinese, no ending period):**
 
-    **FEEDBACK STYLE (Traditional Chinese)**
-    - If SPAM/NONSENSE: "這看起來不像顏色名稱喔", "請輸入具體的命名".
-    - If IRRELEVANT (e.g. 肚子痛): "這名詞好像跟顏色無關耶...", "這名字沒辦法收錄喔".
-    - If CONTRADICTION: "這跟顏色差異有點大喔", "這命名不太準確耶".
-    - If GROSS/VULGAR (but valid): "雖然聽起來有點髒...", "...確實有點味道。".
-    - If VALID (Standard): "命名十分貼切！", "很有意境的名字！", "英雄所見略同！".
-
-    **TECHNICAL RULES**:
-    - Dark Colors (L < 0.25): "Black/Ink/Dark" are VALID.
-    - Bright Colors (L > 0.92): "White/Pale" are VALID.
-    - Low Saturation (C < 0.04): "Gray" is VALID.
+    - **Standard / Precise**:
+      - "很精準的描述！"
+      - "簡單明瞭"
+      - "這就是標準的顏色"
+      
+    - **Generic but Correct** (e.g. "Nike Black", "Apple White"):
+      - "形容有點籠統，不過確實可以這麼說"
+      - "原來還能這樣形容"
+      
+    - **Borderline / Educational** (e.g. Purple called Blue, Teal called Green/Blue, Magenta called Purple/Red):
+      - "雖然偏紫色，但說是藍色也通！"
+      - "稍微偏綠了一點，但還算藍色範圍"
+      - "顏色介於紫紅兩者之間呢，你的說法也行"
+      
+    - **Creative / Poetic**:
+      - "好有詩意的名字！"
+      - "這形容太美了..."
+      - "很有畫面感！"
+      
+    - **Meme / Pop Culture**:
+      - "其實滿有趣的！"
+      - "哈哈有抓到精髓！"
+      
+    - **Gross / Vulgar** (only if valid):
+      - "雖然有點髒...但很貼切"
+      - "很有味道的文字..."
+      - "無法反駁的形容..."
+      
+    - **Reject**:
+      - "這跟顏色差異有點大喔？"
+      - "這名字好像跟顏色無關耶..."
+      - "請輸入具體的顏色名稱喔～"
 
     Return JSON.
   `;
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.5-flash-lite", 
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: validationSchema,
@@ -120,7 +169,6 @@ export const validateColorName = async (
   } catch (error) {
     console.error("Gemini Validation Error:", error);
     
-    // Fallback: 確保 Firebase 不會因為 undefined 報錯
     return { 
       isSuspicious: false,
       feedback: "命名已收錄！(AI連線忙碌中)",
