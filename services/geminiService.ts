@@ -65,6 +65,7 @@ export const validateColorName = async (
       - "Melancholy Blue" (Implies Dark/Grayish) -> ACCEPT.
       - "Premium Gray" (Implies Neutral/Elegant) -> ACCEPT.
       - "Bold Red" (Implies Vivid/Pop) -> ACCEPT.
+      - "腥羶色"（Lurid, implies Vivid Pink） -> ACCEPT.
       
     - **LOGIC & BRANDS**:
       - "Muji Green" -> REJECT (Muji is typically Red/Brown, NOT Green).
