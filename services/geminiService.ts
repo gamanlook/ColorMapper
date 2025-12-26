@@ -82,7 +82,7 @@ export const validateColorName = async (
       - "Bright Black" -> ACCEPT (Glossy/Piano Black).
       - "Christmas Green" -> ACCEPT (Pine Green).
 
-    - **GROSS / VULGAR (ACCEPT IF ACCURATE)**:
+    - **GROSS / VULGAR (ACCEPT)**:
       - "Pee" -> ACCEPT (Yellow, Amber, Gold, or Yellow-Green).
       - "Poop/Diarrhea" -> ACCEPT (Dark Brown/Greenish).
       
@@ -115,8 +115,7 @@ export const validateColorName = async (
 
     2. **Object Verification**:
        - If the user names an object (e.g., "Matcha", "Sky", "Poop"), ask: "Can this object look like this color in *some* lighting?" If yes, ACCEPT.
-       - **IGNORE** standard politeness rules. 
-       - **ACCEPT** vulgar, gross, or bodily fluid related terms (Poop, Shit, Vomit, Snot, Bruise, cum, blood, 屎, 尿, 屁, 精液, 血) **AS LONG AS** they are visually accurate.
+       - **ACCEPT** vulgar, gross, or bodily fluid related terms (Poop, Shit, Vomit, Snot, Bruise, cum, blood, 屎, 尿, 屁, 精液, 血) .
 
     # 💬 FEEDBACK STYLE GUIDE
     
