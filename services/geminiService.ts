@@ -1,27 +1,27 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai"; // 改為新版 SDK 引入
 import { OklchColor } from "../types";
 
 // ✅ 初始化 Google AI
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
+const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_API_KEY });
 
 const validationSchema = {
-  type: SchemaType.OBJECT,
+  type: "object", // SchemaType.OBJECT 改為 "object"
   properties: {
     isSuspicious: {
-      type: SchemaType.BOOLEAN,
+      type: "boolean", // SchemaType.BOOLEAN 改為 "boolean"
       description: "True if input is spam, gibberish, completely irrelevant, or a visual contradiction.",
     },
     reason: {
-      type: SchemaType.STRING,
+      type: "string", // SchemaType.STRING 改為 "string"
       description: "Short explanation of the judgment.",
     },
     correctedPrefix: {
-      type: SchemaType.STRING,
+      type: "string", // SchemaType.STRING 改為 "string"
       description: "A suggested single prefix character (e.g., '淡', '深', '鮮') that better fits the color.",
       nullable: true
     },
     feedback: {
-      type: SchemaType.STRING,
+      type: "string", // SchemaType.STRING 改為 "string"
       description: "A short, engaging comment in Traditional Chinese, no ending period."
     }
   },
@@ -169,11 +169,12 @@ export const validateColorName = async (
   `;
 
   try {
+    // getGenerativeModel 的參數結構保持不變
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash-lite", 
       generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: validationSchema,
+        responseSchema: validationSchema, // Schema 結構保持不變，但內部類型已修改
       },
     });
 
