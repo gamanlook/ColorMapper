@@ -87,7 +87,7 @@ export const validateColorName = async (
       - Visual Accuracy > Politeness.
       - **If the term accurately describes the color -> ACCEPT.**
       - Do not be strict about vulgar terms.
-      - e.g., "Poop", "Shit", "Vomit", "Snot", "Bruise", "cum", "blood", "屎", "尿", "屁", "嘔吐物", "精液", "血") .
+      - e.g., "Poop", "Shit", "Vomit", "Snot", "Bruise", "cum", "blood", "屎", "尿", "屁", "嘔吐物", "血") .
       
     - **VISUAL MISMATCH EXAMPLES**:
       - "Sky Color" on a Green color -> REJECT.
