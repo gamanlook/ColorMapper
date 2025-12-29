@@ -1,12 +1,12 @@
 {
-  "name": "semantic-color-app",
+  "name": "color-mapper",
   "version": "1.0.0",
   "description": "Semantic Color Mapper",
   "main": "index.tsx",
   "scripts": {
-    "start": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+  "start": "vite",
+  "build": "vite build",
+  "serve": "vite preview"
   },
   "dependencies": {
     "react": "^18.2.0",
