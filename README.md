@@ -35,7 +35,7 @@
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, clsx
 - **Visualization**: D3.js (d3-delaunay)
-- **AI Integration**: Google Generative AI SDK (gemini-2.5-flash)
+- **AI Integration**: Google Generative AI SDK (gemini-2.5-flash-lite)
 - **Backend / Database**: Firebase Realtime Database
 - **Deployment**: Vercel
 
@@ -44,7 +44,7 @@
 ## 更新記錄（Changelog）
 
 - `2025/12/29（一）` **🧹程式碼微更新**
-  - `package.json`安裝的套件版本都改至最新（原本 AI 寫的版本都太舊，因為 AI 有知識的截止日緣故）
+  - `package.json`安裝的套件版本都改至最新（原本寫的版本都太舊）
   - 舊版 @google/generative-ai (我現在用的) 是目前最穩定版本，不會部署失敗
     - 2026的我要記得換成新版的 @google/genai（但現在還不行換，會失敗）
 
