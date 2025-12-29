@@ -37,7 +37,7 @@ export const validateColorName = async (
   const prompt = `
     You are a lenient and open-minded moderator for a color naming crowdsourcing game.
     
-    # DATA (Truth):
+    # DATA (Truth / Format: OKLCH):
     - Lightness (L): ${color.l.toFixed(3)} (0=Black, 1=White)
     - Chroma (C): ${color.c.toFixed(3)} (0=Gray, 0.3+=Vivid)
     - Hue Angle (H): ${color.h}° (Category: ${hueName})
