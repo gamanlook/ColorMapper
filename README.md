@@ -1,4 +1,4 @@
-## Semantic Color Mapper <sub><sup>顏色命名研究<sup><sub>
+## Semantic Color Mapper <sub><sup>顏色命名實驗<sup><sub>
 
 > 你會如何形容這個顏色？
 
