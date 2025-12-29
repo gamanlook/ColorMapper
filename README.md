@@ -12,7 +12,7 @@
 
 <br>
 
-<img width="890" height="720" alt="截圖 2025-12-29 下午4 15 10" src="https://github.com/user-attachments/assets/a8eed5b8-b843-40fa-9936-37e0ea10768c" />
+<img width="890" height="720" alt="截圖 2025-12-29 下午4 15 10 1" src="https://github.com/user-attachments/assets/4467136a-33ff-4e27-a425-f92dcb3fbcc2" />
 
 <br>
 
