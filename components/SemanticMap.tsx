@@ -129,8 +129,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove(); // Clear previous render
 
-    // ✨ CHANGED: Adjusted right margin to 60 (matching left) to visually center the chart in the 400px wide container
-    const margin = { top: 20, right: 60, bottom: 60, left: 60 };
+    // 右 margin 58 原因為：60-2，60是真實數學數字，但圖表會有2寬度粗的線框切割，要再微調。 to visually center the chart in the 400px wide container
+    const margin = { top: 20, right: 58, bottom: 60, left: 62 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
@@ -140,6 +140,14 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // --- LAYERS (Z-Index Management) ---
+    // 建立圖層順序，確保 hover 時的放大與邊框不會蓋住更重要的資訊(如座標點、Target)，但會蓋住其他鄰近的色塊
+    const layerGamut = g.append("g").attr("class", "layer-gamut");
+    const layerCells = g.append("g").attr("class", "layer-cells");
+    const layerDots = g.append("g").attr("class", "layer-dots");
+    const layerTarget = g.append("g").attr("class", "layer-target");
+    const layerAxes = g.append("g").attr("class", "layer-axes");
 
     // --- 0. GAMUT BOUNDARY (Background Layer) ---
     const gamutPoints: [number, number][] = [];
@@ -169,7 +177,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const gamutPathStr = lineGenerator(gamutPoints);
 
     if (gamutPathStr) {
-      g.append("path")
+      layerGamut.append("path")
         .attr("d", gamutPathStr)
         .attr("fill", "none")
         .attr("stroke", "var(--color-chart-gamut)") // Use CSS Variable
@@ -180,7 +188,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     // --- 1. VORONOI TESSELLATION (Territories) ---
     if (semanticClusters.length === 0) {
-      g.append("text")
+      layerCells.append("text")
         .attr("x", chartWidth / 2)
         .attr("y", chartHeight / 2)
         .attr("text-anchor", "middle")
@@ -196,7 +204,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         const cellColor = toCss({ l: cluster.l, c: cluster.c, h: hue });
         const isLight = cluster.l > 0.6;
 
-        const cellG = g.append("g")
+        // 注意：這裡 append 到 layerCells
+        const cellG = layerCells.append("g")
           .attr("class", "cursor-pointer transition-opacity duration-200")
           .on("mouseenter", () => setHoveredCluster(cluster))
           .on("mouseleave", () => setHoveredCluster(null));
@@ -205,10 +214,34 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
           .attr("d", path)
           .attr("fill", cellColor)
           .attr("stroke", "var(--color-chart-grid)") // Use CSS variable for cell border
-          .attr("stroke-width", 2)
+          .attr("stroke-width", 1)
           .attr("opacity", 0.7)
-          .on("mouseover", function() { d3.select(this).attr("opacity", 0.9).attr("stroke-width", 3); })
-          .on("mouseout", function() { d3.select(this).attr("opacity", 0.7).attr("stroke-width", 2); });
+          .on("mouseover", function() { 
+             const el = d3.select(this);
+             const parent = d3.select(this.parentNode as Element);
+
+             // ✨ 關鍵修改：將整個群組拉到 layerCells 的最上層，確保邊框蓋住鄰居
+             parent.raise();
+
+             // 1. 稍微加深底色
+             el.attr("opacity", 0.9);
+
+             // 2. 複製一個 Path 疊加上去當作內框
+             parent.append("path")
+               .attr("class", "hover-stroke") // 標記用，方便移除
+               .attr("d", el.attr("d"))       // 形狀完全一樣
+               .attr("fill", "none")          // 中間透明
+               .attr("stroke", "var(--color-chart-grid)") // 使用指定的顏色
+               .attr("stroke-width", 2)       // 線粗 2
+               .attr("pointer-events", "none"); // 讓滑鼠穿透，不要干擾互動
+          })
+          .on("mouseout", function() { 
+             // 1. 恢復原本透明度
+             d3.select(this).attr("opacity", 0.7);
+
+             // 2. 移除剛剛疊加的框線
+             d3.select(this.parentNode as Element).selectAll(".hover-stroke").remove();
+          });
 
         // Label
         cellG.append("text")
@@ -227,7 +260,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     // --- 2. HISTORICAL DATA POINTS (Scatter Plot) ---
     if (hueData.length > 0) {
-      g.append("g")
+      layerDots.append("g")
         .selectAll("circle")
         .data(hueData)
         .join("circle")
@@ -247,7 +280,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       const cy = yScale(currentColor.l);
       const isBright = currentColor.l > 0.5;
 
-      const pulseG = g.append("g");
+      const pulseG = layerTarget.append("g");
       pulseG.append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
@@ -268,7 +301,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         .attr("dur", "1.5s")
         .attr("repeatCount", "indefinite");
 
-      g.append("circle")
+      layerTarget.append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
         .attr("r", 9)
@@ -278,7 +311,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         .attr("stroke-dasharray", "3 2")
         .attr("opacity", 0.7);
 
-      g.append("circle")
+      layerTarget.append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
         .attr("r", 6)
@@ -292,19 +325,19 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => `${(d as number) * 100}`);
     const xAxis = d3.axisBottom(xScale).ticks(5);
 
-    g.append("g").call(yAxis)
+    layerAxes.append("g").call(yAxis)
       .attr("class", "select-none")
       .attr("color", "var(--color-chart-axis)") // Apply color via attribute to group
       .attr("font-family", "inherit");
       
-    g.append("g")
+    layerAxes.append("g")
       .attr("transform", `translate(0,${chartHeight})`)
       .call(xAxis)
       .attr("class", "select-none")
       .attr("color", "var(--color-chart-axis)") // Apply color via attribute to group
       .attr("font-family", "inherit");
 
-    g.append("text")
+    layerAxes.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -45)
       .attr("x", -chartHeight / 2)
@@ -314,7 +347,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       .attr("font-size", "12px")
       .text("Lightness (L)");
 
-    g.append("text")
+    layerAxes.append("text")
       .attr("y", chartHeight + 35)
       .attr("x", chartWidth / 2)
       .style("text-anchor", "middle")
