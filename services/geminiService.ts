@@ -18,7 +18,7 @@ const validationSchema = {
     },
     correctedPrefix: {
       type: SchemaType.STRING,
-      description: "A suggested single prefix character (e.g., '淡', '深', '鮮') that better fits the color.",
+      description: "A suggested single prefix character (e.g., 白, 蒼, 淺灰, 灰, 深灰, 暗灰, 黑, 柔, 淺霧, 霧, 深霧, 墨, 淡, 淺, 亮, 螢光, 明, 鮮, 豔, 純, 正, 濃, 濁, 深, 暗) based on your visual intuition.",
       nullable: true
     },
     isSuspicious: {
