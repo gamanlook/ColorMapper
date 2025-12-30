@@ -366,10 +366,10 @@ function App() {
                 </div>
              </div>
 
-             <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={360} height={360} />
+             <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={400} height={360} />
              <div className="mt-6 text-center">
                 <p className="text-xs text-theme-text-muted max-w-xs mx-auto">
-                  區域由多數人的共識形成。圓點顯示目前的題目顏色。<br />
+                  區域由多數人的共識形成，圓點顯示目前的題目顏色<br />
                 </p>
              </div>
            </div>
