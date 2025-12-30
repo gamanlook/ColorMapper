@@ -129,7 +129,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove(); // Clear previous render
 
-    const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+    // ✨ CHANGED: Adjusted right margin to 60 (matching left) to visually center the chart in the 400px wide container
+    const margin = { top: 20, right: 60, bottom: 60, left: 60 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
@@ -328,7 +329,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       <svg 
         ref={svgRef} 
         viewBox={`0 0 ${width} ${height}`}
-        className="bg-theme-card rounded-xl w-full h-auto max-w-[360px] transition-colors duration-300"
+        className="bg-theme-card rounded-xl w-full h-auto max-w-[400px] transition-colors duration-300"
       />
       
       {/* Enhanced Tooltip Overlay - Updated to match Toast style */}
