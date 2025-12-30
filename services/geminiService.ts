@@ -4,34 +4,28 @@ import { OklchColor } from "../types";
 // ✅ 初始化 Google AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
-// ✨ 關鍵調整：Schema 順序決定 AI 思考順序 ✨
-// 我們讓 AI 先寫 reason (理由) -> 再寫 feedback (回饋) -> 最後才填 isSuspicious (判斷)
+// 調整：Schema 順序決定 AI 思考順序
 const validationSchema = {
   type: SchemaType.OBJECT,
   properties: {
-    // 1. 先寫理由
     reason: {
       type: SchemaType.STRING,
       description: "Short explanation of the judgment in English.",
     },
-    // 2. 再寫給用戶的評語
     feedback: {
       type: SchemaType.STRING,
       description: "A short, engaging comment in Traditional Chinese (NO ending period)."
     },
-    // 3. (選填) 前綴建議
     correctedPrefix: {
       type: SchemaType.STRING,
       description: "A suggested single prefix character (e.g., '淡', '深', '鮮') that better fits the color.",
       nullable: true
     },
-    // 4. 最後根據上面的內容下判斷
     isSuspicious: {
       type: SchemaType.BOOLEAN,
-      description: "Based on the reason and feedback above, true if input is spam, gibberish, completely irrelevant, or a visual contradiction.",
+      description: "True if input is spam, gibberish, completely irrelevant, or a visual contradiction.",
     },
   },
-  // 這裡的順序要跟上面 properties 一致，引導模型依序生成
   required: ["reason", "feedback", "isSuspicious"],
 };
 
