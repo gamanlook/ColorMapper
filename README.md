@@ -12,7 +12,8 @@
 
 <br>
 
-<img width="890" height="720" alt="截圖 2025-12-29 下午4 15 10 1" src="https://github.com/user-attachments/assets/4467136a-33ff-4e27-a425-f92dcb3fbcc2" />
+<img width="896" height="730" alt="Frame 57" src="https://github.com/user-attachments/assets/b3170d01-e715-441d-8bf1-d610518f1861" />
+
 
 <br>
 
