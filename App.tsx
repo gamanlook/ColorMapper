@@ -370,7 +370,6 @@ function App() {
              <div className="mt-6 text-center">
                 <p className="text-xs text-theme-text-muted max-w-xs mx-auto">
                   區域由多數人的共識形成。圓點顯示目前的題目顏色。<br />
-                  <span className="opacity-70 mt-1 inline-block">{isCloudMode ? '● 連線中 (資料即時同步)' : '○ 離線模式 (資料僅存於本機)'}</span>
                 </p>
              </div>
            </div>
