@@ -12,8 +12,7 @@
 
 <br>
 
-<img width="896" height="730" alt="Frame 57" src="https://github.com/user-attachments/assets/b3170d01-e715-441d-8bf1-d610518f1861" />
-
+<img width="896" height="730" alt="Frame 57" src="https://github.com/user-attachments/assets/f54400de-4a60-4d04-92fe-1a9fa1be67b3" />
 
 <br>
 
