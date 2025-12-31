@@ -73,7 +73,7 @@ export const validateColorName = async (
        - If the user names the *visual result* accurately (e.g. "Dirt" for a dark yellow), **Praise them**.
 
     3. **Feedback Style (Be Human & Genuine)**:
-       - **Keep it Short**: Max 25 words.
+       - **Keep it Short**: Max 25 words, no ending period.
        - **Reaction**: React to the input like a friend.
         - **NOTE**: The examples below are merely illustrative. Be creative and use your own wit/attitude to ensure varied responses. Do not simply copy-paste these templates.
        - **For Gross/Vulgar Inputs**: React to the *sensation* (smell, pain, texture, color) with creativity or humor.
