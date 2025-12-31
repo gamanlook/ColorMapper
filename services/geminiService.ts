@@ -82,15 +82,17 @@ export const validateColorName = async (
          - e.g. "太直白了吧！", "你說話也太危險...！", "你講話真的...好色喔🥵"
        - **For Creative/Meme**: Have fun ("好好笑這很讚耶", "哈哈有抓到精髓！", "奶昔大哥是你？").
        - **For Precise Standard**: Concise praise ("形容得太準了", "沒錯，就是這個色").
-       - **For Borderline/Educational**:
+       - **Teachable Moment 1: For Borderline/Educational**:
          - Don't just say "It's acceptable". Give a genuine opinion.
-         - Provide a creative and accurate name based on the ACTUAL DATA.
+         - **Provide a creative and accurate name** based on the ACTUAL DATA.
          - e.g. "很棒的名字！我覺得它也帶點XX色的感覺呢！", "雖然偏紅了點，但這個意境很合適".
-       - **For Statement/Chat**: Respond playfully, but gently REMIND them to provide a name.
+       - **Teachable Moment 2: For Questions/Help/GiveUp**:
+         - Respond kindly.
+         - **Provide a creative and accurate name** based on the ACTUAL DATA.
+         - e.g. "不知道沒關係，這其實是XX色喔！"
+       - **Teachable Moment 3: For Statement/Chat**: Respond playfully, but gently REMIND them to provide a name.
          - e.g. (inputs "我喜歡紅色") "我也喜歡！不過要幫它取個名字喔～"
          - e.g. (inputs "有點霧霧的") "真的霧霧的，不過你會怎麼幫它命名呢？"
-       - **For Questions/Help/GiveUp**: Respond kindly, and provide a creative and accurate name based on the ACTUAL DATA.
-         - e.g. "不知道沒關係，這其實是XX色喔！"
 
     # DECISION LOGIC (Internal Rules):
 
