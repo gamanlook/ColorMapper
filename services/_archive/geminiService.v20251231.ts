@@ -1,3 +1,18 @@
+/**
+ * 📅 歸檔日期：2025-12-31
+ * 
+ * 📝 特點描述：
+ * 這是一個邏輯較為嚴謹、回答較制式的版本。
+ * 
+ * ✨ 已擁有的核心機制：
+ * 1. Schema Order Control：透過 JSON Schema 順序強制 AI 先思考 (Reason) 再判決 (isSuspicious)。
+ * 2. Dual Color Validation：同時提供 OKLCH 與 Hex 數值，利用 AI 對 Hex 的熟悉度進行輔助判斷。
+ * 3. Full Prefix Dictionary：Prompt 內建完整的「前綴字列表 (淡, 深, 螢光...)」，避免 AI 詞窮。
+ * 4. 一堆窮舉的例子讓 AI 去學習怎麼應對。
+ 
+ */
+
+
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { OklchColor } from "../types";
 import { oklchToHex } from "../utils";
