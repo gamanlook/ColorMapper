@@ -1,3 +1,4 @@
+
 import { HUES, MAX_CHROMA, PREFIXES, SEMANTIC_SPECS } from './constants';
 import { ColorEntry, OklchColor } from './types';
 
@@ -27,6 +28,24 @@ export const oklchToLinearSrgb = (l: number, c: number, h: number): [number, num
   const blue = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
 
   return [r, g, blue];
+};
+
+// Convert OKLch to Hex string (for AI reference)
+export const oklchToHex = (l: number, c: number, h: number): string => {
+  const [rLin, gLin, bLin] = oklchToLinearSrgb(l, c, h);
+
+  // Helper: Gamma correction for sRGB (Linear -> sRGB)
+  const toSrgb = (val: number) => {
+    const x = Math.max(0, Math.min(1, val)); // Clamp 0-1
+    return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+  };
+
+  const r = Math.round(toSrgb(rLin) * 255);
+  const g = Math.round(toSrgb(gLin) * 255);
+  const b = Math.round(toSrgb(bLin) * 255);
+
+  const toHex = (n: number) => n.toString(16).padStart(2, '0').toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
 // Check if an OKLch color is within the sRGB gamut
@@ -200,7 +219,7 @@ export const generateSeedData = (): ColorEntry[] => {
     if (peakL >= 0.88) tipPrefix = '螢光';
     else if (peakL >= 0.80) tipPrefix = '亮';
     else if (peakL <= 0.35) tipPrefix = '濃';
-    else if (peakMaxC > 0.28) tipPrefix = '艷';
+    else if (peakMaxC > 0.28) tipPrefix = '豔';
     else if (peakMaxC > 0.22) tipPrefix = '鮮';
     else tipPrefix = '正';
     
