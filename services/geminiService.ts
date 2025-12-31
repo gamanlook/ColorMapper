@@ -1,29 +1,29 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { OklchColor } from "../types";
 import { oklchToHex } from "../utils";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// ✅ 初始化 Google AI
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 // 調整：Schema 順序決定 AI 思考順序
 const validationSchema = {
-  type: Type.OBJECT,
+  type: SchemaType.OBJECT,
   properties: {
     reason: {
-      type: Type.STRING,
+      type: SchemaType.STRING,
       description: "Short explanation of the judgment in English.",
     },
     feedback: {
-      type: Type.STRING,
+      type: SchemaType.STRING,
       description: "A short, engaging comment in Traditional Chinese (NO ending period)."
     },
     correctedPrefix: {
-      type: Type.STRING,
-      description: "A suggested single prefix character (e.g., 白, 蒼, 淺灰, 灰, 深灰, 暗灰, 黑, 淺霧, 霧, 深霧, 墨, 淡, 粉, 柔, 淺, 亮, 螢光, 明, 鮮, 豔, 純, 正, 濃, 濁, 深, 暗) based on your visual intuition.",
+      type: SchemaType.STRING,
+      description: "A suggested single prefix character (e.g., '淡', '深', '鮮') that better fits the color.",
       nullable: true
     },
     isSuspicious: {
-      type: Type.BOOLEAN,
+      type: SchemaType.BOOLEAN,
       description: "True if input is spam, gibberish, completely irrelevant, or a visual contradiction.",
     },
   },
@@ -34,9 +34,10 @@ export const validateColorName = async (
   color: OklchColor,
   inputName: string,
   hueName: string
-): Promise<{ isSuspicious: boolean; reason?: string; correctedPrefix?: string; feedback?: string }> => {
+): Promise<{ reason?: string; feedback?: string; correctedPrefix?: string; isSuspicious: boolean }> => {
   const hexReference = oklchToHex(color.l, color.c, color.h);
 
+  // ✅ 你的 Prompt (保留所有舉例與規則)
   const prompt = `
     You are a lenient and open-minded moderator for a color naming crowdsourcing game.
     # DATA (Truth / Format: OKLCH):
@@ -54,6 +55,7 @@ export const validateColorName = async (
     4. **DECIDE**: Return JSON.
 
     # 📚 REFERENCE EXAMPLES:
+
     - **SPAM / NONSENSE (REJECT)**:
       - "qwert", "3.14159", "Who are you?", "I like red", "Today is sunny".
 
@@ -66,7 +68,7 @@ export const validateColorName = async (
       - "Melancholy Blue" (Implies Dark/Grayish) -> ACCEPT.
       - "Premium Gray" (Implies Neutral/Elegant) -> ACCEPT.
       - "Bold Red" (Implies Vivid/Pop) -> ACCEPT.
-      - "腥羶色" (Lurid, implies Vivid Pink) -> ACCEPT.
+      - "腥羶色"(Lurid, implies Vivid Pink) -> ACCEPT.
 
     - **LOGIC & BRANDS**:
       - "Muji Green" -> REJECT (Muji is typically Red/Brown, NOT Green).
@@ -89,12 +91,11 @@ export const validateColorName = async (
       - **If the term accurately describes the color -> ACCEPT.**
       - Do not be strict about vulgar terms.
       - e.g., "Poop", "Shit", "Vomit", "Snot", "Bruise", "cum", "blood", "屎", "尿", "屁", "嘔吐物", "血") .
-
     - **VISUAL MISMATCH EXAMPLES**:
       - "Sky Color" on a Green color -> REJECT.
       - "Poop" on a Bright Pink color -> REJECT.
 
-# ⚖️ JUDGMENT RULES (Philosophy: EXTREME LENIENCY)
+    # ⚖️ JUDGMENT RULES (Philosophy: EXTREME LENIENCY)
 
     1. **General Conflict (The "Don't be a Nazi" Rule)**
        - **Hue Strategy (Broad Acceptance)**:
@@ -134,25 +135,32 @@ export const validateColorName = async (
     - **Standard / Precise** (ACCEPT):
       - "很精準的描述！"
       - "簡單明瞭"
+
     - **Generic / Broad / Strange** (ACCEPT, Use this when the name is slightly nonsense but acceptable):
       - "形容有點微妙，不過確實可以這麼說"
       - "原來還能這樣形容"
+
     - **Borderline / Educational** (ACCEPT, Use this when the name is slightly off but acceptable):
       - "雖然偏紫色，但說是藍色也通！"
       - "顏色介於藍綠兩者之間呢，你的說法也行"
       - "確實有點紫帶紅，說是紅色還算合理"
       - "因為飽和度低，說是灰色也挺合理的"
+
     - **Creative / Poetic (ACCEPT)**:
       - "好有詩意的名字！"
       - "這形容太美了..."
       - "很有畫面感！"
+
     - **Meme / Pop Culture (ACCEPT)**:
       - "其實滿有趣的！"
       - "哈哈有抓到精髓！"
+      - "奶昔大哥是你？"
+
     - **Gross / Vulgar (ACCEPT)**:
       - "雖然有點髒...但很貼切"
       - "很有味道的文字..."
       - "噁噁的最對味..."
+
     - **Reject**:
       - "這跟顏色差異有點大喔？"
       - "這名字好像跟顏色無關耶..."
@@ -162,31 +170,34 @@ export const validateColorName = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash-lite",
+      generationConfig: {
         responseMimeType: "application/json",
         responseSchema: validationSchema,
-        thinkingConfig: { thinkingBudget: 0 }
       },
     });
 
-    const jsonText = response.text;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const jsonText = response.text();
     if (!jsonText) throw new Error("No response from AI");
-    const result = JSON.parse(jsonText);
+    const parsedResult = JSON.parse(jsonText);
     return {
-      feedback: result.feedback,
-      reason: result.reason,
-      correctedPrefix: result.correctedPrefix,
-      isSuspicious: result.isSuspicious
+      reason: parsedResult.reason,
+      feedback: parsedResult.feedback,
+      correctedPrefix: parsedResult.correctedPrefix,
+      isSuspicious: parsedResult.isSuspicious,
     };
 
   } catch (error) {
     console.error("Gemini Validation Error:", error);
+    // Fallback: 失敗時預設放行，讓用戶不掃興
     return {
+      reason: "AI unavailable" as any,
+      feedback: "命名已收錄！(AI連線忙碌中)",
+      correctedPrefix: undefined,
       isSuspicious: false,
-      feedback: "命名已收錄！(AI連線忙碌中)"
     };
   }
 };
