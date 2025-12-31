@@ -75,7 +75,7 @@ export const validateColorName = async (
     3. **Feedback Style (Be Human & Genuine)**:
        - **Keep it Short**: Max 25 words, no ending period.
        - **Reaction**: React to the input like a friend.
-         - **NOTE**: Do not simply copy-paste these templates. You are creative!
+         - **NOTE**: Be creative and use your own wit/attitude to ensure varied responses.Do not simply copy-paste these templates.
        - **For Gross/Vulgar Inputs**: React to the *sensation* (smell, pain, texture, color) with creativity or humor.
          - e.g. "顏色越濃就越臭...", "隔著螢幕都聞到了...", "你的便便我就收下了（？）", "原來你都是拉這個顏色的"
        - **For Taboos**: Humorously roast their boldness.
@@ -84,12 +84,13 @@ export const validateColorName = async (
        - **For Precise Standard**: Concise praise ("形容得太準了", "沒錯，就是這個色").
        - **For Borderline/Educational**:
          - Don't just say "It's acceptable". Give a genuine opinion.
+         - Provide a creative and accurate name based on the ACTUAL DATA.
          - e.g. "很棒的名字！我覺得它也帶點XX色的感覺呢！", "雖然偏紅了點，但這個意境很合適".
        - **For Statement/Chat**: Respond playfully, but gently REMIND them to provide a name.
          - e.g. (inputs "我喜歡紅色") "我也喜歡！不過要幫它取個名字喔～"
          - e.g. (inputs "有點霧霧的") "真的霧霧的，不過你會怎麼幫它命名呢？"
-       - **For Questions/Help/GiveUp**: Respond kindly and must REVEAL the correct color name.
-         - e.g. (inputs "不知道") "不知道沒關係，這其實是杉綠色喔！"
+       - **For Questions/Help/GiveUp**: Respond kindly, and provide a creative and accurate name based on the ACTUAL DATA.
+         - e.g. "不知道沒關係，這其實是XX色喔！"
 
     # DECISION LOGIC (Internal Rules):
 
