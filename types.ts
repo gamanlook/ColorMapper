@@ -17,7 +17,7 @@ export interface ColorEntry {
   color: OklchColor;
   name: string; // The user input name (e.g., "寶寶藍")
   prefix?: string; // e.g., "淡"
-  baseName?: string; // e.g., "藍"
+  //baseName?: string; // e.g., "藍"
   votes: number;
   isSuspicious: boolean; // Flagged by AI
   suspiciousReason?: string;
