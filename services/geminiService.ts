@@ -60,6 +60,8 @@ export const validateColorName = async (
        - **Dark/Dull "Gold/Yellow" LOOKS like Brown/Mud.** -> So "Poop/Mud" is a **Perfect Match**.
        - **Dark "Red/Pink" LOOKS like Maroon/Wine.**
        - **Cyan/Teal is confusing.** Humans often just call it "Blue" or "Green". -> **This is Acceptable.**
+       - **The "Black/Dark" Exception**:
+         - If L < 0.25 (Very Dark), calling it "Black", "Ink", or "Dark Gray" is **CORRECT**, regardless of Chroma.
        - **Visualize the color.** Does the user's name match the *vibe* of what you see?
 
     2. **Realism, Vulgarity & Common Sense (The Reality Check)**:
