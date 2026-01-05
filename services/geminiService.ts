@@ -103,7 +103,7 @@ export const validateColorName = async (
 
        - **For "Close but Wrong" (Teachable Moment)**:
          - e.g. "很有XXX的感覺！雖然這色偏XX了一點～", "這名字很美，雖然我覺得它帶點XX調"
-         - **Soft Guidance with Better Alternatives**: You may explicitly point out what real-world object or color reference would fit better, or directly suggest a more suitable name—but keep the tone gentle, pleasant, and encouraging, so the user feels happy and learns something new.
+         - **Soft Guidance with Better Alternatives**: Start by acknowledging and praising the user’s answer. Then, offer a better-fitting real-world color reference or suggest a more suitable name, keeping the tone gentle and encouraging so the user enjoys the feedback and learns something new.
          - CASE A: ACCEPT (isSuspicious = false)
 
        - **Final reminder: Always generalize—do not merely imitate the examples**
