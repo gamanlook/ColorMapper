@@ -19,13 +19,7 @@ const validationSchema = {
       type: SchemaType.STRING,
       description: "Step 2: A short, witty, or insightful comment in Traditional Chinese, no ending period."
     },
-    // Step 3: (選填)
-    correctedPrefix: {
-      type: SchemaType.STRING,
-      description: "A suggested single prefix character (e.g., 白, 蒼, 淺灰, 灰, 深灰, 暗灰, 黑, 淺霧, 霧, 深霧, 墨, 淡, 粉, 柔, 淺, 亮, 螢光, 明, 鮮, 豔, 純, 正, 濃, 濁, 深, 暗) based on your visual intuition.",
-      nullable: true
-    },
-    // Step 4: 最後下判決
+    // Step 3: 最後下判決
     isSuspicious: {
       type: SchemaType.BOOLEAN,
       // 這裡再次強調 Hard Conflict (Known Object vs Wrong Color) 要填 True
@@ -39,7 +33,7 @@ export const validateColorName = async (
   color: OklchColor,
   inputName: string,
   hueName: string
-): Promise<{ reason?: string; feedback?: string; correctedPrefix?: string; isSuspicious: boolean }> => {
+): Promise<{ reason?: string; feedback?: string; isSuspicious: boolean }> => {
   const hexReference = oklchToHex(color.l, color.c, color.h);
 
   // ✅ 強化版 Prompt (保留所有舉例與規則)
@@ -136,7 +130,6 @@ export const validateColorName = async (
     return {
       reason: parsedResult.reason,
       feedback: parsedResult.feedback,
-      correctedPrefix: parsedResult.correctedPrefix,
       isSuspicious: parsedResult.isSuspicious,
     };
 
@@ -145,8 +138,7 @@ export const validateColorName = async (
     // Fallback: 失敗時預設放行，讓用戶不掃興
     return {
       reason: "AI unavailable" as any,
-      feedback: "命名已收錄！(AI連線忙碌中)",
-      correctedPrefix: undefined,
+      feedback: "AI罷工中，先算你過！",
       isSuspicious: false,
     };
   }
