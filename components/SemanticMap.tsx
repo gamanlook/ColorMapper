@@ -358,6 +358,11 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
   }, [hue, hueData, currentColor, width, height, semanticClusters]);
 
   return (
+    
+    //max-w-[...px] 可以改圖表的大小感
+    //改不動或有必要的話，去 App.tsx 找以下「右側容器」的width、height
+    // App.tsx 「右側容器」長得會像 <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={448} height={408} />
+
     <div className="relative flex justify-center w-full max-w-[400px] mx-auto">
       <svg 
         ref={svgRef} 
