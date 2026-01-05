@@ -130,7 +130,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     svg.selectAll("*").remove(); // Clear previous render
 
     // 右 margin 59 原因為：60-1，60是真實數學數字，但圖表會有1寬度粗的線框切割，要再微調。 to visually center the chart in the 400px wide container
-    const margin = { top: 20, right: 60, bottom: 60, left: 60 };
+    const margin = { top: 20, right: 59, bottom: 60, left: 61 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
