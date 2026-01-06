@@ -246,7 +246,6 @@ const createFakeEntry = (h: number, l: number, c: number, name: string, prefix: 
     id: Math.random().toString(36).substr(2, 9),
     color: { h, l, c },
     name,
-    prefix,
     votes: 1,
     isSuspicious: false,
     timestamp: Date.now(),
