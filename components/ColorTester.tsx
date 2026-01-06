@@ -186,8 +186,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           {showHex ? (
              // Code Icon (</>)
              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <polyline points="7 8 3 12 7 16" />
-               <polyline points="17 8 21 12 17 16" />
+               <polyline points="6.5 8 2.5 12 6.5 16" />
+               <polyline points="17.5 8 21.5 12 17.5 16" />
                <line x1="14" y1="4" x2="10" y2="20" />
              </svg>
           ) : (
