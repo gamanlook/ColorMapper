@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { OklchColor, HueDefinition } from '../types';
-import { toCss, suggestPrefixes } from '../utils';
+import { toCss, suggestPrefixes, oklchToHex } from '../utils';
 import { PREFIXES } from '../constants';
 import { validateColorName } from '../services/geminiService';
 
@@ -17,6 +17,7 @@ const MAX_CHARS = 23;
 
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
+  const [showHex, setShowHex] = useState(false);
   const [inputName, setInputName] = useState('');
   const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +26,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const hintRef = useRef<HTMLSpanElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
-  // ✨ 新增：紀錄是否已經互動過 (用來判斷是不是第一次彈鍵盤) ✨
+  // ✨ 新增：記錄是否已經互動過 (用來判斷是不是第一次彈鍵盤) ✨
   const hasInteractedRef = useRef(false);
   
   const [offsetX, setOffsetX] = useState(0);
@@ -33,6 +34,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   useEffect(() => {
     setInputName('');
     setSuggestedPrefixesList(suggestPrefixes(color));
+    // Reset hex view when color changes, or keep it? Let's keep it user preference, 
+    // but typically resetting to standard OKLch is safer for this app context. 
+    // However, keeping user preference (don't reset showHex) feels smoother.
   }, [color]);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
@@ -160,6 +164,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   const currentColorCss = toCss(color);
   const textColorClass = color.l > 0.65 ? 'text-black/70' : 'text-white/90';
+  const hexValue = oklchToHex(color.l, color.c, color.h);
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
@@ -170,6 +175,33 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         flex items-center justify-center
         ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
+        {/* Toggle Hex/OKLch Button (Top Left) */}
+        <button 
+          onClick={() => setShowHex(!showHex)}
+          className={`absolute top-4 left-4 p-2 rounded-full border transition-all z-10 
+            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+          `}
+          title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
+        >
+          {showHex ? (
+             // Code Icon (</>)
+             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <polyline points="7 8 3 12 7 16" />
+               <polyline points="17 8 21 12 17 16" />
+               <line x1="14" y1="4" x2="10" y2="20" />
+             </svg>
+          ) : (
+             // Hash Icon (#)
+             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <line x1="5.25" y1="9" x2="19.5" y2="9" />
+               <line x1="4.5" y1="15" x2="18.75" y2="15" />
+               <line x1="10" y1="4" x2="8" y2="20" />
+               <line x1="16" y1="4" x2="14" y2="20" />
+             </svg>
+          )}
+        </button>
+
+        {/* Toggle BG Color Button (Top Right) */}
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-4 right-4 p-2 rounded-full border transition-all z-10 
@@ -191,7 +223,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           style={{ backgroundColor: currentColorCss }}
         >
            <div className={`text-[10px] font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
-              OKLch({(color.l*100).toFixed(0)}% {color.c.toFixed(3)} {color.h}°)
+              {showHex 
+                ? hexValue 
+                : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`
+              }
            </div>
         </div>
       </div>
