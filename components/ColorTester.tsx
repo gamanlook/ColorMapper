@@ -25,34 +25,55 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const [showSkipHint, setShowSkipHint] = useState(false);
   // Ref to track if user has EVER used skip in this session (persists across renders)
   const hasUsedSkipRef = useRef(false);
+  // Ref to track latest input name for use in timeouts (avoids stale closures)
+  const inputNameRef = useRef(inputName);
+  // ✨ NEW: Ref to track if the 4-second wait is over for the current color
+  const hintTimerExpiredRef = useRef(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
   const hasInteractedRef = useRef(false);
 
+  // Sync ref with state whenever input changes
+  useEffect(() => {
+    inputNameRef.current = inputName;
+    
+    if (inputName) {
+      // User is typing: Hide hint immediately
+      setShowSkipHint(false);
+    } else {
+      // ✨ FIX: User cleared input. 
+      // If the 4s timer has ALREADY expired (and user hasn't learned skip yet), 
+      // restore the hint immediately.
+      if (hintTimerExpiredRef.current && !hasUsedSkipRef.current) {
+        setShowSkipHint(true);
+      }
+    }
+  }, [inputName]);
+
   useEffect(() => {
     setInputName('');
+    // Important: Reset ref immediately for the new cycle
+    inputNameRef.current = '';
+    
     setSuggestedPrefixesList(suggestPrefixes(color));
     
     // Reset hint state for new color
     setShowSkipHint(false);
+    hintTimerExpiredRef.current = false; // Reset timer status
 
     // 4-second timer for progressive disclosure
     const timer = setTimeout(() => {
-      // Only show hint if:
-      // 1. User hasn't typed anything yet
-      // 2. User hasn't used the skip button before in this session
-      if (!inputName && !hasUsedSkipRef.current) {
+      hintTimerExpiredRef.current = true; // Mark timer as expired
+
+      // Use Ref to check the LATEST value
+      if (!inputNameRef.current && !hasUsedSkipRef.current) {
         setShowSkipHint(true);
       }
     }, 4000);
 
     return () => clearTimeout(timer);
-    // Note: We intentionally don't include inputName in dependency array 
-    // because we only want to start the timer when the *color* changes.
-    // The check inside the timeout handles the inputName check.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color]);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
@@ -383,6 +404,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                - Flex item (no longer absolute)
                - flex-none to prevent shrinking
                - self-end (aligned to bottom)
+               - ✨ Removed 'transition-colors' to prevent purple-bg flash when text deleted
             */}
             <button
               type={hasContent ? "submit" : "button"}
@@ -392,7 +414,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                 flex-none p-3 rounded-full
                 flex items-center justify-center
                 ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted-solid'}
-                hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors
+                hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed
               `}
             >
               {isSubmitting ? (
