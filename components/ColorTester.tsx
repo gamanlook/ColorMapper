@@ -276,11 +276,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           {/* 
             Container Setup:
             - Flexbox (items-end) allows button to stay at bottom while input grows
-            - gap-3 (12px) spacing between input area and buttons
+            - gap 文字與按鈕們之間的距離
             - left padding 文字與邊緣
             - top/bottom/right padding 圓形按鈕與邊緣
           */}
-          <div className="flex items-end gap-3 w-full rounded-[2rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
+          <div className="flex items-end gap-2 w-full rounded-[2rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
             
             {/* 
               Input Area (Textarea + Ghost)
@@ -298,6 +298,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                  - Controls height via content
                  - py-1.5 (6px) vertical padding
                  - px-0 horizontal padding (container handles left indentation)
+                 - whitespace-pre-wrap & break-words: ensures long text breaks line
               */}
               <div 
                 className="col-start-1 row-start-1 px-0 py-1.5 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
@@ -318,6 +319,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               {/* 
                  Interactive Layer (Textarea):
                  - Matches ghost layer positioning and padding exactly
+                 - Added 'whitespace-pre-wrap break-words' to match Ghost Layer behavior
               */}
               <textarea
                 ref={textareaRef}
@@ -340,6 +342,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                   bg-transparent border-none outline-none 
                   resize-none overflow-hidden
                   text-transparent caret-theme-text-main
+                  whitespace-pre-wrap break-words
                 `}
               />
             </div>
@@ -348,7 +351,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                Action Button:
                - Flex item (no longer absolute)
                - flex-none to prevent shrinking
-               - p-3 (12px) padding
                - self-end (aligned to bottom)
             */}
             <button
