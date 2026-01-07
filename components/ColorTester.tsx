@@ -175,7 +175,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
         >
           {showHex ? (
-             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <polyline points="1 5 1 19 5 19" />
                <polyline points="17.6666 5 17.6666 19" />
                <polyline points="17.6666 12 23 12" />
@@ -183,7 +183,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                <path d="M13.8398 8.37988C13.7904 7.91013 13.7226 7.42749 13.6211 7.01953C13.5753 6.8357 13.4885 6.52265 13.3242 6.20312C13.2442 6.04755 13.079 5.75727 12.7871 5.47559C12.486 5.18509 11.8796 4.75 11 4.75C10.1204 4.75 9.51399 5.18509 9.21289 5.47559C8.92098 5.75727 8.75581 6.04755 8.67578 6.20312C8.51146 6.52265 8.42466 6.8357 8.37981 7.01953C8.27739 7.42749 8.2096 7.91013 8.16016 8.37988C8.05798 9.35074 8 10.6296 8 12C8 13.3704 8.05798 14.6493 8.16016 15.6201C8.2096 16.0899 8.27739 16.5725 8.37891 16.9805C8.42466 17.1643 8.51146 17.4773 8.67578 17.7969C8.75581 17.9524 8.92098 18.2427 9.21289 18.5244C9.51399 18.8149 10.1204 19.25 11 19.25C11.8796 19.25 12.486 18.8149 12.7871 18.5244C13.079 18.2427 13.2442 17.9524 13.3242 17.7969C13.4885 17.4773 13.5753 17.1643 13.6211 16.9805C13.7226 16.5725 13.7904 16.0899 13.8398 15.6201" />
              </svg>
           ) : (
-             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <line x1="5.25" y1="9" x2="19.5" y2="9" />
                <line x1="4.5" y1="15" x2="18.75" y2="15" />
                <line x1="10" y1="4" x2="8" y2="20" />
@@ -201,11 +201,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           title="切換背景顏色"
         >
           {bgBlack ? (
-             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
              </svg>
           ) : (
-             <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                <path d="M20.96724 12.76724A9 9 0 1 1 11.23276 3.03276A7 7 0 0 0 20.96724 12.76724z" />
              </svg>
           )}
@@ -366,19 +366,19 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             >
               {isSubmitting ? (
                 // Spinner
-                <svg className="animate-spin w-[18px] h-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin w-[1.125rem] h-[1.125rem] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               ) : hasContent ? (
                 // Submit Icon (Arrow Up)
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="5 11 12 4 19 11" />
                   <line x1="12" y1="4" x2="12" y2="20" />
                 </svg>
               ) : (
                 // Skip Icon (Refresh)
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C13.0609 4 14.0736 4.20651 15 4.58152" />
                   <polyline points="13 1.15 16 4.15 13 7.15" />
                 </svg>
