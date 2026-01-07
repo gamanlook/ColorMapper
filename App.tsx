@@ -308,7 +308,7 @@ function App() {
                 {/* Custom Overlay Dropdown for Quiz Filter */}
                 <div className="relative max-w-[50%] min-w-[120px] flex-shrink-0">
                   {/* Visual Layer (Short Text + Truncate) */}
-                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-xl text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
+                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-full text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
                      <span className="truncate block">{getQuizFilterLabel()}</span>
                      <svg className="h-4 w-4 fill-current text-theme-text-muted flex-shrink-0 ml-2" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                   </div>
@@ -346,7 +346,7 @@ function App() {
                {/* Custom Overlay Dropdown for View Filter */}
                <div className="relative max-w-[50%] min-w-[120px] flex-shrink-0">
                   {/* Visual Layer */}
-                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-xl text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
+                  <div className="w-full flex items-center justify-between text-sm font-medium pl-4 pr-3 py-2 bg-theme-input rounded-full text-theme-text-main border-none focus-within:ring-2 focus-within:ring-theme-brand">
                      <span className="truncate block">{getViewHueLabel()}</span>
                      <svg className="h-4 w-4 fill-current text-theme-text-muted flex-shrink-0 ml-2" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
                   </div>
