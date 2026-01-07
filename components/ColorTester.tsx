@@ -170,7 +170,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setShowHex(!showHex)}
           className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/40 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
         >
@@ -196,7 +196,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/40 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
         >
@@ -271,32 +271,36 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Auto-growing Textarea Form */}
+        {/* Auto-growing Textarea Form - Layout V2 (Flexbox) */}
         <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
           {/* 
             Container Setup:
-            - min-h-[3rem] to match previous size
-            - rounded-[2rem] (32px) to form concentric circles with the button
-            - p-2 to give breathing room for the button
+            - Flexbox (items-end) allows button to stay at bottom while input grows
+            - gap-3 (12px) spacing between input area and buttons
+            - left padding 文字與邊緣
+            - top/bottom/right padding 圓形按鈕與邊緣
           */}
-          <div className="relative w-full rounded-[2rem] border border-theme-input-border bg-theme-input transition-colors p-2">
+          <div className="flex items-end gap-3 w-full rounded-[2rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
             
             {/* 
-              CSS Grid Stack:
-              We stack the Ghost Div and the Textarea exactly on top of each other (row-1, col-1).
-              The Ghost Div has the content and forces the container to grow.
-              The Textarea is absolute/stretched to cover the area.
+              Input Area (Textarea + Ghost)
+              - flex-1 to fill remaining space
+              - min-w-0 to prevent flex item overflow
+              - ✨ self-stretch: This is the KEY. It forces the text container to height-match 
+                the adjacent button if the button is taller. 
+                Combined with 'items-center' (on the grid itself), single-line text will center nicely 
+                against a huge button, while still allowing the button to stay at the bottom for multi-line text.
             */}
-            <div className="grid w-full h-full relative items-center">
+            <div className="grid flex-1 min-w-0 relative items-center self-stretch">
               
               {/* 
                  Ghost Layer (Visuals): 
                  - Controls height via content
-                 - Displays text + Suffix
-                 - padding must match Textarea exactly
+                 - py-1.5 (6px) vertical padding
+                 - px-0 horizontal padding (container handles left indentation)
               */}
               <div 
-                className="col-start-1 row-start-1 px-4 py-2 pr-12 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
+                className="col-start-1 row-start-1 px-0 py-1.5 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
                 aria-hidden="true"
               >
                  <span className={`${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
@@ -307,18 +311,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                        什麼色？
                     </span>
                  )}
-                 {/* 
-                   這是一個零寬空格 (Zero-width space) + 換行，
-                   確保當最後一個字剛好滿一行時，Ghost Layer 能正確撐開下一行的高度 
-                 */}
+                 {/* Zero-width space + newline to ensure height growth */}
                  <span className="inline-block w-0">&#8203;</span>
               </div>
 
               {/* 
                  Interactive Layer (Textarea):
-                 - Transparent text color (to show ghost layer below)
-                 - Visible caret (caret-theme-text-main)
-                 - "Search-like" attributes to prevent autocomplete
+                 - Matches ghost layer positioning and padding exactly
               */}
               <textarea
                 ref={textareaRef}
@@ -330,17 +329,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                 onFocus={scrollToBottom}
                 onClick={scrollToBottom}
                 placeholder="" 
-                
-                /* Mobile "Search" Input Simulation */
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck="false"
                 enterKeyHint="send"
-
                 className={`
                   col-start-1 row-start-1 w-full h-full 
-                  px-4 py-2 pr-12 text-lg 
+                  px-0 py-1.5 text-lg 
                   bg-transparent border-none outline-none 
                   resize-none overflow-hidden
                   text-transparent caret-theme-text-main
@@ -350,16 +346,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             
             {/* 
                Action Button:
-               - Absolute positioned to stay at bottom-right
-               - p-3 as requested
+               - Flex item (no longer absolute)
+               - flex-none to prevent shrinking
+               - p-3 (12px) padding
+               - self-end (aligned to bottom)
             */}
             <button
               type={hasContent ? "submit" : "button"}
               onClick={hasContent ? undefined : onSkip}
               disabled={isSubmitting}
               className={`
-                absolute right-2 bottom-2 p-3 rounded-full
-                flex items-center justify-center z-30
+                flex-none p-3 rounded-full
+                flex items-center justify-center
                 ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted-solid'}
                 hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors
               `}
