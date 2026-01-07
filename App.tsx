@@ -299,7 +299,7 @@ function App() {
         
         {/* 左側容器 */}
         <div className="space-y-8 w-full">
-           <div className="bg-theme-card p-6 rounded-3xl transition-colors duration-300">
+           <div className="bg-theme-card p-6 rounded-[2.5rem] transition-colors duration-300">
               
               {/* Header with Adaptive Layout */}
               <div className="flex justify-between items-center mb-2 gap-4">
@@ -337,7 +337,7 @@ function App() {
 
         {/* 右側容器 */}
         <div className="flex flex-col gap-4 w-full">
-           <div className="bg-theme-card p-6 rounded-3xl flex flex-col items-center transition-colors duration-300">
+           <div className="bg-theme-card p-6 rounded-[2.5rem] flex flex-col items-center transition-colors duration-300">
              
              {/* Header with Adaptive Layout */}
              <div className="w-full flex justify-between items-center mb-6 gap-4">
