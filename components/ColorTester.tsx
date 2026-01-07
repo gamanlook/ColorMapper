@@ -264,7 +264,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 text-[12px] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 text-sm bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
             >
               {prefix}
             </button>
