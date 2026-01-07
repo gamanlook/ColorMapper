@@ -52,7 +52,7 @@
 - `2025/01/07（三）` **💬輸入框UI大改**
   -  原本的輸入框跟按鈕盤踞在不同地方，有的還沒有底色顯得很碎片
     - 圓角變圓、變大、更現代，根據情況顯示對應按鈕，減少空間浪費 
-<img width="1792" height="952" alt="image" src="https://github.com/user-attachments/assets/750051df-f3cf-43ea-8040-82ce72674ecd" />
+<img width="896" height="476" alt="image" src="https://github.com/user-attachments/assets/750051df-f3cf-43ea-8040-82ce72674ecd" />
 
 - `2025/01/06（二）` **🤖收斂太嗆的口氣**
   - 原本 AI 回饋有趣是有趣，但因為判別而拒絕收錄回答時，口氣太兇、太嗆，會導致心情不好
