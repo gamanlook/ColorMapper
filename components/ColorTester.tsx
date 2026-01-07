@@ -418,7 +418,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                   {/* Hug-like Animation Trick */}
                   <span 
                      className={`
-                       overflow-hidden whitespace-nowrap text-base/4 
+                       overflow-hidden whitespace-nowrap text-[0.9375rem]/4 
                        transition-all duration-500 ease-in-out
                        ${showSkipHint && !inputName 
                           ? 'max-w-[4em] opacity-100 ml-0.5' 
