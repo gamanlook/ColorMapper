@@ -286,7 +286,7 @@ function App() {
                  </h1>
                  <div className="flex items-center gap-1.5 mt-1">
                    <span className={`w-2 h-2 rounded-full ${isCloudMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-                   <span className="text-[10px] font-medium text-theme-text-muted uppercase tracking-wide">
+                   <span className="text-[0.625rem] font-medium text-theme-text-muted uppercase tracking-wide">
                      {isCloudMode ? 'Online' : 'Local'} · 已蒐集 {humanEntries} 組
                    </span>
                  </div>
