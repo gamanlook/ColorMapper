@@ -21,6 +21,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // UX State: Skip Button Hint
+  const [showSkipHint, setShowSkipHint] = useState(false);
+  // Ref to track if user has EVER used skip in this session (persists across renders)
+  const hasUsedSkipRef = useRef(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
@@ -29,6 +34,25 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   useEffect(() => {
     setInputName('');
     setSuggestedPrefixesList(suggestPrefixes(color));
+    
+    // Reset hint state for new color
+    setShowSkipHint(false);
+
+    // 4-second timer for progressive disclosure
+    const timer = setTimeout(() => {
+      // Only show hint if:
+      // 1. User hasn't typed anything yet
+      // 2. User hasn't used the skip button before in this session
+      if (!inputName && !hasUsedSkipRef.current) {
+        setShowSkipHint(true);
+      }
+    }, 4000);
+
+    return () => clearTimeout(timer);
+    // Note: We intentionally don't include inputName in dependency array 
+    // because we only want to start the timer when the *color* changes.
+    // The check inside the timeout handles the inputName check.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [color]);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
@@ -106,6 +130,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       // 這會觸發 <form> 的 onSubmit 事件
       formRef.current?.requestSubmit();
     }
+  };
+  
+  const handleSkipClick = () => {
+    // Mark that the user has learned the skip function
+    hasUsedSkipRef.current = true;
+    setShowSkipHint(false); // Immediately hide hint
+    onSkip();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -319,7 +350,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               {/* 
                  Interactive Layer (Textarea):
                  - Matches ghost layer positioning and padding exactly
-                 - Added 'whitespace-pre-wrap break-words' to match Ghost Layer behavior
+                 - Added 'whitespace-pre-wrap & break-words' to match Ghost Layer behavior
               */}
               <textarea
                 ref={textareaRef}
@@ -355,7 +386,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             */}
             <button
               type={hasContent ? "submit" : "button"}
-              onClick={hasContent ? undefined : onSkip}
+              onClick={hasContent ? undefined : handleSkipClick}
               disabled={isSubmitting}
               className={`
                 flex-none p-3 rounded-full
@@ -377,11 +408,27 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                   <line x1="12" y1="4" x2="12" y2="20" />
                 </svg>
               ) : (
-                // Skip Icon (Refresh)
-                <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C13.0609 4 14.0736 4.20651 15 4.58152" />
-                  <polyline points="13 1.15 16 4.15 13 7.15" />
-                </svg>
+                // Skip Icon (Refresh) with Progressive Disclosure Text
+                <>
+                  <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C13.0609 4 14.0736 4.20651 15 4.58152" />
+                    <polyline points="13 1.15 16 4.15 13 7.15" />
+                  </svg>
+                  
+                  {/* Hug-like Animation Trick */}
+                  <span 
+                     className={`
+                       overflow-hidden whitespace-nowrap text-base/4 
+                       transition-all duration-500 ease-in-out
+                       ${showSkipHint && !inputName 
+                          ? 'max-w-[4em] opacity-100 ml-0.5' 
+                          : 'max-w-0 opacity-0 ml-0'
+                       }
+                     `}
+                  >
+                     略過
+                  </span>
+                </>
               )}
             </button>
           </div>
