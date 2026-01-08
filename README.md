@@ -54,7 +54,7 @@
     - 圓角變圓、變大、更現代，根據情況顯示對應按鈕，減少空間浪費
     - 閒置太久會出現提示文字「跳過」
   <br>
-  <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/750051df-f3cf-43ea-8040-82ce72674ecd" />
+  <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/4b5e3a17-ec28-4be4-a266-f09a05cb70d0" />
   <br>
   
 - `2025/01/06（二）` **🤖收斂太嗆的口氣**
