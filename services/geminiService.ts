@@ -59,6 +59,7 @@ export const validateColorName = async (
          - e.g. Dark/Dull "Orange/Gold/Yellow" LOOKS like Brown/Mud.
          - e.g. Dark "Red/Pink" LOOKS like Maroon/Wine.
          - e.g. Cyan/Teal LOOKS like Green/Blue.
+         - e.g. Skin(皮膚色/膚色) LOOKS like Nude/Beige in Asia.
        - **The "Black/Dark" Exception**:
          - If L < 0.25 (Very Dark), calling it "Black", "Ink", or "Dark Gray" is CORRECT, regardless of Chroma. The hue becomes almost invisible.
        - Dual-color naming is a form of **mixing / in-between color grammar**, and should not be interpreted only as prefix-based modification.
