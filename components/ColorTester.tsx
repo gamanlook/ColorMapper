@@ -328,11 +328,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           {/* 
             Container Setup:
             - Flexbox (items-end) allows button to stay at bottom while input grows
+            - rounded 圓角 1.875rem = [ 輸入框總高 3.75rem ]/2 = [ icon高度 1.125rem(18px) + 圓按鈕上下padding 1.5rem(p-3*2, 24px) + 輸入框上下padding 1rem(p-2*2, 16px) + border線粗 0.125rem(1px*2) ]/2
             - gap 文字與按鈕們之間的距離
             - left padding 文字與邊緣
             - top/bottom/right padding 圓形按鈕與邊緣
           */}
-          <div className="flex items-end gap-2 w-full rounded-[2rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
+          <div className="flex items-end gap-2 w-full rounded-[1.875rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
             
             {/* 
               Input Area (Textarea + Ghost)
