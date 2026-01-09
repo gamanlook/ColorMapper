@@ -258,7 +258,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const currentColorCss = toCss(color);
-  const textColorClass = color.l > 0.65 ? 'text-black/55' : 'text-white/75';
+  const textColorClass = color.l > 0.65 ? 'text-black/50' : 'text-white/70';
   
   const hexValue = oklchToHex(color.l, color.c, color.h);
   // Prepare Display Text
