@@ -18,9 +18,6 @@ const MAX_CHARS = 23;
 // 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
 
-// ✨ 設定目標視覺像素大小 (用於題目上的 Hex 與 OKLch 顯示)
-const TARGET_FONT_PIXEL_SIZE = 14;
-
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
   const [showHex, setShowHex] = useState(false);
@@ -88,7 +85,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     return () => clearTimeout(timer);
   }, [color]);
 
-  // ✨ 優化後的 ResizeObserver
+  // ✨ 優化後的 ResizeObserver (包含流體排版邏輯)
   // 將所有計算邏輯移入這裡，避免在 render 時重複計算造成效能浪費
   useEffect(() => {
     if (!containerRef.current) return;
@@ -97,9 +94,29 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       for (const entry of entries) {
         const width = entry.contentRect.width;
         if (width > 0) {
-          // 反向縮放公式：(目標像素 * 100) / 容器寬度
-          // 不需要再抓取瀏覽器的 rootFontSize 了
-          const calculatedSize = (TARGET_FONT_PIXEL_SIZE * 100) / width;
+          // --- 1. 流體排版邏輯 (Fluid Typography) ---
+          // 448px -> 14px
+          // 280px -> 10px
+          // 中間：線性插值
+          
+          let targetPixelSize = 10; // Default / Min value
+
+          if (width >= 448) {
+            targetPixelSize = 14;
+          } else if (width <= 280) {
+            targetPixelSize = 10;
+          } else {
+            // Linear Interpolation Calculation
+            // 總寬度差: 448 - 280 = 168
+            // 總字體差: 14 - 10 = 4
+            const percentage = (width - 280) / (448 - 280);
+            targetPixelSize = 10 + (percentage * (14 - 10));
+          }
+
+          // --- 2. 反向縮放公式 (Counter-Scaling) ---
+          // 將目標像素轉換為 SVG 內部的單位
+          // 公式：(目標像素 * 100) / 容器寬度
+          const calculatedSize = (targetPixelSize * 100) / width;
           
           setSvgFontSize(calculatedSize);
         }
