@@ -18,6 +18,10 @@ const MAX_CHARS = 23;
 // 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
 
+// ✨ 設定目標視覺大小 (改用 REM)
+// 0.75rem 在預設 16px 的瀏覽器上 = 12px
+const TARGET_FONT_REM = 1;
+
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
   const [showHex, setShowHex] = useState(false);
@@ -37,6 +41,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
+  // ✨ 用於反向縮放：監聽容器寬度
+  const containerRef = useRef<HTMLDivElement>(null);
+  // 優化：直接儲存計算好的 SVG Font Size，而不是容器寬度
+  const [svgFontSize, setSvgFontSize] = useState(3); 
+
   const hasInteractedRef = useRef(false);
 
   // Sync ref with state whenever input changes
@@ -79,6 +88,36 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     return () => clearTimeout(timer);
   }, [color]);
+
+  // ✨ 優化後的 ResizeObserver
+  // 將所有計算邏輯移入這裡，避免在 render 時重複計算造成效能浪費
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+          // 1. 取得根元素字體大小 (預設 16px)
+          const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+          
+          // 2. 計算目標像素值 (0.75 * 16 = 12px)
+          const targetPixelSize = TARGET_FONT_REM * rootFontSize;
+
+          // 3. 代入反向縮放公式：(目標像素 * 100) / 容器寬度
+          const calculatedSize = (targetPixelSize * 100) / width;
+          
+          setSvgFontSize(calculatedSize);
+        }
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
@@ -227,16 +266,20 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // Flags: 0 (large-arc) 0 (sweep: counter-clockwise) -> Draw arc via Bottom (Smile)
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
+  // (舊的計算邏輯已移除，現在直接使用 state: svgFontSize)
+
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
 
       {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
       
       {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
-      <div className={`
-        relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
-        flex items-center justify-center
-        ${bgBlack ? 'bg-black' : 'bg-white/85'}
+      <div 
+        ref={containerRef}
+        className={`
+          relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
+          flex items-center justify-center
+          ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
         {/* Toggle Hex/OKLch Button */}
         <button 
@@ -301,8 +344,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                  <path id="text-curve" d={curvePathD} fill="none" />
               </defs>
               <text 
-                fontSize="3" 
-                // ✨ Added 'pointer-events-auto', 'cursor-pointer', and 'opacity'
+                fontSize={svgFontSize}
+                // ✨ Added 'pointer-events-auto', 'cursor-pointer', and 'opacity-80'
                 className="font-mono font-medium tracking-wider fill-current select-all pointer-events-auto cursor-pointer opacity-80" 
                 textAnchor="middle" 
                 dominantBaseline="middle"
