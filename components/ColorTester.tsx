@@ -210,7 +210,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const hasContent = inputName.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
+    <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
+
+      {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
       
       {/* Visual Stage */}
       <div className={`
