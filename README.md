@@ -51,6 +51,7 @@
 
 - `2025/01/09（五）` **⭕️文字沿著圓環**
   - Hex色碼或OKlch數值，現在文字會沿著圓環排列，營造整體的徽章感
+    - 搞了一些數學公式，讓字不會單純跟著圓形等比例縮放到看不見
   <br>
   <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/ec43180e-33fe-424a-ab4c-8144628096ba" />
   <br>
