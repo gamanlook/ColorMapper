@@ -214,9 +214,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
       {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
       
-      {/* Visual Stage */}
+      {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
       <div className={`
-        relative aspect-square rounded-3xl border border-theme-card-border overflow-hidden transition-colors duration-500
+        relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
         flex items-center justify-center
         ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
