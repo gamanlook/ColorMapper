@@ -96,7 +96,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         if (width > 0) {
           // --- 1. 流體排版邏輯 (Fluid Typography) ---
           // 448px -> 14px
-          // 280px -> 10px
+          // 280px -> 11px
           // 中間：線性插值
           
           let targetPixelSize = 11; // Default / Min value
@@ -110,7 +110,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             // 總寬度差: 448 - 280
             // 總字體差: 14 - 11
             const percentage = (width - 280) / (448 - 280);
-            targetPixelSize = 10 + (percentage * (14 - 11));
+            targetPixelSize = 11 + (percentage * (14 - 11));
           }
 
           // --- 2. 反向縮放公式 (Counter-Scaling) ---
