@@ -14,6 +14,10 @@ interface ColorTesterProps {
 const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
 const MAX_CHARS = 23;
 
+// ✨ 這裡定義文字圓弧的半徑 (相對於 100x100 的容器)
+// 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
+const TEXT_PATH_RADIUS = 44;
+
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
   const [showHex, setShowHex] = useState(false);
@@ -205,9 +209,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   const currentColorCss = toCss(color);
   const textColorClass = color.l > 0.65 ? 'text-black/70' : 'text-white/90';
+  
   const hexValue = oklchToHex(color.l, color.c, color.h);
+  // Prepare Display Text
+  const displayText = showHex 
+    ? hexValue 
+    : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`;
   
   const hasContent = inputName.trim().length > 0;
+
+  // Calculate SVG Path for Curved Text
+  // Center (50, 50). Start/End X based on Radius. 
+  // We draw a bottom arc (Smile) from Left to Right.
+  const pathStartX = 50 - TEXT_PATH_RADIUS;
+  const pathEndX = 50 + TEXT_PATH_RADIUS;
+  // Arc Command: M startX,50 A r,r 0 0,0 endX,50
+  // Flags: 0 (large-arc) 0 (sweep: counter-clockwise) -> Draw arc via Bottom (Smile)
+  const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
@@ -266,15 +284,42 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         </button>
 
         <div 
-          className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
+          className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out relative group"
           style={{ backgroundColor: currentColorCss }}
         >
-           <div className={`text-[0.625rem] font-mono font-medium text-center tracking-wider transition-opacity duration-300 ${textColorClass}`}>
-              {showHex 
-                ? hexValue 
-                : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`
-              }
-           </div>
+           {/* 
+              SVG Text Layer:
+              - absolute inset-0: Fills the color circle exactly
+              - pointer-events-none: Allows clicks to pass through the empty parts of the SVG
+              - textColorClass: Adapts fill color based on background lightness
+           */}
+           <svg 
+             viewBox="0 0 100 100" 
+             className={`absolute inset-0 w-full h-full overflow-visible pointer-events-none ${textColorClass}`}
+           >
+              <defs>
+                 <path id="text-curve" d={curvePathD} fill="none" />
+              </defs>
+              <text 
+                fontSize="3" 
+                // ✨ Added 'pointer-events-auto', 'cursor-pointer', and 'opacity'
+                className="font-mono font-medium tracking-wider fill-current select-all pointer-events-auto cursor-pointer opacity-80" 
+                textAnchor="middle" 
+                dominantBaseline="middle"
+                onClick={(e) => {
+                  // JS Force Select All: Ensures a single click selects the entire string
+                  const selection = window.getSelection();
+                  const range = document.createRange();
+                  range.selectNodeContents(e.currentTarget);
+                  selection?.removeAllRanges();
+                  selection?.addRange(range);
+                }}
+              >
+                 <textPath href="#text-curve" startOffset="50%">
+                    {displayText}
+                 </textPath>
+              </text>
+           </svg>
         </div>
       </div>
 
