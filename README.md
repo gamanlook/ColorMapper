@@ -53,7 +53,7 @@
   - Hex色碼、OKlch數值：現在文字會沿著圓環排列，營造徽章感
     - 搞了一些數學公式，讓字不會在手機版時等比例縮放到看不見
     - 題目以體感亮度 L:0.7 當作基準，亮底題目顯示黑字(55% alpha)；暗底題目顯示白字(70% alpha)
-      - 有根據APCA+我的色準肉眼考證這恰好是最佳基準
+      - 有根據APCA+我的超級色準眼做保證
   <br>
   <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/ec43180e-33fe-424a-ab4c-8144628096ba" />
   <br>
