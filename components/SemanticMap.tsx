@@ -367,7 +367,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       <svg 
         ref={svgRef} 
         viewBox={`0 0 ${width} ${height}`}
-        className="bg-theme-card rounded-xl w-full h-auto transition-colors duration-300"
+        className="bg-theme-card w-full h-auto transition-colors duration-300"
       />
       
       {/* Enhanced Tooltip Overlay - Updated to match Toast style */}
