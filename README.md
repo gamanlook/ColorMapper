@@ -51,6 +51,10 @@
 
 - `2025/01/09（五）` **⭕️文字沿著圓環**
   - Hex色碼或OKlch數值，現在文字會沿著圓環排列，營造整體的徽章感
+  <br>
+  <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/ec43180e-33fe-424a-ab4c-8144628096ba" />
+  <br>
+  <br>
 
 - `2025/01/07（三）` **💬輸入框UI大改**
   - 原本的輸入框跟按鈕盤踞在不同地方，有的還沒有底色顯得很碎片
@@ -58,6 +62,7 @@
     - 閒置太久會出現提示文字「跳過」
   <br>
   <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/4b5e3a17-ec28-4be4-a266-f09a05cb70d0" />
+  <br>
   <br>
   
 - `2025/01/06（二）` **🤖收斂太嗆的口氣**
