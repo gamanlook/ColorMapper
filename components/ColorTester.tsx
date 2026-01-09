@@ -269,7 +269,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out flex items-end justify-center pb-8 group"
           style={{ backgroundColor: currentColorCss }}
         >
-           <div className={`text-[0.625rem] font-mono font-medium tracking-wider transition-opacity duration-300 ${textColorClass}`}>
+           <div className={`text-[0.625rem] font-mono font-medium text-center tracking-wider transition-opacity duration-300 ${textColorClass}`}>
               {showHex 
                 ? hexValue 
                 : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`
