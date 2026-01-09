@@ -19,7 +19,7 @@ const MAX_CHARS = 23;
 const TEXT_PATH_RADIUS = 44;
 
 // ✨ 設定目標視覺像素大小 (用於題目上的 Hex 與 OKLch 顯示)
-const TARGET_FONT_PIXEL_SIZE = 14;
+const TARGET_FONT_PIXEL_SIZE = 12;
 
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
