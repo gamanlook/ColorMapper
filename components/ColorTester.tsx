@@ -279,14 +279,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   // 計算圓形顏色題目的高光透明度
   // 1. L >= 0.25 : 太亮了，隱藏高光 (0)
-  // 2. L <= 0.10 : 很黑，維持最大強度 (0.45)
-  // 3. 0.10 < L < 0.25 : 線性遞減 (Interpolation)
-  //    分母 0.15 是因為 (0.25 - 0.10) 的區間長度
+  // 2. L <= 0.15 : 很黑，維持最大強度 (0.40)
+  // 3. 0.15 < L < 0.25 : 線性遞減 (Interpolation)
+  //    分母 0.1 是因為 (0.25 - 0.15) 的區間長度
   const highlightOpacity = color.l >= 0.25 
     ? 0 
-    : color.l <= 0.10
-      ? 0.45
-      : 0.45 * (1 - ((color.l - 0.10) / 0.15));
+    : color.l <= 0.15
+      ? 0.4
+      : 0.4 * (1 - ((color.l - 0.15) / 0.1));
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
