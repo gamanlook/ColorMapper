@@ -340,6 +340,20 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out relative group"
           style={{ backgroundColor: currentColorCss }}
         >
+
+           {/* 染色高光層 (Tinted Highlight Layer)  */}
+           <div className="
+             absolute inset-0 rounded-full pointer-events-none
+             shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.1)]
+             mix-blend-plus-lighter
+           "></div>
+
+           {/* 白色高光層 (White Highlight Layer)  */}
+           <div className="
+             absolute inset-0 rounded-full pointer-events-none
+             shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.2)]
+           "></div>
+
            {/* 
               SVG Text Layer:
               - absolute inset-0: Fills the color circle exactly
@@ -355,7 +369,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               </defs>
               <text 
                 fontSize={svgFontSize}
-                // ✨ Added 'pointer-events-auto', 'cursor-pointer'
+                // Added 'pointer-events-auto', 'cursor-pointer'
                 className="font-mono font-medium tracking-wider fill-current select-all pointer-events-auto cursor-pointer" 
                 textAnchor="middle" 
                 dominantBaseline="middle"
@@ -505,7 +519,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                - Flex item (no longer absolute)
                - flex-none to prevent shrinking
                - self-end (aligned to bottom)
-               - ✨ Removed 'transition-colors' to prevent purple-bg flash when text deleted
+               - Removed 'transition-colors' to prevent purple-bg flash when text deleted
             */}
             <button
               type={hasContent ? "submit" : "button"}
