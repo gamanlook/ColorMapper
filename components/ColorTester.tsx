@@ -277,6 +277,16 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // Flags: 0 (large-arc) 0 (sweep: counter-clockwise) -> Draw arc via Bottom (Smile)
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
+  // 計算圓形顏色題目的高光透明度
+  // 1. L >= 0.25 : 太亮了，隱藏高光 (0)
+  // 2. L <= 0.10 : 很黑，維持最大強度 (0.45)
+  // 3. 0.10 < L < 0.25 : 線性遞減 (Interpolation)
+  //    分母 0.15 是因為 (0.25 - 0.10) 的區間長度
+  const highlightOpacity = color.l >= 0.25 
+    ? 0 
+    : color.l <= 0.10
+      ? 0.45
+      : 0.45 * (1 - ((color.l - 0.10) / 0.15));
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
@@ -341,12 +351,17 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           style={{ backgroundColor: currentColorCss }}
         >
 
-           {/* 高光層 (Highlight Layer) - 只有 bgBlack 為 true 時顯示 */}
-           {bgBlack && (
-             <div className="
-               absolute inset-0 rounded-full pointer-events-none
-               shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.3)]
-             "></div>
+           {/* 高光層 (Highlight Layer) - 只有 bgBlack 為 true 且 透明度 > 0 時顯示 */}
+           {bgBlack && highlightOpacity > 0 && (
+             <div 
+               className="
+                 absolute inset-0 rounded-full pointer-events-none
+                 mix-blend-plus-lighter
+               "
+               style={{
+                 boxShadow: `inset 0 0.25px 1.25px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`
+               }}
+             ></div>
            )}
 
            {/* 
