@@ -341,22 +341,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           style={{ backgroundColor: currentColorCss }}
         >
 
-           {/* 只有 bgBlack 為 true 時才渲染這兩個高光層 */}
+           {/* 高光層 (Highlight Layer) - 只有 bgBlack 為 true 時顯示 */}
            {bgBlack && (
-             <>
-               {/* 染色高光層 (Tinted Highlight Layer)  */}
-               <div className="
-                 absolute inset-0 rounded-full pointer-events-none
-                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.2)]
-                 mix-blend-plus-lighter
-               "></div>
-
-               {/* 白色高光層 (White Highlight Layer) 蓋在 Tinted Highlight 之上 */}
-               <div className="
-                 absolute inset-0 rounded-full pointer-events-none
-                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.2)]
-               "></div>
-             </>
+             <div className="
+               absolute inset-0 rounded-full pointer-events-none
+               shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.3)]
+             "></div>
            )}
 
            {/* 
