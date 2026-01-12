@@ -295,7 +295,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setShowHex(!showHex)}
           className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
         >
@@ -321,7 +321,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button 
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-10 
-            ${bgBlack ? 'bg-white/10 border-white/20 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
         >
@@ -341,18 +341,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           style={{ backgroundColor: currentColorCss }}
         >
 
-           {/* 染色高光層 (Tinted Highlight Layer)  */}
-           <div className="
-             absolute inset-0 rounded-full pointer-events-none
-             shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.1)]
-             mix-blend-plus-lighter
-           "></div>
+           {/* 只有 bgBlack 為 true 時才渲染這兩個高光層 */}
+           {bgBlack && (
+             <>
+               {/* 染色高光層 (Tinted Highlight Layer)  */}
+               <div className="
+                 absolute inset-0 rounded-full pointer-events-none
+                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.3)]
+                 mix-blend-plus-lighter
+               "></div>
 
-           {/* 白色高光層 (White Highlight Layer)  */}
-           <div className="
-             absolute inset-0 rounded-full pointer-events-none
-             shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.2)]
-           "></div>
+               {/* 白色高光層 (White Highlight Layer) 蓋在 Tinted Highlight 之上 */}
+               <div className="
+                 absolute inset-0 rounded-full pointer-events-none
+                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.2)]
+               "></div>
+             </>
+           )}
 
            {/* 
               SVG Text Layer:
