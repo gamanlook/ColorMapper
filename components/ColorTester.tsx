@@ -278,15 +278,15 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
   // 計算圓形顏色題目的高光透明度
-  // 1. L >= 0.25 : 太亮了，隱藏高光 (0)
-  // 2. L <= 0.15 : 很黑，維持最大強度 (0.40)
-  // 3. 0.15 < L < 0.25 : 線性遞減 (Interpolation)
-  //    分母 0.1 是因為 (0.25 - 0.15) 的區間長度
+  // 1. L >= 0.275 : 題目太亮了，隱藏高光 (0)
+  // 2. L <= 0.15 : 題目太黑，維持高光最大強度 (0.40)
+  // 3. 0.15 < L < 0.275 : 線性遞減 (Interpolation)
+  //    分母 0.125 是因為 (0.275 - 0.15) 的區間長度
   const highlightOpacity = color.l >= 0.25 
     ? 0 
     : color.l <= 0.15
-      ? 0.4
-      : 0.4 * (1 - ((color.l - 0.15) / 0.1));
+      ? 0.5
+      : 0.5 * (1 - ((color.l - 0.15) / 0.125));
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
@@ -359,7 +359,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                  mix-blend-plus-lighter
                "
                style={{
-                 boxShadow: `inset 0 0.25px 1.25px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`
+                 boxShadow: `inset 0 0.3px 1.5px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`
                }}
              ></div>
            )}
