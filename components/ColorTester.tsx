@@ -347,7 +347,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                {/* 染色高光層 (Tinted Highlight Layer)  */}
                <div className="
                  absolute inset-0 rounded-full pointer-events-none
-                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.3)]
+                 shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.2)]
                  mix-blend-plus-lighter
                "></div>
 
