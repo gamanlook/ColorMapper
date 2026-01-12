@@ -345,7 +345,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
            {bgBlack && (
              <div className="
                absolute inset-0 rounded-full pointer-events-none
-               shadow-[inset_0_0.5px_1px_rgba(255,255,255,0.3)]
+               shadow-[inset_0_0.25px_1.25px_rgba(255,255,255,0.3)]
              "></div>
            )}
 
