@@ -172,7 +172,7 @@ function App() {
       name: suspicious ? "奇怪的名字" : "標準色名",
       hueDef: HUES.find(h => h.angle === testColor.h) || HUES[0],
       isSuspicious: suspicious,
-      feedback: suspicious ? "這跟顏色差異有點大喔，沒辦法收錄。" : "命名十分貼切！"
+      feedback: suspicious ? "這跟顏色差異有點大喔，沒辦法收錄" : "命名十分貼切！"
     });
   };
 
