@@ -1,40 +1,13 @@
-import { GoogleGenerativeAI, SchemaType, Schema } from '@google/generative-ai';
-
-// Schema 順序決定 AI 思考順序
-// Explicitly type this as Schema to satisfy TypeScript strict checks
-const validationSchema: Schema = {
-  type: SchemaType.OBJECT,
-  properties: {
-    // Step 1: 先思考理由 (加入 "Don't make up excuses" 的提示)
-    reason: {
-      type: SchemaType.STRING,
-      description: "Step 1: Concise English explanation (Max 30 words). Focus on PRIMARY visual reality. Do not invent hypothetical scenarios (e.g. 'fan art') to justify a mismatch.",
-    },
-    // Step 2: 擬定回覆 (強調 Internet-savvy 與引導性)
-    feedback: {
-      type: SchemaType.STRING,
-      description: "Step 2: A short, witty, internet-savvy comment in Traditional Chinese, no ending period. Be guiding if the user is 'Chatting'. Be humorous if 'Vulgar'. Be educational if 'Wrong'."
-    },
-    // Step 3: 最後下判決
-    isSuspicious: {
-      type: SchemaType.BOOLEAN,
-      description: "Step 3: Final Verdict. True ONLY if the input falls under CASE B (Hard Conflict, Nonsense, Spam, Statement/Chat). Teachable moments (CASE A) must be False.",
-    },
-  },
-  required: ["reason", "feedback", "isSuspicious"],
-};
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Vercel Serverless Function Handler
 export default async function handler(req: any, res: any) {
-  // --- 1. 嚴謹的 CORS 設定，VIP才能進門 ---
+  // --- 1. 嚴謹的 CORS 設定 ---
   const allowedOrigin = 'https://color-mapper.vercel.app';
-  // --- 2. 檢查來的人是誰 ---
   const origin = req.headers.origin;
-  // --- 3. 判斷能不能進來，允許正式站或本機開發 (localhost:3000) ---
   const isAllowed = origin === allowedOrigin || origin?.startsWith('http://localhost');
 
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  // 如果是白名單內的來源，就回傳該來源；否則回傳 null (或 allowedOrigin 讓瀏覽器擋掉)
   res.setHeader('Access-Control-Allow-Origin', isAllowed && origin ? origin : allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
@@ -57,16 +30,35 @@ export default async function handler(req: any, res: any) {
       throw new Error('Server API Key not configured');
     }
 
-    // Receive Data
-    // Frontend sends: { color: {l,c,h}, hexReference: "#...", inputName: "...", hueName: "..." }
     const { color, hexReference, inputName, hueName } = req.body;
 
     if (!color || !inputName) {
       return res.status(400).json({ error: 'Missing required fields (color, inputName)' });
     }
 
+    // ✅ 核彈級解法：直接定義純物件 Schema，不依賴 SDK Enum
+    // 這樣可以避免 Serverless 環境下 Enum Import 失敗導致的 500 Crash
+    const validationSchema = {
+      type: "OBJECT",
+      properties: {
+        reason: {
+          type: "STRING",
+          description: "Step 1: Concise English explanation (Max 30 words). Focus on PRIMARY visual reality. Do not invent hypothetical scenarios (e.g. 'fan art') to justify a mismatch.",
+        },
+        feedback: {
+          type: "STRING",
+          description: "Step 2: A short, witty, internet-savvy comment in Traditional Chinese, no ending period. Be guiding if the user is 'Chatting'. Be humorous if 'Vulgar'. Be educational if 'Wrong'."
+        },
+        isSuspicious: {
+          type: "BOOLEAN",
+          description: "Step 3: Final Verdict. True ONLY if the input falls under CASE B (Hard Conflict, Nonsense, Spam, Statement/Chat). Teachable moments (CASE A) must be False.",
+        },
+      },
+      required: ["reason", "feedback", "isSuspicious"],
+    };
+
     // ✅ Prompt (已調整語氣為 Warm & Design-savvy)
-    const prompt = `
+  const prompt = `
     You are a **Witty, Warm and Design-savvy Color Master**.
     You should feel like a highly-liked internet comment: funny, insightful, not aggressive.
     You encourage creativity, sometimes you speak like a tasteful designer naming a palette, but keep it short.
@@ -157,27 +149,24 @@ export default async function handler(req: any, res: any) {
           - Sentences like "I like this", "Is this blue?", or cases where the user appears to be “pretending to name a color but is actually just talking.”
 
 
-
     # OUTPUT INSTRUCTION:
     Return JSON.
   `;
 
-    // Initialize Gemini
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.5-flash-lite", // 確保這個模型名稱是你專案中有權限使用的
       generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: validationSchema,
+        // Force Cast to any to bypass strict TS checks and avoid Runtime Enum issues
+        responseSchema: validationSchema as any,
       },
     });
 
-    // 5. Call API
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
-    // 6. Return Result
     return res.status(200).json({ text });
 
   } catch (error: any) {
