@@ -368,8 +368,9 @@ function App() {
 
              <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={448} height={408} />
              <div className="mt-2 text-center">
-                <p className="text-xs text-theme-text-muted max-w-xs mx-auto">
-                  區域由多數人的共識形成，圓點顯示目前的題目顏色<br />
+                <p className="text-xs text-theme-text-muted max-w-xs mx-auto leading-relaxed">
+                  區域由多數人的共識形成<br />
+                  縱軸(L)-體感亮度 ∙ 橫軸(C)-刺眼度
                 </p>
              </div>
            </div>
