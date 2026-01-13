@@ -3,8 +3,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Vercel Serverless Function Handler
 export default async function handler(req: any, res: any) {
   // --- 1. 寬鬆的 CORS 設定 (Allow All) ---
-  // 當 Origin 為 '*' 時，Access-Control-Allow-Credentials 不能為 true，因此移除該行
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
