@@ -1,9 +1,17 @@
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+// ❌ 移除 Google SDK 的 import，不需要在前端載入它了
 import { OklchColor } from "../types";
 import { oklchToHex } from "../utils";
 
-// ✅ 初始化 Google AI
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
+// ⚠️ 為了讓 TypeScript 認識 SchemaType，我們需要手動定義它 (因為移除 SDK 了)
+// 這是 Google SDK 定義的列舉，我們把它抄過來
+const SchemaType = {
+  STRING: "STRING",
+  NUMBER: "NUMBER",
+  INTEGER: "INTEGER",
+  BOOLEAN: "BOOLEAN",
+  ARRAY: "ARRAY",
+  OBJECT: "OBJECT"
+};
 
 // 調整：Schema 順序決定 AI 思考順序
 const validationSchema = {
@@ -134,18 +142,30 @@ export const validateColorName = async (
   `;
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: validationSchema,
+    // ✨ 重大改變：改成呼叫自家的後端 API
+    // 我們把 prompt 和 schema 一起打包傳給後端api/gemini（改AI模型也要去那邊改）
+    const response = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ 
+        prompt, 
+        schema: validationSchema // 把 schema 傳給後端去設定
+      }), 
     });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const jsonText = response.text();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.details || 'API call failed');
+    }
+
+    const data = await response.json();
+    const jsonText = data.text; // 後端回傳的 AI 文字 (JSON 格式)
+
     if (!jsonText) throw new Error("No response from AI");
+
+    // 解析 JSON
     const parsedResult = JSON.parse(jsonText);
     return {
       reason: parsedResult.reason,
@@ -155,7 +175,7 @@ export const validateColorName = async (
 
   } catch (error) {
     console.error("Gemini Validation Error:", error);
-    // Fallback: 失敗時預設放行，讓用戶不掃興
+    // Fallback: 失敗時預設放行
     return {
       reason: "AI unavailable" as any,
       feedback: "AI罷工中，先算你過！",
