@@ -2,13 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Vercel Serverless Function Handler
 export default async function handler(req: any, res: any) {
-  // --- 1. 嚴謹的 CORS 設定 ---
-  const allowedOrigin = 'https://color-mapper.vercel.app';
-  const origin = req.headers.origin;
-  const isAllowed = origin === allowedOrigin || origin?.startsWith('http://localhost');
-
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', isAllowed && origin ? origin : allowedOrigin);
+  // --- 1. 寬鬆的 CORS 設定 (Allow All) ---
+  // 當 Origin 為 '*' 時，Access-Control-Allow-Credentials 不能為 true，因此移除該行
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -155,7 +151,7 @@ export default async function handler(req: any, res: any) {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite", // 確保這個模型名稱是你專案中有權限使用的
+      model: "gemini-2.5-flash-lite", // ✅ 堅持使用 2.5 flash-lite
       generationConfig: {
         responseMimeType: "application/json",
         // Force Cast to any to bypass strict TS checks and avoid Runtime Enum issues
