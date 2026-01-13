@@ -1,7 +1,8 @@
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType, Schema } from '@google/generative-ai';
 
 // Schema 順序決定 AI 思考順序
-const validationSchema = {
+// Explicitly type this as Schema to satisfy TypeScript strict checks
+const validationSchema: Schema = {
   type: SchemaType.OBJECT,
   properties: {
     // Step 1: 先思考理由 (加入 "Don't make up excuses" 的提示)
@@ -167,8 +168,7 @@ export default async function handler(req: any, res: any) {
       model: "gemini-2.5-flash-lite",
       generationConfig: {
         responseMimeType: "application/json",
-        // Force Type Cast here to bypass Vercel build type errors
-        responseSchema: validationSchema as any,
+        responseSchema: validationSchema,
       },
     });
 
