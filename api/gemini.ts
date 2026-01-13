@@ -1,4 +1,3 @@
-// 這裡使用舊版的 SDK 寫法，因為你目前是用這個版本
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 // Schema 順序決定 AI 思考順序
@@ -168,7 +167,8 @@ export default async function handler(req: any, res: any) {
       model: "gemini-2.5-flash-lite",
       generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: validationSchema,
+        // Force Type Cast here to bypass Vercel build type errors
+        responseSchema: validationSchema as any,
       },
     });
 
