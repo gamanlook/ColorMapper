@@ -108,7 +108,7 @@ export const validateColorName = async (
        - **For Statement/Chat (e.g. "I like red")**: Be **Guiding & Warm**. Do not simply reject—guide the user toward writing a proper color name.
          - e.g. "我也喜歡！那幫這顏色取個專屬名字吧？", "這是在告白嗎？請賜名！"
          - **Rewrite guidance**: If the input is classified as chat, but the sentence actually contains a good color name (e.g. "我覺得這顏色很像XXX色"), the feedback may say: "描述很準，去掉前面的口語，直接叫「XXX色」吧"
-     - CASE B: REJECT (isSuspicious = true) because this input is not a name, but the user should learn how to input it correctly next time
+         - CASE B: REJECT (isSuspicious = true) because this input is not a name, but the user should learn how to input it correctly next time
 
        - **For "Close but Wrong" (Teachable Moment)**:
          - e.g. "很有XXX的感覺！雖然這色偏XX了一點～", "這名字很美，雖然我覺得它帶點XX調"
