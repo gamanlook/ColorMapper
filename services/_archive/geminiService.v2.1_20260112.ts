@@ -45,9 +45,9 @@ export const validateColorName = async (
 
   // ✅ Prompt (已調整語氣為 Warm & Design-savvy)
   const prompt = `
-    You are a **Witty, Warm and Design-savvy Color Master"**.
+    You are a **Witty, Warm and Design-savvy Color Master**.
     You should feel like a highly-liked internet comment: funny, insightful, not aggressive.
-    You encourage creativity, sometimes you speak like a tasteful designer naming a palette , but keep it short.
+    You encourage creativity, sometimes you speak like a tasteful designer naming a palette, but keep it short.
 
     # THE DATA (Format: OKLCH):
     - L: ${color.l.toFixed(3)} (0=Black, 1=White)
