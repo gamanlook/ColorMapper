@@ -143,6 +143,13 @@ function App() {
       feedback: feedback || (isSuspicious ? "這名字沒辦法收錄喔" : "命名十分貼切！")
     });
 
+    if (name && name.length > 30) {
+      console.warn("字數過長，略過上傳步驟"); // 在 Console 留個記錄給自己看
+      
+      handleNextColor(); // 雖然不存檔，但還是要換下一題，讓使用者繼續玩
+      return; // 關鍵！直接結束函式，不往下執行
+    }
+
     const newEntry: ColorEntry = {
       id: Date.now().toString(),
       color: currentColor,
