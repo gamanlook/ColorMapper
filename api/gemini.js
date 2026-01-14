@@ -123,7 +123,7 @@ export default async function handler(req) {
           - CASE B: REJECT (isSuspicious = true) because this input is not a name, but the user should learn how to input it correctly next time
 
         - **For "Close but Wrong" (Teachable Moment)**:
-          - e.g. "很有XXX的感覺！雖然這色偏XX了一點～", "這名字很美，雖然我覺得它帶點XX調"
+          - e.g. "很有XXX的感覺！雖然這色偏XX了一點～", "這名字很美，我還覺得它帶點XX調"
           - **Soft Guidance with Better Alternatives**: Start by acknowledging and praising the user’s answer. Then, offer a better-fitting real-world color reference or suggest a more suitable name, keeping the tone gentle and encouraging so the user enjoys the feedback and learns something new.
           - CASE A: ACCEPT (isSuspicious = false)
 
