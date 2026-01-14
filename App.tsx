@@ -6,7 +6,7 @@ import { ColorEntry, HueDefinition, OklchColor } from './types';
 import SemanticMap from './components/SemanticMap';
 import ColorTester from './components/ColorTester';
 import Toast, { ToastData } from './components/Toast';
-import { subscribeToEntries, addEntryToCloud, isFirebaseActive } from './services/firebaseService';
+import { subscribeToEntries, addEntryToCloud, isFirebaseActive, pruneOldData } from './services/firebaseService';
 
 function App() {
   const [entries, setEntries] = useState<ColorEntry[]>([]);
@@ -181,6 +181,19 @@ function App() {
       isSuspicious: suspicious,
       feedback: suspicious ? "這跟顏色差異有點大喔，沒辦法收錄" : "命名十分貼切！"
     });
+  };
+
+  const handlePrune = async () => {
+    try {
+      const { deletedCount, updatedCount } = await pruneOldData();
+      alert(`清理完成！\n\n🗑️ 刪除無效資料: ${deletedCount} 筆\n✨ 瘦身有效資料: ${updatedCount} 筆\n\n(記得去關門 .write: false)`);
+    } catch (error: any) {
+      if (error.code === 'PERMISSION_DENIED' || error.message?.includes('PERMISSION_DENIED')) {
+        alert("❌ 權限不足！門沒開！\n\n請去 Firebase Console -> Realtime Database -> Rules\n把 .write 改成 true。\n\n(清理完記得馬上改回 false！)");
+      } else {
+        alert("發生錯誤: " + error.message);
+      }
+    }
   };
 
   const handleToastClick = () => {
@@ -401,6 +414,12 @@ function App() {
                 className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-red-700/80 dark:bg-zinc-900 dark:text-red-400/75 hover:opacity-80 transition-transform"
               >
                 測試不收錄
+              </button>
+              <button 
+                onClick={handlePrune}
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-slate-700/80 dark:bg-zinc-900 dark:text-slate-400/75 hover:opacity-80 transition-transform"
+              >
+                清理舊資料
               </button>
             </div>
           </div>
