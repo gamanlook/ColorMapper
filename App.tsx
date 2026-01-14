@@ -186,7 +186,7 @@ function App() {
   const handlePrune = async () => {
     try {
       const { deletedCount, updatedCount } = await pruneOldData();
-      alert(`清理完成！\n\n🗑️ 刪除無效資料: ${deletedCount} 筆\n✨ 瘦身有效資料: ${updatedCount} 筆\n\n(記得去關門 .write: false)`);
+      alert(`清理完成！\n\n🗑️ 刪除無效資料： ${deletedCount} 筆\n✨ 瘦身有效資料： ${updatedCount} 筆\n\n(記得去關門 .write: false)`);
     } catch (error: any) {
       if (error.code === 'PERMISSION_DENIED' || error.message?.includes('PERMISSION_DENIED')) {
         alert("❌ 權限不足！門沒開！\n\n請去 Firebase Console -> Realtime Database -> Rules\n把 .write 改成 true。\n\n(清理完記得馬上改回 false！)");
