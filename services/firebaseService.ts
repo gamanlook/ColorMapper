@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getDatabase, ref, onValue, push, Database, query, orderByChild, endAt, get, remove, update } from "firebase/database";
+import { getDatabase, ref, onValue, push, Database, query, orderByChild, endAt, get, remove, update, set } from "firebase/database";
 import { ColorEntry } from "../types";
 
 const firebaseConfig = {
@@ -81,6 +81,24 @@ export const addEntryToCloud = async (entry: ColorEntry) => {
 // ✨ NEW: 清理舊資料函式
 export const pruneOldData = async () => {
   if (!db) throw new Error("Firebase not initialized");
+
+  // 🚪 門鈴測試
+  // 1. 我們故意去戳一個跟資料無關的路徑 (利用 Rules 中的 $other: false 特性)
+  const testRef = ref(db, 'permission_test_doorbell'); 
+  try {
+    // 2. 嘗試寫入一點小東西
+    await set(testRef, { test: true, timestamp: Date.now() });
+    // 3. 如果成功沒報錯，代表門是開的！馬上把測試資料刪掉 (煙滅證據)
+    await remove(testRef);
+  } catch (error: any) {
+    // 4. 如果報錯 PERMISSION_DENIED，代表門是關的 (被 $other 擋掉了)
+    if (error.code === 'PERMISSION_DENIED' || error.message?.includes('PERMISSION_DENIED')) {
+      // 直接在這裡擋下，並拋出錯誤，這樣就不會執行後面的清理查詢
+      throw new Error("PERMISSION_DENIED"); 
+    }
+    throw error; // 其他網路錯誤照樣拋出
+  }
+
 
   // 1. 計算 14 天前的 Timestamp
   const cutoffTime = Date.now() - (14 * 24 * 60 * 60 * 1000);
