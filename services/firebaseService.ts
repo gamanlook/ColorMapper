@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getDatabase, ref, onValue, push, Database } from "firebase/database";
+import { getDatabase, ref, onValue, push, Database, query, orderByChild, endAt, get, remove, update } from "firebase/database";
 import { ColorEntry } from "../types";
 
 const firebaseConfig = {
@@ -76,4 +76,52 @@ export const addEntryToCloud = async (entry: ColorEntry) => {
     console.error("❌ 上傳失敗，錯誤原因:", e);
     throw e;
   }
+};
+
+// ✨ NEW: 清理舊資料函式
+export const pruneOldData = async () => {
+  if (!db) throw new Error("Firebase not initialized");
+
+  // 1. 計算 14 天前的 Timestamp
+  const cutoffTime = Date.now() - (14 * 24 * 60 * 60 * 1000);
+  console.log(`🧹 開始清理... 尋找 timestamp <= ${cutoffTime} 的資料`);
+
+  const entriesRef = ref(db, 'entries');
+  
+  // 2. 查詢舊資料
+  const oldDataQuery = query(entriesRef, orderByChild('timestamp'), endAt(cutoffTime));
+  const snapshot = await get(oldDataQuery);
+
+  if (!snapshot.exists()) {
+    return { deletedCount: 0, updatedCount: 0 };
+  }
+
+  let deletedCount = 0;
+  let updatedCount = 0;
+  const promises: Promise<void>[] = [];
+
+  // 3. 遍歷並執行操作
+  snapshot.forEach((childSnapshot) => {
+    const key = childSnapshot.key;
+    const val = childSnapshot.val() as ColorEntry;
+    
+    if (!key) return;
+
+    if (val.isSuspicious) {
+      // A. 可疑資料：整筆刪除
+      const p = remove(ref(db, `entries/${key}`));
+      promises.push(p);
+      deletedCount++;
+    } else if (val.suspiciousReason) {
+      // B. 正常資料：只刪除 suspiciousReason 欄位 (設為 null)
+      const p = update(ref(db, `entries/${key}`), { suspiciousReason: null });
+      promises.push(p);
+      updatedCount++;
+    }
+  });
+
+  // 等待所有操作完成
+  await Promise.all(promises);
+
+  return { deletedCount, updatedCount };
 };
