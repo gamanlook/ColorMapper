@@ -350,7 +350,7 @@ function App() {
                 </div>
               </div>
 
-              <p className="text-sm text-theme-text-muted mb-6">協助我們建立人類對顏色的感知地圖。你會如何形容這個顏色？</p>
+              <p className="text-sm text-theme-text-muted mb-6">協助建立人類對顏色的感知地圖。你會如何形容這個顏色？</p>
               {currentColor && <ColorTester color={currentColor} hueDef={currentHueDef} onSubmit={handleSubmit} onSkip={handleNextColor} />}
            </div>
         </div>
