@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- 1. 核心設定 (這行一定要放第一個，確保編碼正確) -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- 2. 瀏覽器分頁設定 -->
     <title>Color Mapper</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- 3. Open Graph 社群分享設定 (給 FB/LINE/Discord 機器人看的) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://color-mapper.vercel.app" />
+    <meta property="og:title" content="SemanticColorMapper 顏色命名實驗" />
+    <meta property="og:description" content="協助建立人類對顏色的感知地圖。你會如何形容這個顏色？" />
+    <meta property="og:image" content="https://color-mapper.vercel.app/og-image.png" />
+
+    
     
     <!-- 為了方便，我們還是先留著 CDN 版的 Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
