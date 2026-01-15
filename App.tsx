@@ -398,28 +398,28 @@ function App() {
       </main>
 
       {/* 底部功能與資訊區 */}
-      <footer className="w-full mx-auto px-4 mt-12 pb-24 grid grid-cols-1 lg:grid-cols-layout-desktop justify-center gap-12">
+      <footer className="w-full mx-auto px-4 pt-12 pb-24 grid grid-cols-1 lg:grid-cols-layout-desktop justify-center gap-12">
         {/* 內容跨越兩欄 (col-span-2) */}
         <div className="col-span-1 lg:col-span-2 border-t border-theme-card-border pt-8 flex flex-col md:flex-row justify-between items-start gap-8">
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-1.5">
               <button 
                 onClick={() => triggerToastTest(false)}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-green-700/80 dark:bg-zinc-900 dark:text-green-400/70 hover:opacity-80 transition-transform"
+                className="px-3.5 py-2 text-xs font-bold rounded-full bg-slate-200/40 text-green-700/80 dark:bg-zinc-900 dark:text-green-400/70 hover:opacity-80 transition-transform"
               >
                 測試收錄
               </button>
               <button 
                 onClick={() => triggerToastTest(true)}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-red-700/80 dark:bg-zinc-900 dark:text-red-400/75 hover:opacity-80 transition-transform"
+                className="px-3.5 py-2 text-xs font-bold rounded-full bg-slate-200/40 text-red-700/80 dark:bg-zinc-900 dark:text-red-400/75 hover:opacity-80 transition-transform"
               >
                 測試不收錄
               </button>
               <button 
                 onClick={handlePrune}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-slate-200/40 text-slate-700/80 dark:bg-zinc-900 dark:text-slate-400/75 hover:opacity-80 transition-transform"
+                className="px-3.5 py-2 text-xs font-bold rounded-full bg-slate-200/40 text-slate-700/80 dark:bg-zinc-900 dark:text-slate-400/75 hover:opacity-80 transition-transform"
               >
-                清理舊資料
+                清理無用資料
               </button>
             </div>
           </div>
