@@ -538,7 +538,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               className={`
                 flex-none p-3 rounded-full
                 flex items-center justify-center
-                ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted-solid'}
+                ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted'}
                 hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed
               `}
             >
@@ -558,8 +558,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                 // Skip Icon (Refresh) with Progressive Disclosure Text
                 <>
                   <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C13.0609 4 14.0736 4.20651 15 4.58152" />
-                    <polyline points="13 1.15 16 4.15 13 7.15" />
+                    <path d="M 20 12 A 8 8 0 1 1 15.17718 4.65796 M 13 1.15 L 16 4.15 L 13 7.15" />
                   </svg>
                   
                   {/* Hug-like Animation Trick */}
