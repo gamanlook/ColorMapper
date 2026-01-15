@@ -181,8 +181,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         .attr("d", gamutPathStr)
         .attr("fill", "none")
         .attr("stroke", "var(--color-chart-gamut)") // Use CSS Variable
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "4 4")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4 2")
         .attr("pointer-events", "none");
     }
 
@@ -287,7 +287,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
         .attr("r", 8)
         .attr("fill", "none")
         .attr("stroke", isBright ? "black" : "white")
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 1)
         .append("animate")
         .attr("attributeName", "r")
         .attr("values", "8; 28")
@@ -304,10 +304,10 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       layerTarget.append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
-        .attr("r", 9)
+        .attr("r", 10)
         .attr("fill", "none")
         .attr("stroke", isBright ? "black" : "white")
-        .attr("stroke-width", 2)
+        .attr("stroke-width", 1)
         .attr("stroke-dasharray", "3 2")
         .attr("opacity", 0.7);
 
