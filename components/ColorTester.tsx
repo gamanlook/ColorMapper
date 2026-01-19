@@ -411,7 +411,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               </defs>
               <text 
                 fontSize={svgFontSize}
-                className="font-mono font-medium tracking-wider fill-current pointer-events-auto cursor-pointer" 
+                className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer" 
                 textAnchor="middle" 
                 dominantBaseline="middle"
                 onClick={handleCopy}
