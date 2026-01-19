@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { OklchColor, HueDefinition } from '../types';
 import { toCss, suggestPrefixes, oklchToHex } from '../utils';
@@ -18,6 +19,12 @@ const MAX_CHARS = 23;
 // 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
 
+// ✨ 顏文字庫
+const KAOMOJI = [
+  '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)', 
+  '( ˙꒳˙ )', '(  ᐛ  )', '( ʘ̅ᴗʘ̅ )'
+];
+
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
   const [bgBlack, setBgBlack] = useState(false);
   const [showHex, setShowHex] = useState(false);
@@ -33,6 +40,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const inputNameRef = useRef(inputName);
   // ✨ NEW: Ref to track if the 4-second wait is over for the current color
   const hintTimerExpiredRef = useRef(false);
+
+  // ✨ Copy Feedback State
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -71,6 +81,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     // Reset hint state for new color
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false; // Reset timer status
+    setCopyFeedback(null); // Reset copy feedback
 
     // 4-second timer for progressive disclosure
     const timer = setTimeout(() => {
@@ -261,10 +272,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const textColorClass = color.l > 0.70 ? 'text-black/55' : 'text-white/70';
   
   const hexValue = oklchToHex(color.l, color.c, color.h);
-  // Prepare Display Text
-  const displayText = showHex 
+  
+  // Base Text (The Color Code)
+  const baseDisplayText = showHex 
     ? hexValue 
     : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`;
+  
+  // Rendered Text (Either Feedback or Color Code)
+  const renderedText = copyFeedback || baseDisplayText;
   
   const hasContent = inputName.trim().length > 0;
 
@@ -287,6 +302,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     : color.l <= 0.15
       ? 0.5
       : 0.5 * (1 - ((color.l - 0.15) / 0.125));
+
+  // Handle Copy Click
+  const handleCopy = () => {
+    // If feedback is showing, ignore clicks
+    if (copyFeedback) return;
+
+    // 1. Copy original text to clipboard
+    navigator.clipboard.writeText(baseDisplayText);
+    // 2. Randomly select a kaomoji
+    const randomKaomoji = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
+    // 3. Show feedback
+    setCopyFeedback(`Copied! ${randomKaomoji}`);
+    // 4. Reset after 1 second
+    setTimeout(() => {
+      setCopyFeedback(null);
+    }, 1000);
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
@@ -379,21 +411,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
               </defs>
               <text 
                 fontSize={svgFontSize}
-                // Added 'pointer-events-auto', 'cursor-pointer'
-                className="font-mono font-medium tracking-wider fill-current select-all pointer-events-auto cursor-pointer" 
+                className="font-mono font-medium tracking-wider fill-current pointer-events-auto cursor-pointer" 
                 textAnchor="middle" 
                 dominantBaseline="middle"
-                onClick={(e) => {
-                  // JS Force Select All: Ensures a single click selects the entire string
-                  const selection = window.getSelection();
-                  const range = document.createRange();
-                  range.selectNodeContents(e.currentTarget);
-                  selection?.removeAllRanges();
-                  selection?.addRange(range);
-                }}
+                onClick={handleCopy}
               >
                  <textPath href="#text-curve" startOffset="50%">
-                    {displayText}
+                    {renderedText}
                  </textPath>
               </text>
            </svg>
