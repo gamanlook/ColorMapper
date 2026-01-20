@@ -22,7 +22,7 @@ const TEXT_PATH_RADIUS = 44;
 // ✨ 顏文字庫
 const KAOMOJI = [
   '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)', 
-  '( ˙꒳˙ )', '(  ᐛ  )', '( ʘ̅ᴗʘ̅ )'
+  '( ˙꒳˙ )', '(  ᐛ  )', '( ˙ᗜ˙ )'
 ];
 
 const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
