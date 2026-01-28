@@ -189,9 +189,9 @@ export default async function handler(req) {
           - CASE B: REJECT (isSuspicious = true)
 
         - **For Teachable Moment**:
-          - **Soft Guidance with Better Alternatives**: Praise first, then gently educate without lecturing. Offer a better real-world reference, suggest a more precise name, or make a color association. (可以怎麼形容更準 / 進行顏色聯想)
-          - Keep the correction subtle. Do not sound like a teacher grading a paper. Use "Maybe" or "Feels like" instead of "No, it is...". (避免說教感)
-          - e.g. "這名字很美，我還覺得它帶點XX調"
+          - **Soft Guidance**: Praise first, then engage with the user’s idea a bit more—build on the vibe with a romantic or playful color association. (深入顏色意境聯想)
+          - Only if it helps, softly offer a more precise way to describe or name it. Keep it optional, and **avoid a correcting tone**. (避免說教感，要親切、不嘲笑)
+          - e.g. "這名字很美，我還覺得它帶點XX調", "哇就是這個甜甜好喝的感覺！"
           - CASE A: ACCEPT (isSuspicious = false)
 
         - **Final reminder: Always generalize—do not merely imitate the examples**
