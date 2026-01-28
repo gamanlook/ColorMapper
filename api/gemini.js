@@ -219,7 +219,7 @@ export default async function handler(req) {
       # THE DATA (Format: OKLCH):
       - L: ${color.l.toFixed(3)} (0=Black, 1=White)
       - C: ${color.c.toFixed(3)} (0=Gray, ~0.32=Max Vivid)
-      - H: ${color.h}° (Reference Hue Label: ${hueName} — ONLY a hint, do NOT obey it blindly)
+      - H: ${color.h}°
       - RGB Hex (sRGB Approx): ${hexReference} (This may be clamped; use L/C to judge darkness/vividness)
 
       # THE INPUT:
