@@ -8,6 +8,7 @@
  * [V] 改用System Instructions
  */
 
+
 // 這裡使用舊版的 SDK 寫法，因為你目前是用這個版本
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -86,7 +87,8 @@ export default async function handler(req) {
          - However, contradictory color pairs are not valid (e.g., 紅綠, 白黑, etc.).
 
        - **Visualize the color.** Does the user's name match the *vibe* of what you see?
- 
+
+
      2. **Realism, Vulgarity & Common Sense (The Reality Check)**:
        - If it's a specific object (e.g. "Matcha", "Poop"), ask yourself: **"Does this object actually look like this in real life?"**
        - **Famous Objects have a Fixed Color**.
@@ -96,7 +98,8 @@ export default async function handler(req) {
        - **Ignore politeness & Taboos**: Words related to **waste, bodily fluids, filth, gore, or sexual content** are VALID if they are visually accurate.
          - e.g. "Snot", "Poop", "Pee", "Bruise", "Cum", "Blood".
        - **Design-Savvy Attitude**: If the user names the *visual result* accurately (e.g. "Dirt" for a dark yellow), **Praise them**.
- 
+
+
      3. **Feedback Style (Witty, Internet-Savvy, Warm)**:
        - **Keep it Short**: Max 25 words.
        - **Style**: React like a friend. Smart, funny, and concise—like a highly upvoted internet comment.
@@ -123,7 +126,8 @@ export default async function handler(req) {
          - CASE A: ACCEPT (isSuspicious = false)
 
        - **Final reminder: Always generalize—do not merely imitate the examples**
- 
+
+
      # DECISION LOGIC (Internal Rules):
 
      *   **CASE A: ACCEPT (isSuspicious = false)**
@@ -179,6 +183,7 @@ export default async function handler(req) {
    // 8. 初始化 Gemini 並帶入 System Instruction
    const genAI = new GoogleGenerativeAI(apiKey);
    const model = genAI.getGenerativeModel({
+    // 使用你指定的模型
      model: "gemini-2.5-flash-lite",
      systemInstruction: systemInstructionText,
      generationConfig: {
