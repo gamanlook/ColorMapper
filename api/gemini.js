@@ -138,7 +138,6 @@ export default async function handler(req) {
                - 如：Cyan/Teal/Tiffany/Peacock LOOKS like Green/Blue. (「藍/綠/青/湖水」經常互相混用，藍綠色對於一般人來說常會擇一歸類為「綠」或「藍」)
                - 如：Dark/Dull "Orange/Gold/Yellow" LOOKS like Brown/Mud.
                - 如：Dark "Red/Pink" LOOKS like Maroon/Wine.
-
           - 籠統/廣義詞：語境的大包小是能被接受的 (Umbrella terms are allowed)，因為語言有模糊性、包容性
                - 膚色系：Skin(皮膚色/膚色) LOOKS like Nude/Beige(裸色/米色) in Asia.
                  - 其他深淺膚色也有相應稱呼，如：白皙、小麥、古銅、黝黑…等
