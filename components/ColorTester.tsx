@@ -1,7 +1,8 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Swirl } from '@paper-design/shaders-react'; // Import Shader
+import { GrainGradient } from '@paper-design/shaders-react'; // Import Shader
 import { OklchColor, HueDefinition } from '../types';
-import { toCss, suggestPrefixes, oklchToHex } from '../utils';
+import { toCss, suggestPrefixes, oklchToHex, generateShaderPalette } from '../utils';
 import { PREFIXES } from '../constants';
 import { validateColorName } from '../services/geminiService';
 
@@ -15,13 +16,22 @@ interface ColorTesterProps {
 const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
 const MAX_CHARS = 23;
 
-// ✨ 這裡定義文字圓弧的半徑 (相對於 100x100 的容器)
+// --- 有關計算題目上的彎曲文字 ---
+// 這裡定義文字圓弧的半徑 (相對於 100x100 的容器)
 // 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
+// 想要的字體像素大小 (Target Pixel Size)：
+// 當圓形很寬時 (>= 336px)，字體要是 11px
+// 當圓形很窄時 (<= 210px)，字體要是 8px
+// (註：336/210 是基於你原本 448/280 的 0.75 倍推算出的「圓形寬度」)
+const MAX_FONT_PX = 11;
+const MIN_FONT_PX = 8;
+const MAX_WIDTH_BREAKPOINT = 336;
+const MIN_WIDTH_BREAKPOINT = 210;
 
-// ✨ 顏文字庫
+// 顏文字庫
 const KAOMOJI = [
-  '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)', 
+  '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)',
   '( ˙꒳˙ )', '(  ᐛ  )', '( ˙ᗜ˙ )'
 ];
 
@@ -31,39 +41,41 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const [inputName, setInputName] = useState('');
   const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   // UX State: Skip Button Hint
   const [showSkipHint, setShowSkipHint] = useState(false);
   // Ref to track if user has EVER used skip in this session (persists across renders)
   const hasUsedSkipRef = useRef(false);
   // Ref to track latest input name for use in timeouts (avoids stale closures)
   const inputNameRef = useRef(inputName);
-  // ✨ NEW: Ref to track if the 4-second wait is over for the current color
+  // Ref to track if the 4-second wait is over for the current color
   const hintTimerExpiredRef = useRef(false);
 
-  // ✨ Copy Feedback State
+  // Copy Feedback State
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
-  // ✨ 用於反向縮放：監聽容器寬度
-  const containerRef = useRef<HTMLDivElement>(null);
+  // 只使用這一個 Ref 來監聽「圓形視覺區」
+  // 不再監聽外層 Container，直接綁定在 w-3/4 那個圓球上
+  const visualStageRef = useRef<HTMLDivElement>(null);
+
   // 優化：直接儲存計算好的 SVG Font Size，而不是容器寬度
-  const [svgFontSize, setSvgFontSize] = useState(3); 
+  const [svgFontSize, setSvgFontSize] = useState(3);
+  // 用於 Shader 的像素尺寸 (預設 300 避免 0)
+  const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
 
   const hasInteractedRef = useRef(false);
 
   // Sync ref with state whenever input changes
   useEffect(() => {
     inputNameRef.current = inputName;
-    
     if (inputName) {
       // User is typing: Hide hint immediately
       setShowSkipHint(false);
     } else {
-      // ✨ FIX: User cleared input. 
-      // If the 4s timer has ALREADY expired (and user hasn't learned skip yet), 
+      // ✨ FIX: User cleared input.
+      // If the 4s timer has ALREADY expired (and user hasn't learned skip yet),
       // restore the hint immediately.
       if (hintTimerExpiredRef.current && !hasUsedSkipRef.current) {
         setShowSkipHint(true);
@@ -75,9 +87,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     setInputName('');
     // Important: Reset ref immediately for the new cycle
     inputNameRef.current = '';
-    
     setSuggestedPrefixesList(suggestPrefixes(color));
-    
     // Reset hint state for new color
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false; // Reset timer status
@@ -96,50 +106,51 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     return () => clearTimeout(timer);
   }, [color]);
 
-  // ✨ 優化後的 ResizeObserver (包含流體排版邏輯)
-  // 將所有計算邏輯移入這裡，避免在 render 時重複計算造成效能浪費
+  // ✨ 優化後的 ResizeObserver：直覺式流體排版
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!visualStageRef.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width;
-        if (width > 0) {
-          // --- 1. 流體排版邏輯 (Fluid Typography) ---
-          // 448px -> 14px
-          // 280px -> 11px
-          // 中間：線性插值
-          
-          let targetPixelSize = 11; // Default / Min value
+        // 取得圓形當下的實際寬度
+        const containerWidth = entry.contentRect.width;
+        
+        if (containerWidth > 0) {
+          // --- 更新 Shader 尺寸 ---
+          // 直接用實際寬度，達成 1:1 像素對應
+          setDimensions({ width: containerWidth, height: containerWidth });
 
-          if (width >= 448) {
-            targetPixelSize = 14;
-          } else if (width <= 280) {
-            targetPixelSize = 11;
+          let targetPixelSize = MIN_FONT_PX;
+
+          if (containerWidth >= MAX_WIDTH_BREAKPOINT) {
+            targetPixelSize = MAX_FONT_PX;
+          } else if (containerWidth <= MIN_WIDTH_BREAKPOINT) {
+            targetPixelSize = MIN_FONT_PX;
           } else {
-            // Linear Interpolation Calculation
-            // 總寬度差: 448 - 280
-            // 總字體差: 14 - 11
-            const percentage = (width - 280) / (448 - 280);
-            targetPixelSize = 11 + (percentage * (14 - 11));
+            // 線性插值：算出中間值
+            const percentage = (containerWidth - MIN_WIDTH_BREAKPOINT) / (MAX_WIDTH_BREAKPOINT - MIN_WIDTH_BREAKPOINT);
+            targetPixelSize = MIN_FONT_PX + (percentage * (MAX_FONT_PX - MIN_FONT_PX));
           }
 
-          // --- 2. 反向縮放公式 (Counter-Scaling) ---
-          // 將目標像素轉換為 SVG 內部的單位
-          // 公式：(目標像素 * 100) / 容器寬度
-          const calculatedSize = (targetPixelSize * 100) / width;
+          // --- 自動換算成 SVG 單位 ---
+          // 公式原理： (目標像素 / 容器寬度) = (SVG數值 / 100)
+          // 所以：SVG數值 = (目標像素 * 100) / 容器寬度
+          const calculatedSvgSize = (targetPixelSize * 100) / containerWidth;
           
-          setSvgFontSize(calculatedSize);
+          setSvgFontSize(calculatedSvgSize);
         }
       }
     });
 
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(visualStageRef.current);
 
     return () => {
       resizeObserver.disconnect();
     };
   }, []);
+
+  // 產生 Shader 需要的顏色組
+  const { shaderColors, shaderBack } = useMemo(() => generateShaderPalette(color), [color]);
 
   const normalizedInput = inputName.replace(/艷/g, '豔');
   const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
@@ -161,20 +172,17 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const handlePrefixClick = (prefix: string) => {
     const currentName = inputName;
     let newName = prefix;
-    
     const existingPrefix = PREFIXES.find(p => currentName.startsWith(p));
     if (existingPrefix) {
        newName = prefix + currentName.substring(existingPrefix.length);
     } else {
        newName = prefix + currentName;
     }
-    
     if (newName.replace(/\s/g, '').length <= MAX_CHARS) {
       setInputName(newName);
     } else {
       return;
     }
-    
     if (textareaRef.current) {
       textareaRef.current.focus({ preventScroll: true });
       // 保持游標在最後
@@ -191,7 +199,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
     // 簡單過濾換行符，保持單純
-    const cleanVal = val.replace(/\n/g, ''); 
+    const cleanVal = val.replace(/\n/g, '');
     const nonSpaceCount = cleanVal.replace(/\s/g, '').length;
 
     if (nonSpaceCount <= MAX_CHARS || cleanVal.length < inputName.length) {
@@ -211,13 +219,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     if (e.key === 'Enter') {
       // 阻止 textarea 預設的換行行為
       e.preventDefault();
-      
       // 使用 requestSubmit() 模擬原生表單送出
       // 這會觸發 <form> 的 onSubmit 事件
       formRef.current?.requestSubmit();
     }
   };
-  
   const handleSkipClick = () => {
     // Mark that the user has learned the skip function
     hasUsedSkipRef.current = true;
@@ -240,13 +246,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     if (isPrefixOnly) {
       onSubmit(
-        cleanedName, 
-        true, 
-        "PREFIX_ONLY", 
+        cleanedName,
+        true,
+        "PREFIX_ONLY",
         `後面好像少了顏色？試試看：${cleanedName}紅、${cleanedName}藍...`
       );
       setIsSubmitting(false);
-      
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus({ preventScroll: true });
@@ -254,7 +259,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           textareaRef.current.setSelectionRange(len, len);
         }
       }, 0);
-      return; 
+      return;
     }
 
     try {
@@ -270,26 +275,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   const currentColorCss = toCss(color);
   const textColorClass = color.l > 0.70 ? 'text-black/55' : 'text-white/70';
-  
   const hexValue = oklchToHex(color.l, color.c, color.h);
-  
   // Base Text (The Color Code)
-  const baseDisplayText = showHex 
-    ? hexValue 
+  const baseDisplayText = showHex
+    ? hexValue
     : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`;
-  
   // Rendered Text (Either Feedback or Color Code)
   const renderedText = copyFeedback || baseDisplayText;
-  
   const hasContent = inputName.trim().length > 0;
 
   // Calculate SVG Path for Curved Text
-  // Center (50, 50). Start/End X based on Radius. 
-  // We draw a bottom arc (Smile) from Left to Right.
   const pathStartX = 50 - TEXT_PATH_RADIUS;
   const pathEndX = 50 + TEXT_PATH_RADIUS;
-  // Arc Command: M startX,50 A r,r 0 0,0 endX,50
-  // Flags: 0 (large-arc) 0 (sweep: counter-clockwise) -> Draw arc via Bottom (Smile)
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
   // 計算圓形顏色題目的高光透明度
@@ -297,8 +294,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // 2. L <= 0.15 : 題目太黑，維持高光最大強度 (0.40)
   // 3. 0.15 < L < 0.275 : 線性遞減 (Interpolation)
   //    分母 0.125 是因為 (0.275 - 0.15) 的區間長度
-  const highlightOpacity = color.l >= 0.25 
-    ? 0 
+  const highlightOpacity = color.l >= 0.25
+    ? 0
     : color.l <= 0.15
       ? 0.5
       : 0.5 * (1 - ((color.l - 0.15) / 0.125));
@@ -307,14 +304,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const handleCopy = () => {
     // If feedback is showing, ignore clicks
     if (copyFeedback) return;
-
-    // 1. Copy original text to clipboard
     navigator.clipboard.writeText(baseDisplayText);
-    // 2. Randomly select a kaomoji
     const randomKaomoji = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
-    // 3. Show feedback
     setCopyFeedback(`Copied! ${randomKaomoji}`);
-    // 4. Reset after 1 second
     setTimeout(() => {
       setCopyFeedback(null);
     }, 1000);
@@ -324,19 +316,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
 
       {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
-      
+
       {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
-      <div 
-        ref={containerRef}
+      <div
         className={`
           relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
           flex items-center justify-center
           ${bgBlack ? 'bg-black' : 'bg-white/85'}
       `}>
         {/* Toggle Hex/OKLch Button */}
-        <button 
+        <button
           onClick={() => setShowHex(!showHex)}
-          className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-10 
+          className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-20
             ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
@@ -360,9 +351,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         </button>
 
         {/* Toggle BG Color Button */}
-        <button 
+        <button
           onClick={() => setBgBlack(!bgBlack)}
-          className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-10 
+          className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-20
             ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
@@ -378,16 +369,35 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           )}
         </button>
 
-        <div 
-          className="w-3/4 h-3/4 rounded-full shadow-2xl transition-all duration-300 ease-out relative group"
+        <div
+          // 關鍵：Ref 移到這裡！
+          ref={visualStageRef}
+          className="w-3/4 h-3/4 rounded-full shadow-[0_25px_60px_-12px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out relative group overflow-hidden"
           style={{ backgroundColor: currentColorCss }}
         >
+           {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
+           <div className="absolute inset-0 z-0">
+             <GrainGradient
+               width={dimensions.width}
+               height={dimensions.height}
+               colors={shaderColors}
+               colorBack={shaderBack}
+               softness={0}
+               intensity={2.2}
+               noise={0}
+               shape="wave"
+               speed={5}
+               scale={1}
+               offsetX={0}
+               offsetY={0}
+             />
+           </div>
 
-           {/* 高光層 (Highlight Layer) - 只有 bgBlack 為 true 且 透明度 > 0 時顯示 */}
+           {/* 高光層 (Highlight Layer) - 放在 Shader 之上 (z-10) */}
            {bgBlack && highlightOpacity > 0 && (
-             <div 
+             <div
                className="
-                 absolute inset-0 rounded-full pointer-events-none
+                 absolute inset-0 rounded-full pointer-events-none z-10
                  mix-blend-plus-lighter
                "
                style={{
@@ -396,23 +406,18 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
              ></div>
            )}
 
-           {/* 
-              SVG Text Layer:
-              - absolute inset-0: Fills the color circle exactly
-              - pointer-events-none: Allows clicks to pass through the empty parts of the SVG
-              - textColorClass: Adapts fill color based on background lightness
-           */}
-           <svg 
-             viewBox="0 0 100 100" 
+           {/* SVG Text Layer (z-20) */}
+           <svg
+             viewBox="0 0 100 100"
              className={`absolute inset-0 w-full h-full overflow-visible pointer-events-none ${textColorClass}`}
            >
               <defs>
                  <path id="text-curve" d={curvePathD} fill="none" />
               </defs>
-              <text 
+              <text
                 fontSize={svgFontSize}
-                className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer" 
-                textAnchor="middle" 
+                className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer"
+                textAnchor="middle"
                 dominantBaseline="middle"
                 onClick={handleCopy}
               >
@@ -427,33 +432,31 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       <div className="flex flex-col gap-4">
 
         {/* Suggested Prefixes */}
-        <div 
+        <div
           className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-5 w-[calc(100%+3rem)]"
           style={{
-            WebkitMaskImage: `linear-gradient(to right, 
-              transparent, 
-              rgba(0,0,0, 0.1) 4px, 
-              rgba(0,0,0, 0.4) 10px, 
-              rgba(0,0,0, 0.8) 18px, 
-              black 24px, 
-              
-              black calc(100% - 24px), 
-              rgba(0,0,0, 0.8) calc(100% - 18px), 
-              rgba(0,0,0, 0.4) calc(100% - 10px), 
-              rgba(0,0,0, 0.1) calc(100% - 4px), 
+            WebkitMaskImage: `linear-gradient(to right,
+              transparent,
+              rgba(0,0,0, 0.1) 4px,
+              rgba(0,0,0, 0.4) 10px,
+              rgba(0,0,0, 0.8) 18px,
+              black 24px,
+              black calc(100% - 24px),
+              rgba(0,0,0, 0.8) calc(100% - 18px),
+              rgba(0,0,0, 0.4) calc(100% - 10px),
+              rgba(0,0,0, 0.1) calc(100% - 4px),
               transparent
             )`,
-            maskImage: `linear-gradient(to right, 
-              transparent, 
-              rgba(0,0,0, 0.1) 4px, 
-              rgba(0,0,0, 0.4) 10px, 
-              rgba(0,0,0, 0.8) 18px, 
-              black 24px, 
-              
-              black calc(100% - 24px), 
-              rgba(0,0,0, 0.8) calc(100% - 18px), 
-              rgba(0,0,0, 0.4) calc(100% - 10px), 
-              rgba(0,0,0, 0.1) calc(100% - 4px), 
+            maskImage: `linear-gradient(to right,
+              transparent,
+              rgba(0,0,0, 0.1) 4px,
+              rgba(0,0,0, 0.4) 10px,
+              rgba(0,0,0, 0.8) 18px,
+              black 24px,
+              black calc(100% - 24px),
+              rgba(0,0,0, 0.8) calc(100% - 18px),
+              rgba(0,0,0, 0.4) calc(100% - 10px),
+              rgba(0,0,0, 0.1) calc(100% - 4px),
               transparent
             )`
           }}
@@ -471,9 +474,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           ))}
         </div>
 
-        {/* Auto-growing Textarea Form - Layout V2 (Flexbox) */}
+        {/* Auto-growing Textarea Form (Flexbox) */}
         <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
-          {/* 
+          {/*
             Container Setup:
             - Flexbox (items-end) allows button to stay at bottom while input grows
             - rounded 圓角 1.875rem = [ 輸入框總高 3.75rem ]/2 = [ icon高度 1.125rem(18px) + 圓按鈕上下padding 1.5rem(p-3*2, 24px) + 輸入框上下padding 1rem(p-2*2, 16px) + border線粗 0.125rem(1px*2) ]/2
@@ -482,26 +485,24 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
             - top/bottom/right padding 圓形按鈕與邊緣
           */}
           <div className="flex items-end gap-2 w-full rounded-[1.875rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
-            
-            {/* 
+            {/*
               Input Area (Textarea + Ghost)
               - flex-1 to fill remaining space
               - min-w-0 to prevent flex item overflow
-              - ✨ self-stretch: This is the KEY. It forces the text container to height-match 
-                the adjacent button if the button is taller. 
-                Combined with 'items-center' (on the grid itself), single-line text will center nicely 
+              - ✨ self-stretch: This is the KEY. It forces the text container to height-match
+                the adjacent button if the button is taller.
+                Combined with 'items-center' (on the grid itself), single-line text will center nicely
                 against a huge button, while still allowing the button to stay at the bottom for multi-line text.
             */}
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
-              
-              {/* 
-                 Ghost Layer (Visuals): 
+              {/*
+                 Ghost Layer (Visuals):
                  - Controls height via content
                  - py-1.5 (6px) vertical padding
                  - px-0 horizontal padding (container handles left indentation)
                  - whitespace-pre-wrap & break-words: ensures long text breaks line
               */}
-              <div 
+              <div
                 className="col-start-1 row-start-1 px-0 py-1.5 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
                 aria-hidden="true"
               >
@@ -517,7 +518,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                  <span className="inline-block w-0">&#8203;</span>
               </div>
 
-              {/* 
+              {/*
                  Interactive Layer (Textarea):
                  - Matches ghost layer positioning and padding exactly
                  - Added 'whitespace-pre-wrap & break-words' to match Ghost Layer behavior
@@ -531,24 +532,24 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                 onKeyDown={handleKeyDown}
                 onFocus={scrollToBottom}
                 onClick={scrollToBottom}
-                placeholder="" 
+                placeholder=""
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
                 spellCheck="false"
                 enterKeyHint="send"
                 className={`
-                  col-start-1 row-start-1 w-full h-full 
-                  px-0 py-1.5 text-lg 
-                  bg-transparent border-none outline-none 
+                  col-start-1 row-start-1 w-full h-full
+                  px-0 py-1.5 text-lg
+                  bg-transparent border-none outline-none
                   resize-none overflow-hidden
                   text-transparent caret-theme-text-main
                   whitespace-pre-wrap break-words
                 `}
               />
             </div>
-            
-            {/* 
+
+            {/*
                Action Button:
                - Flex item (no longer absolute)
                - flex-none to prevent shrinking
@@ -584,14 +585,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                   <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M 20 12 A 8 8 0 1 1 15.17718 4.65796 M 13 1.15 L 16 4.15 L 13 7.15" />
                   </svg>
-                  
                   {/* Hug-like Animation Trick */}
-                  <span 
+                  <span
                      className={`
-                       overflow-hidden whitespace-nowrap text-[0.9375rem]/4 
+                       overflow-hidden whitespace-nowrap text-[0.9375rem]/4
                        transition-all duration-500 ease-in-out
-                       ${showSkipHint && !inputName 
-                          ? 'max-w-[4em] opacity-100 ml-0.5' 
+                       ${showSkipHint && !inputName
+                          ? 'max-w-[4em] opacity-100 ml-0.5'
                           : 'max-w-0 opacity-0 ml-0'
                        }
                      `}
