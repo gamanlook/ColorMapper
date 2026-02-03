@@ -30,7 +30,9 @@ export const oklchToLinearSrgb = (l: number, c: number, h: number): [number, num
   return [r, g, blue];
 };
 
-// Convert OKLch to Hex string (for AI reference)
+// Convert OKLch to Hex string (for AI reference & UI Display)
+// NOTE: This uses "Clipping" method (maintains Hue/Chroma numbers but clips RGB).
+// Good for text, but can cause hue shifts or posterization in gradients.
 export const oklchToHex = (l: number, c: number, h: number): string => {
   const [rLin, gLin, bLin] = oklchToLinearSrgb(l, c, h);
 
@@ -59,7 +61,6 @@ export const inGamut = (l: number, c: number, h: number): boolean => {
 // Binary search to find the maximum Chroma for a given Lightness and Hue
 export const findMaxChroma = (l: number, h: number): number => {
   if (l <= 0.001 || l >= 0.999) return 0;
-  
   let low = 0;
   let high = 0.4;
   let mid = 0;
@@ -73,6 +74,20 @@ export const findMaxChroma = (l: number, h: number): number => {
     }
   }
   return low;
+};
+
+// ✨ NEW: Convert OKLch to Hex using Gamut Mapping (Chroma Reduction)
+// This preserves Lightness and Hue by reducing Chroma until it fits sRGB.
+// Essential for Shaders/Gradients to prevent clipping artifacts (posterization).
+export const oklchToGamutHex = (l: number, c: number, h: number): string => {
+  // 1. Check if valid
+  if (inGamut(l, c, h)) {
+    return oklchToHex(l, c, h);
+  }
+  // 2. If out of gamut, find the limitC (max chroma) for this L/H
+  const limitC = findMaxChroma(l, h);
+  // 3. Use the safe chroma to generate Hex
+  return oklchToHex(l, limitC, h);
 };
 
 // Helper to find the Lightness that allows the absolute maximum chroma for a hue
@@ -89,14 +104,13 @@ export const findPeakLightnessForHue = (h: number): { l: number, maxC: number } 
   return { l: peakL, maxC: absMaxC };
 }
 
-// ✨ UPDATE: 全面採用「投點法 (Rejection Sampling)」
+// 全面採用「投點法 (Rejection Sampling)」
 // 讓所有區域的顏色分佈都符合面積比例，避免「卡在邊緣」或「奇怪的髒色」。
 export const generateRandomColor = (hueAngle: number): OklchColor => {
   const mode = Math.random();
   let l: number, c: number;
   let isValid = false;
   let tryCount = 0;
-  
   const MAX_TRIES = 100;
 
   // 輔助函式：投點邏輯
@@ -104,10 +118,8 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
     // 1. 在矩形範圍內隨機投點
     const randL = minL + Math.random() * (maxL - minL);
     const randC = minC + Math.random() * (maxC - minC);
-    
     // 2. 檢查是否落在 sRGB 形狀內
     const limitC = findMaxChroma(randL, hueAngle);
-    
     if (randC <= limitC) {
       return { l: randL, c: randC, success: true };
     }
@@ -125,8 +137,7 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
       tryCount++;
     }
     if (!isValid) { l = 0.95; c = 0.02; } // Fallback
-  } 
-  
+  }
   // --- MODE 2: DARK / SHADOWS ---
   // 深色區：想稍微少一點，避免一直出髒色 (6%)
   // L: 0.05 ~ 0.30 (很暗)
@@ -195,7 +206,6 @@ export const suggestPrefixes = (color: OklchColor): string[] => {
 // Generate seed data with strictly in-gamut colors and GEOMETRY-AWARE distribution
 export const generateSeedData = (): ColorEntry[] => {
   const entries: ColorEntry[] = [];
-  
   HUES.forEach(hue => {
     const { l: peakL, maxC: peakMaxC } = findPeakLightnessForHue(hue.angle);
 
@@ -222,7 +232,6 @@ export const generateSeedData = (): ColorEntry[] => {
     else if (peakMaxC > 0.28) tipPrefix = '豔';
     else if (peakMaxC > 0.22) tipPrefix = '鮮';
     else tipPrefix = '正';
-    
     addRelativeCluster(2, peakL, 0.05, 0.9, 0.05, tipPrefix);
 
     // 2. LIGHT (淺)
@@ -230,7 +239,7 @@ export const generateSeedData = (): ColorEntry[] => {
     addRelativeCluster(2, lightL, 0.05, 0.4, 0.1, '淺');
 
     // 3. DEEP (深)
-    const deepL = peakL * 0.5; 
+    const deepL = peakL * 0.5;
     addRelativeCluster(2, deepL, 0.05, 0.5, 0.1, '深');
 
     // 4. MIST (霧)
@@ -249,6 +258,75 @@ const createFakeEntry = (h: number, l: number, c: number, name: string, prefix: 
     votes: 1,
     isSuspicious: false,
     timestamp: Date.now(),
-    isSeed: true 
+    isSeed: true
   }
 }
+
+// Helper: Linear Map (Clamped)
+const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
+  if (value <= inMin) return outMin;
+  if (value >= inMax) return outMax;
+  const percentage = (value - inMin) / (inMax - inMin);
+  return outMin + percentage * (outMax - outMin);
+};
+
+// 產生 Shader Palette 需要的顏色組
+// 使用ToGamut，不使用clip，而是用同亮度的極限C取代
+// 使用動態亮度，越亮的題目不需要太大的對比，越暗的題目需要強化對比
+export const generateShaderPalette = (color: OklchColor): { shaderColors: string[], shaderBack: string } => {
+  
+  // Dynamic Contrast Configuration
+  const SHADER_PARAMS = {
+    LOW_L_LIMIT: 0.05,
+    HIGH_L_LIMIT: 0.85,
+    // Darker: 深色題目(L15%)要更多加深、更多反光，淺色題目(L85%)要更少陰影感、更少提亮
+    DARKER_OFFSET: { MAX: 0.05, MIN: 0.015 },
+    LIGHTER_OFFSET: { MAX: 0.06, MIN: 0.015 }
+  };
+
+  // 計算動態 Offset
+  const dynamicDarkerOffset = mapRange(
+    color.l, 
+    SHADER_PARAMS.LOW_L_LIMIT, 
+    SHADER_PARAMS.HIGH_L_LIMIT, 
+    SHADER_PARAMS.DARKER_OFFSET.MAX, 
+    SHADER_PARAMS.DARKER_OFFSET.MIN
+  );
+
+  const dynamicLighterOffset = mapRange(
+    color.l, 
+    SHADER_PARAMS.LOW_L_LIMIT, 
+    SHADER_PARAMS.HIGH_L_LIMIT, 
+    SHADER_PARAMS.LIGHTER_OFFSET.MAX, 
+    SHADER_PARAMS.LIGHTER_OFFSET.MIN
+  );
+
+  // 基礎色 (baseHex)
+  const baseHex = oklchToGamutHex(color.l, color.c, color.h);
+
+  // 最暗 (darkestHex) - 使用 Offset * 2
+  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2));
+  const darkestC = Math.max(0, color.c + 0.0066);
+  const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
+
+  // 暗一點、濃一點 (darkerHex) - 使用 Offset * 1
+  const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset));
+  const darkerC = Math.max(0, color.c + 0.0033);
+  const darkerHex = oklchToGamutHex(darkerL, darkerC, color.h);
+
+  // 亮一點 (lighterHex) - 使用 Offset * 1
+  const lighterL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset));
+  const lighterC = Math.max(0, color.c - 0.0016);
+  const lighterHex = oklchToGamutHex(lighterL, lighterC, color.h);
+
+  // 最亮 (lightestHex) - 使用 Offset * 2
+  const lightestL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset * 2));
+  const lightestC = Math.max(0, color.c - 0.0032);
+  const lightestHex = oklchToGamutHex(lightestL, lightestC, color.h);
+
+  return {
+    // 順序: 亮到暗，背景是最上方的顏色 (lightestHex)
+    shaderColors: [lighterHex, baseHex, darkerHex, darkestHex],
+    shaderBack: lightestHex
+  };
+};
