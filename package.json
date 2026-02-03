@@ -18,6 +18,7 @@
     "d3": "^7.9.0",
     "d3-delaunay": "^6.0.4",
     "@google/generative-ai": "^0.24.1"
+    "@paper-design/shaders-react": "^1.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
