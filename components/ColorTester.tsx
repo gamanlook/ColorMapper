@@ -6,6 +6,7 @@ import { toCss, suggestPrefixes, oklchToHex, generateShaderPalette } from '../ut
 import { PREFIXES } from '../constants';
 import { validateColorName } from '../services/geminiService';
 
+
 interface ColorTesterProps {
   color: OklchColor;
   hueDef: HueDefinition;
