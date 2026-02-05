@@ -250,7 +250,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
           .attr("y", yScale(cluster.l))
           .attr("dy", "0.35em")
           .attr("text-anchor", "middle")
-          .attr("font-size", "12px")
+          .attr("font-size", "11px")
           .attr("font-weight", "600")
           // Use CSS variables for text contrast based on lightness
           .attr("fill", isLight ? "var(--color-chart-text-cell-light)" : "var(--color-chart-text-cell-dark)")
@@ -326,35 +326,51 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const yAxis = d3.axisLeft(yScale).ticks(5).tickFormat(d => `${(d as number) * 100}`);
     const xAxis = d3.axisBottom(xScale).ticks(5);
 
-    layerAxes.append("g").call(yAxis)
+    const yAxisGroup = layerAxes.append("g")
+      .attr("transform", "translate(-1, 0)")
+      .call(yAxis)
       .attr("class", "select-none")
       .attr("color", "var(--color-chart-axis)") // Apply color via attribute to group
       .attr("font-family", "inherit");
-      
-    layerAxes.append("g")
-      .attr("transform", `translate(0,${chartHeight})`)
+    
+    yAxisGroup.select(".domain").remove(); //移除長長的軸線 (如果想要隱藏軸線的話)
+
+
+    const xAxisGroup = layerAxes.append("g")
+      .attr("transform", `translate(0,${chartHeight + 1})`)
       .call(xAxis)
       .attr("class", "select-none")
       .attr("color", "var(--color-chart-axis)") // Apply color via attribute to group
-      .attr("font-family", "inherit");
+      .attr("font-family", "inherit")
+
+    xAxisGroup.select(".domain").remove(); //移除長長的軸線
+
+    // 手動植牙，補上最右邊的收尾刻度
+    xAxisGroup.append("line")
+      .attr("x1", chartWidth)
+      .attr("x2", chartWidth)
+      .attr("y1", 0)
+      .attr("y2", 6)
+      .attr("stroke", "currentColor"); // 吃父層的 color 設定
+
 
     layerAxes.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -45)
+      .attr("y", -48)
       .attr("x", -chartHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .attr("fill", "var(--color-chart-axis)")
       .attr("font-size", "12px")
-      .text("Lightness (L)");
+      .text("LIGHTNESS (L) %");
 
     layerAxes.append("text")
-      .attr("y", chartHeight + 35)
+      .attr("y", chartHeight + 40)
       .attr("x", chartWidth / 2)
       .style("text-anchor", "middle")
       .attr("fill", "var(--color-chart-axis)")
       .attr("font-size", "12px")
-      .text("Chroma (C) / Saturation");
+      .text("CHROMA (C)");
 
   }, [hue, hueData, currentColor, width, height, semanticClusters]);
 
