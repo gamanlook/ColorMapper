@@ -12,7 +12,8 @@
 
 <br>
 
-<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/ad12ab2a-9e5e-4ebb-aebe-5227d2c63a24" />
+<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/f566dea0-60bf-45e3-9790-c1cf9b9e6303" />
+
 
 <br>
 
