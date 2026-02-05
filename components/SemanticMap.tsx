@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { Delaunay } from 'd3-delaunay';
@@ -138,16 +137,18 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
     const xScale = d3.scaleLinear().domain([0, MAX_CHROMA]).range([0, chartWidth]);
     const yScale = d3.scaleLinear().domain([0, 1]).range([chartHeight, 0]);
 
-    const g = svg.append("g")
+    const mainChartGroup = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // --- LAYERS (Z-Index Management) ---
-    // 建立圖層順序，確保 hover 時的放大與邊框不會蓋住更重要的資訊(如座標點、Target)，但會蓋住其他鄰近的色塊
-    const layerGamut = g.append("g").attr("class", "layer-gamut");
-    const layerCells = g.append("g").attr("class", "layer-cells");
-    const layerDots = g.append("g").attr("class", "layer-dots");
-    const layerTarget = g.append("g").attr("class", "layer-target");
-    const layerAxes = g.append("g").attr("class", "layer-axes");
+    // 建立圖層順序，確保 hover 時的放大與邊框不會蓋住更重要的資訊
+    // Order: Gamut < Cells < Dots < Labels < Target < Axes
+    const layerGamut = mainChartGroup.append("g").attr("class", "layer-gamut");
+    const layerCells = mainChartGroup.append("g").attr("class", "layer-cells");
+    const layerDots = mainChartGroup.append("g").attr("class", "layer-dots");
+    const layerLabels = mainChartGroup.append("g").attr("class", "layer-labels"); // ✨ 新增文字層 (在 Dots 之上)
+    const layerTarget = mainChartGroup.append("g").attr("class", "layer-target");
+    const layerAxes = mainChartGroup.append("g").attr("class", "layer-axes");
 
     // --- 0. GAMUT BOUNDARY (Background Layer) ---
     const gamutPoints: [number, number][] = [];
@@ -188,7 +189,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     // --- 1. VORONOI TESSELLATION (Territories) ---
     if (semanticClusters.length === 0) {
-      layerCells.append("text")
+      layerLabels.append("text")
         .attr("x", chartWidth / 2)
         .attr("y", chartHeight / 2)
         .attr("text-anchor", "middle")
@@ -243,8 +244,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
              d3.select(this.parentNode as Element).selectAll(".hover-stroke").remove();
           });
 
-        // Label
-        cellG.append("text")
+        // Label: ✨ Moved to layerLabels to be above layerDots
+        layerLabels.append("text")
           .attr("x", xScale(cluster.c))
           .attr("y", yScale(cluster.l))
           .attr("dy", "0.35em")
@@ -254,7 +255,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
           // Use CSS variables for text contrast based on lightness
           .attr("fill", isLight ? "var(--color-chart-text-cell-light)" : "var(--color-chart-text-cell-dark)")
           .text(cluster.displayLabel)
-          .attr("pointer-events", "none");
+          .attr("pointer-events", "none"); // 保持讓滑鼠穿透，才不會擋到下面色塊的 hover
       });
     }
 
