@@ -6,7 +6,6 @@ import { toCss, suggestPrefixes, oklchToHex, generateShaderPalette } from '../ut
 import { PREFIXES } from '../constants';
 import { validateColorName } from '../services/geminiService';
 
-
 interface ColorTesterProps {
   color: OklchColor;
   hueDef: HueDefinition;
@@ -22,13 +21,13 @@ const MAX_CHARS = 23;
 // 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
 // 想要的字體像素大小 (Target Pixel Size)：
-// 當圓形很寬時 (>= 336px)，字體要是 11px
-// 當圓形很窄時 (<= 210px)，字體要是 8px
-// (註：336/210 是基於你原本 448/280 的 0.75 倍推算出的「圓形寬度」)
+// 當圓形很寬時 (>= 350px)，字體要是 11px
+// 當圓形很窄時 (<= 225px)，字體要是 8px
+// (註：336/210 是推算出的「圓形寬度」)
 const MAX_FONT_PX = 11;
 const MIN_FONT_PX = 8;
-const MAX_WIDTH_BREAKPOINT = 336;
-const MIN_WIDTH_BREAKPOINT = 210;
+const MAX_WIDTH_BREAKPOINT = 350;
+const MIN_WIDTH_BREAKPOINT = 225;
 
 // 顏文字庫
 const KAOMOJI = [
@@ -53,6 +52,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   // Copy Feedback State
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  // Shader Random Offset State
+  const [randomOffset, setRandomOffset] = useState(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -93,6 +95,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false; // Reset timer status
     setCopyFeedback(null); // Reset copy feedback
+    
+    // 每次換題，就骰一個 -1 到 1 之間的數字，讓紋理有點變化
+    setRandomOffset((Math.random() * 2) - 1);
 
     // 4-second timer for progressive disclosure
     const timer = setTimeout(() => {
@@ -280,7 +285,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // Base Text (The Color Code)
   const baseDisplayText = showHex
     ? hexValue
-    : `OKLch(${(color.l*100).toFixed(0)}% ${color.c.toFixed(3)} ${color.h}°)`;
+    : `oklch(${(color.l*100).toFixed(1)}% ${color.c.toFixed(3)} ${color.h})`;
   // Rendered Text (Either Feedback or Color Code)
   const renderedText = copyFeedback || baseDisplayText;
   const hasContent = inputName.trim().length > 0;
@@ -373,7 +378,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <div
           // 關鍵：Ref 移到這裡！
           ref={visualStageRef}
-          className="w-3/4 h-3/4 rounded-full shadow-[0_25px_60px_-12px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out relative group overflow-hidden"
+          className="w-4/5 h-4/5 rounded-full shadow-[0_25px_60px_-12px_rgba(0,0,0,0.08)] transition-all duration-300 ease-out relative group overflow-hidden"
           style={{ backgroundColor: currentColorCss }}
         >
            {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
@@ -383,13 +388,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                height={dimensions.height}
                colors={shaderColors}
                colorBack={shaderBack}
-               softness={0}
-               intensity={2.2}
+               softness={0.05}
+               intensity={2}
                noise={0}
                shape="wave"
-               speed={5}
+               speed={2.75}
                scale={1}
-               offsetX={0}
+               offsetX={randomOffset}
                offsetY={0}
              />
            </div>
