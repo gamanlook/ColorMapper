@@ -280,8 +280,8 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
     LOW_L_LIMIT: 0.05,
     HIGH_L_LIMIT: 0.85,
     // Darker: 深色題目(L15%)要更多加深、更多反光，淺色題目(L85%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.05, MIN: 0.015 },
-    LIGHTER_OFFSET: { MAX: 0.06, MIN: 0.015 }
+    DARKER_OFFSET: { MAX: 0.0375, MIN: 0.012 },
+    LIGHTER_OFFSET: { MAX: 0.0375, MIN: 0.012 }
   };
 
   // 計算動態 Offset
@@ -306,17 +306,17 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
 
   // 最暗 (darkestHex) - 使用 Offset * 2
   const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2));
-  const darkestC = Math.max(0, color.c + 0.0066);
+  const darkestC = Math.max(0, color.c + 0.0056);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
   // 暗一點、濃一點 (darkerHex) - 使用 Offset * 1
   const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset));
-  const darkerC = Math.max(0, color.c + 0.0033);
+  const darkerC = Math.max(0, color.c + 0.0028);
   const darkerHex = oklchToGamutHex(darkerL, darkerC, color.h);
 
   // 亮一點 (lighterHex) - 使用 Offset * 1
   const lighterL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset));
-  const lighterC = Math.max(0, color.c - 0.0016);
+  const lighterC = Math.max(0, color.c - 0.0012);
   const lighterHex = oklchToGamutHex(lighterL, lighterC, color.h);
 
   // 最亮 (lightestHex) - 使用 Offset * 2
