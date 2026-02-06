@@ -378,7 +378,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <div
           // 關鍵：Ref 移到這裡！
           ref={visualStageRef}
-          className="w-4/5 h-4/5 rounded-full shadow-[0_32px_48px_-16px_rgba(0,0,0,0.20)] transition-all duration-300 ease-out relative group overflow-hidden"
+          className="w-4/5 h-4/5 rounded-full shadow-[0_32px_60px_-8px_rgba(0,0,0,0.20)] transition-all duration-300 ease-out relative group overflow-hidden"
           style={{ backgroundColor: currentColorCss }}
         >
            {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
