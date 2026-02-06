@@ -280,7 +280,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
     LOW_L_LIMIT: 0.05,
     HIGH_L_LIMIT: 0.88,
     // Darker: 深色題目(L5%)要更多加深、更多反光，淺色題目(L88%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.0375, MIN: 0.013 },
+    DARKER_OFFSET: { MAX: 0.0385, MIN: 0.0135 },
     LIGHTER_OFFSET: { MAX: 0.0375, MIN: 0.012 }
   };
 
