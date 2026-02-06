@@ -250,7 +250,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
           .attr("y", yScale(cluster.l))
           .attr("dy", "0.35em")
           .attr("text-anchor", "middle")
-          .attr("font-size", "11px")
+          .attr("font-size", "12px")
           .attr("font-weight", "600")
           // Use CSS variables for text contrast based on lightness
           .attr("fill", isLight ? "var(--color-chart-text-cell-light)" : "var(--color-chart-text-cell-dark)")
@@ -376,11 +376,11 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
   return (
     
-    //max-w-[...px] 可以改圖表的大小感
-    //改不動或有必要的話，去 App.tsx 找以下「右側容器」的width、height
-    // App.tsx 「右側容器」長得會像 <SemanticMap hue={viewHueAngle} data={entries} currentColor={currentColor} width={448} height={408} />
-
-    <div className="relative flex justify-center w-full max-w-[400px] mx-auto">
+    // RWD 邏輯更新：
+    // Mobile: w-[calc(100%+3rem)] -mx-6 (維持滿版出血)
+    // Desktop: lg:max-w-[400px] (維持原本雙欄設計的尺寸)
+    
+    <div className="relative flex justify-center w-[calc(100%+3rem)] -mx-6 max-w-[480px] lg:max-w-[416px]">
       <svg 
         ref={svgRef} 
         viewBox={`0 0 ${width} ${height}`}
@@ -389,7 +389,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
       
       {/* Enhanced Tooltip Overlay - Updated to match Toast style */}
       {hoveredCluster && (
-        <div className="absolute top-4 left-4 bg-theme-toast-bg backdrop-blur-md p-4 rounded-2xl shadow-xl shadow-slate-700/10 dark:shadow-black/50 border border-theme-toast-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[160px]">
+        <div className="absolute bottom-6 right-2 bg-theme-toast-bg backdrop-blur-md p-4 rounded-2xl shadow-xl shadow-slate-700/10 dark:shadow-black/50 border border-theme-toast-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[160px]">
           <div className="font-bold text-theme-text-main mb-1 flex items-center gap-2">
             <span className="w-5 h-5 rounded-full border border-white dark:border-white/50 shadow-sm" style={{backgroundColor: toCss({l: hoveredCluster.l, c: hoveredCluster.c, h: hue})}}></span>
             {hoveredCluster.displayLabel}
