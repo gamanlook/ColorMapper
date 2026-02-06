@@ -1,332 +1,617 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Swirl } from '@paper-design/shaders-react'; // Import Shader
+import { GrainGradient } from '@paper-design/shaders-react'; // Import Shader
+import { OklchColor, HueDefinition } from '../types';
+import { toCss, suggestPrefixes, oklchToHex, generateShaderPalette } from '../utils';
+import { PREFIXES } from '../constants';
+import { validateColorName } from '../services/geminiService';
 
-import { HUES, MAX_CHROMA, PREFIXES, SEMANTIC_SPECS } from './constants';
-import { ColorEntry, OklchColor } from './types';
-
-// Generate a CSS string
-export const toCss = (color: OklchColor): string => {
-  return `oklch(${color.l * 100}% ${color.c} ${color.h})`;
-};
-
-// --- GAMUT & CONVERSION LOGIC ---
-
-// Convert OKLch -> OKLab -> Linear sRGB to check gamut
-export const oklchToLinearSrgb = (l: number, c: number, h: number): [number, number, number] => {
-  const hRad = h * (Math.PI / 180);
-  const a = c * Math.cos(hRad);
-  const b = c * Math.sin(hRad);
-
-  const l_ = l + 0.3963377774 * a + 0.2158037573 * b;
-  const m_ = l - 0.1055613458 * a - 0.0638541728 * b;
-  const s_ = l - 0.0894841775 * a - 1.2914855480 * b;
-
-  const l3 = l_ * l_ * l_;
-  const m3 = m_ * m_ * m_;
-  const s3 = s_ * s_ * s_;
-
-  const r = +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3;
-  const g = -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3;
-  const blue = -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3;
-
-  return [r, g, blue];
-};
-
-// Convert OKLch to Hex string (for AI reference & UI Display)
-// NOTE: This uses "Clipping" method (maintains Hue/Chroma numbers but clips RGB).
-// Good for text, but can cause hue shifts or posterization in gradients.
-export const oklchToHex = (l: number, c: number, h: number): string => {
-  const [rLin, gLin, bLin] = oklchToLinearSrgb(l, c, h);
-
-  // Helper: Gamma correction for sRGB (Linear -> sRGB)
-  const toSrgb = (val: number) => {
-    const x = Math.max(0, Math.min(1, val)); // Clamp 0-1
-    return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
-  };
-
-  const r = Math.round(toSrgb(rLin) * 255);
-  const g = Math.round(toSrgb(gLin) * 255);
-  const b = Math.round(toSrgb(bLin) * 255);
-
-  const toHex = (n: number) => n.toString(16).padStart(2, '0').toUpperCase();
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
-
-// Check if an OKLch color is within the sRGB gamut
-export const inGamut = (l: number, c: number, h: number): boolean => {
-  const EPS = -0.0001;
-  const MAX = 1.0001;
-  const [r, g, b] = oklchToLinearSrgb(l, c, h);
-  return r >= EPS && r <= MAX && g >= EPS && g <= MAX && b >= EPS && b <= MAX;
-};
-
-// Binary search to find the maximum Chroma for a given Lightness and Hue
-export const findMaxChroma = (l: number, h: number): number => {
-  if (l <= 0.001 || l >= 0.999) return 0;
-  let low = 0;
-  let high = 0.4;
-  let mid = 0;
-
-  for (let i = 0; i < 15; i++) {
-    mid = (low + high) / 2;
-    if (inGamut(l, mid, h)) {
-      low = mid;
-    } else {
-      high = mid;
-    }
-  }
-  return low;
-};
-
-// ✨ NEW: Convert OKLch to Hex using Gamut Mapping (Chroma Reduction)
-// This preserves Lightness and Hue by reducing Chroma until it fits sRGB.
-// Essential for Shaders/Gradients to prevent clipping artifacts (posterization).
-export const oklchToGamutHex = (l: number, c: number, h: number): string => {
-  // 1. Check if valid
-  if (inGamut(l, c, h)) {
-    return oklchToHex(l, c, h);
-  }
-  // 2. If out of gamut, find the limitC (max chroma) for this L/H
-  const limitC = findMaxChroma(l, h);
-  // 3. Use the safe chroma to generate Hex
-  return oklchToHex(l, limitC, h);
-};
-
-// Helper to find the Lightness that allows the absolute maximum chroma for a hue
-export const findPeakLightnessForHue = (h: number): { l: number, maxC: number } => {
-  let peakL = 0.5;
-  let absMaxC = 0;
-  for (let l = 0.1; l <= 0.95; l += 0.05) {
-    const c = findMaxChroma(l, h);
-    if (c > absMaxC) {
-      absMaxC = c;
-      peakL = l;
-    }
-  }
-  return { l: peakL, maxC: absMaxC };
+interface ColorTesterProps {
+  color: OklchColor;
+  hueDef: HueDefinition;
+  onSubmit: (name: string, isSuspicious: boolean, reason?: string, feedback?: string) => void;
+  onSkip: () => void;
 }
 
-// 全面採用「投點法 (Rejection Sampling)」
-// 讓所有區域的顏色分佈都符合面積比例，避免「卡在邊緣」或「奇怪的髒色」。
-export const generateRandomColor = (hueAngle: number): OklchColor => {
-  const mode = Math.random();
-  let l: number, c: number;
-  let isValid = false;
-  let tryCount = 0;
-  const MAX_TRIES = 100;
+const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
+const MAX_CHARS = 23;
 
-  // 輔助函式：投點邏輯
-  const trySample = (minL: number, maxL: number, minC: number, maxC: number) => {
-    // 1. 在矩形範圍內隨機投點
-    const randL = minL + Math.random() * (maxL - minL);
-    const randC = minC + Math.random() * (maxC - minC);
-    // 2. 檢查是否落在 sRGB 形狀內
-    const limitC = findMaxChroma(randL, hueAngle);
-    if (randC <= limitC) {
-      return { l: randL, c: randC, success: true };
-    }
-    return { l: randL, c: randC, success: false }; // 失敗，重投
-  };
+// --- 有關計算題目上的彎曲文字 ---
+// 這裡定義文字圓弧的半徑 (相對於 100x100 的容器)
+// 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
+const TEXT_PATH_RADIUS = 44;
+// 想要的字體像素大小 (Target Pixel Size)：
+// 當圓形很寬時 (>= 350px)，字體要是 11px
+// 當圓形很窄時 (<= 225px)，字體要是 8px
+// (註：336/210 是推算出的「圓形寬度」)
+const MAX_FONT_PX = 11;
+const MIN_FONT_PX = 8;
+const MAX_WIDTH_BREAKPOINT = 350;
+const MIN_WIDTH_BREAKPOINT = 225;
 
-  // --- MODE 1: PALE / WHITE / HIGH KEY ---
-  // 亮色區：想稍微多一點 (14%)
-  // L: 0.85 ~ 0.99 (很亮)
-  // C: 0.00 ~ 0.18 (極限)
-  if (mode < 0.14) {
-    while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.85, 0.99, 0.00, 0.18);
-      if (res.success) { l = res.l; c = res.c; isValid = true; }
-      tryCount++;
-    }
-    if (!isValid) { l = 0.95; c = 0.02; } // Fallback
-  }
-  // --- MODE 2: DARK / SHADOWS ---
-  // 深色區：想稍微少一點，避免一直出髒色 (6%)
-  // L: 0.05 ~ 0.30 (很暗)
-  // C: 0.00 ~ 0.18 (極限)
-  else if (mode < 0.20) {
-    while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.05, 0.30, 0.00, 0.18);
-      if (res.success) { l = res.l; c = res.c; isValid = true; }
-      tryCount++;
-    }
-    if (!isValid) { l = 0.15; c = 0.02; } // Fallback
-  }
+// 顏文字庫
+const KAOMOJI = [
+  '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)',
+  '( ˙꒳˙ )', '(  ᐛ  )', '( ˙ᗜ˙ )'
+];
 
-  // --- MODE 3: GRAY / MUTED ---
-  // 灰色區：中等機率 (30%)
-  // L: 0.22 ~ 0.92 (深到亮)
-  // C: 0.00 ~ 0.12 (灰到霧)
-  else if (mode < 0.50) {
-    while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.22, 0.92, 0.00, 0.12);
-      if (res.success) { l = res.l; c = res.c; isValid = true; }
-      tryCount++;
-    }
-    if (!isValid) { l = 0.60; c = 0.06; } // Fallback
-  }
+const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
+  const [bgBlack, setBgBlack] = useState(false);
+  const [showHex, setShowHex] = useState(false);
+  const [inputName, setInputName] = useState('');
+  const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // UX State: Skip Button Hint
+  const [showSkipHint, setShowSkipHint] = useState(false);
+  // Ref to track if user has EVER used skip in this session (persists across renders)
+  const hasUsedSkipRef = useRef(false);
+  // Ref to track latest input name for use in timeouts (avoids stale closures)
+  const inputNameRef = useRef(inputName);
+  // Ref to track if the 4-second wait is over for the current color
+  const hintTimerExpiredRef = useRef(false);
 
-  // --- MODE 4: STANDARD / VIVID ---
-  // 鮮豔/一般區：主力題目 (50%)
-  // L: 0.20 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
-  // C: 0.06 ~ 0.32 (避開灰，往高飽和投)
-  else {
-    while (!isValid && tryCount < MAX_TRIES) {
-      // 這裡 Chroma 上限給到 0.32 其實很大(超出 sRGB 很多)，
-      // 但透過投點法，它會自動貼合 sRGB 的邊緣形狀，而不會死死卡在邊緣。
-      const res = trySample(0.20, 0.98, 0.06, 0.32);
-      if (res.success) { l = res.l; c = res.c; isValid = true; }
-      tryCount++;
-    }
-    if (!isValid) { l = 0.60; c = 0.10; } // Fallback
-  }
+  // Copy Feedback State
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
-  // 回傳結果
-  return { l: l!, c: c!, h: hueAngle };
-};
+  // Shader Random Offset State
+  const [randomOffset, setRandomOffset] = useState(0);
 
-// --- SEMANTIC PREFIX LOGIC ---
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  
+  // 只使用這一個 Ref 來監聽「圓形視覺區」
+  // 不再監聽外層 Container，直接綁定在 w-3/4 那個圓球上
+  const visualStageRef = useRef<HTMLDivElement>(null);
 
-export const suggestPrefixes = (color: OklchColor): string[] => {
-  const { l, c } = color;
+  // 優化：直接儲存計算好的 SVG Font Size，而不是容器寬度
+  const [svgFontSize, setSvgFontSize] = useState(3);
+  // 用於 Shader 的像素尺寸 (預設 300 避免 0)
+  const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
 
-  // Use the centralized SEMANTIC_SPECS from constants.ts
-  const weightedResults = SEMANTIC_SPECS.map(item => {
-    const dL = item.l - l;
-    const dC = (item.c - c) * 2.5; // Weight chroma differences more heavily
-    const distance = Math.sqrt(dL * dL + dC * dC);
-    return { ...item, distance };
-  });
+  const hasInteractedRef = useRef(false);
 
-  // Sort by nearest distance
-  weightedResults.sort((a, b) => a.distance - b.distance);
-
-  // Return top 6 distinct prefixes
-  return weightedResults.slice(0, 6).map(item => item.prefix);
-};
-
-// Generate seed data with strictly in-gamut colors and GEOMETRY-AWARE distribution
-export const generateSeedData = (): ColorEntry[] => {
-  const entries: ColorEntry[] = [];
-  HUES.forEach(hue => {
-    const { l: peakL, maxC: peakMaxC } = findPeakLightnessForHue(hue.angle);
-
-    const addRelativeCluster = (count: number, targetL: number, lSpread: number, chromaFactor: number, cSpread: number, prefix: string) => {
-      for(let i=0; i<count; i++) {
-        let l = targetL + (Math.random() - 0.5) * lSpread;
-        l = Math.max(0.05, Math.min(0.95, l));
-
-        const boundaryC = findMaxChroma(l, hue.angle);
-        let targetC = boundaryC * chromaFactor;
-        let finalC = targetC + (Math.random() - 0.5) * (boundaryC * cSpread);
-        finalC = Math.max(0, Math.min(boundaryC - 0.001, finalC));
-
-        const name = `${prefix}${hue.nameZH}`;
-        entries.push(createFakeEntry(hue.angle, l, finalC, name, prefix));
+  // Sync ref with state whenever input changes
+  useEffect(() => {
+    inputNameRef.current = inputName;
+    if (inputName) {
+      // User is typing: Hide hint immediately
+      setShowSkipHint(false);
+    } else {
+      // ✨ FIX: User cleared input.
+      // If the 4s timer has ALREADY expired (and user hasn't learned skip yet),
+      // restore the hint immediately.
+      if (hintTimerExpiredRef.current && !hasUsedSkipRef.current) {
+        setShowSkipHint(true);
       }
+    }
+  }, [inputName]);
+
+  useEffect(() => {
+    setInputName('');
+    // Important: Reset ref immediately for the new cycle
+    inputNameRef.current = '';
+    setSuggestedPrefixesList(suggestPrefixes(color));
+    // Reset hint state for new color
+    setShowSkipHint(false);
+    hintTimerExpiredRef.current = false; // Reset timer status
+    setCopyFeedback(null); // Reset copy feedback
+    
+    // 每次換題，就骰一個 -1 到 1 之間的數字，讓紋理有點變化
+    setRandomOffset((Math.random() * 2) - 1);
+
+    // 4-second timer for progressive disclosure
+    const timer = setTimeout(() => {
+      hintTimerExpiredRef.current = true; // Mark timer as expired
+
+      // Use Ref to check the LATEST value
+      if (!inputNameRef.current && !hasUsedSkipRef.current) {
+        setShowSkipHint(true);
+      }
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [color]);
+
+  // ✨ 優化後的 ResizeObserver：直覺式流體排版
+  useEffect(() => {
+    if (!visualStageRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // 取得圓形當下的實際寬度
+        const containerWidth = entry.contentRect.width;
+        
+        if (containerWidth > 0) {
+          // --- 更新 Shader 尺寸 ---
+          // 直接用實際寬度，達成 1:1 像素對應
+          setDimensions({ width: containerWidth, height: containerWidth });
+
+          let targetPixelSize = MIN_FONT_PX;
+
+          if (containerWidth >= MAX_WIDTH_BREAKPOINT) {
+            targetPixelSize = MAX_FONT_PX;
+          } else if (containerWidth <= MIN_WIDTH_BREAKPOINT) {
+            targetPixelSize = MIN_FONT_PX;
+          } else {
+            // 線性插值：算出中間值
+            const percentage = (containerWidth - MIN_WIDTH_BREAKPOINT) / (MAX_WIDTH_BREAKPOINT - MIN_WIDTH_BREAKPOINT);
+            targetPixelSize = MIN_FONT_PX + (percentage * (MAX_FONT_PX - MIN_FONT_PX));
+          }
+
+          // --- 自動換算成 SVG 單位 ---
+          // 公式原理： (目標像素 / 容器寬度) = (SVG數值 / 100)
+          // 所以：SVG數值 = (目標像素 * 100) / 容器寬度
+          const calculatedSvgSize = (targetPixelSize * 100) / containerWidth;
+          
+          setSvgFontSize(calculatedSvgSize);
+        }
+      }
+    });
+
+    resizeObserver.observe(visualStageRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // 產生 Shader 需要的顏色組
+  const { shaderColors, shaderBack } = useMemo(() => generateShaderPalette(color), [color]);
+
+  const normalizedInput = inputName.replace(/艷/g, '豔');
+  const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
+
+  const scrollToBottom = () => {
+    const doScroll = () => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     };
 
-    // 1. PEAK / TIP CLUSTER
-    let tipPrefix = '正';
-    if (peakL >= 0.88) tipPrefix = '螢光';
-    else if (peakL >= 0.80) tipPrefix = '亮';
-    else if (peakL <= 0.35) tipPrefix = '濃';
-    else if (peakMaxC > 0.28) tipPrefix = '豔';
-    else if (peakMaxC > 0.22) tipPrefix = '鮮';
-    else tipPrefix = '正';
-    addRelativeCluster(2, peakL, 0.05, 0.9, 0.05, tipPrefix);
-
-    // 2. LIGHT (淺)
-    const lightL = peakL + (0.98 - peakL) * 0.5;
-    addRelativeCluster(2, lightL, 0.05, 0.4, 0.1, '淺');
-
-    // 3. DEEP (深)
-    const deepL = peakL * 0.5;
-    addRelativeCluster(2, deepL, 0.05, 0.5, 0.1, '深');
-
-    // 4. MIST (霧)
-    addRelativeCluster(2, peakL, 0.1, 0.20, 0.05, '霧');
-
-  });
-
-  return entries;
-};
-
-const createFakeEntry = (h: number, l: number, c: number, name: string, prefix: string): ColorEntry => {
-  return {
-    id: Math.random().toString(36).substr(2, 9),
-    color: { h, l, c },
-    name,
-    votes: 1,
-    isSuspicious: false,
-    timestamp: Date.now(),
-    isSeed: true
-  }
-}
-
-// Helper: Linear Map (Clamped)
-const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
-  if (value <= inMin) return outMin;
-  if (value >= inMax) return outMax;
-  const percentage = (value - inMin) / (inMax - inMin);
-  return outMin + percentage * (outMax - outMin);
-};
-
-// 產生 Shader Palette 需要的顏色組
-// 使用ToGamut，不使用clip，而是用同亮度的極限C取代
-// 使用動態亮度，越亮的題目不需要太大的對比，越暗的題目需要強化對比
-export const generateShaderPalette = (color: OklchColor): { shaderColors: string[], shaderBack: string } => {
-  
-  // Dynamic Contrast Configuration
-  const SHADER_PARAMS = {
-    LOW_L_LIMIT: 0.05,
-    HIGH_L_LIMIT: 0.88,
-    // Darker: 深色題目(L5%)要更多加深、更多反光，淺色題目(L88%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.0375, MIN: 0.013 },
-    LIGHTER_OFFSET: { MAX: 0.0375, MIN: 0.012 }
+    if (!hasInteractedRef.current) {
+      setTimeout(doScroll, 1);
+      setTimeout(doScroll, 500);
+      hasInteractedRef.current = true;
+    } else {
+      setTimeout(doScroll, 150);
+    }
   };
 
-  // 計算動態 Offset
-  const dynamicDarkerOffset = mapRange(
-    color.l, 
-    SHADER_PARAMS.LOW_L_LIMIT, 
-    SHADER_PARAMS.HIGH_L_LIMIT, 
-    SHADER_PARAMS.DARKER_OFFSET.MAX, 
-    SHADER_PARAMS.DARKER_OFFSET.MIN
-  );
-
-  const dynamicLighterOffset = mapRange(
-    color.l, 
-    SHADER_PARAMS.LOW_L_LIMIT, 
-    SHADER_PARAMS.HIGH_L_LIMIT, 
-    SHADER_PARAMS.LIGHTER_OFFSET.MAX, 
-    SHADER_PARAMS.LIGHTER_OFFSET.MIN
-  );
-
-  // 基礎色 (baseHex)
-  const baseHex = oklchToGamutHex(color.l, color.c, color.h);
-
-  // 最暗 (darkestHex) - 使用 Offset * 2
-  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2));
-  const darkestC = Math.max(0, color.c + 0.0056);
-  const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
-
-  // 暗一點、濃一點 (darkerHex) - 使用 Offset * 1
-  const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset));
-  const darkerC = Math.max(0, color.c + 0.0028);
-  const darkerHex = oklchToGamutHex(darkerL, darkerC, color.h);
-
-  // 亮一點 (lighterHex) - 使用 Offset * 1
-  const lighterL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset));
-  const lighterC = Math.max(0, color.c - 0.0012);
-  const lighterHex = oklchToGamutHex(lighterL, lighterC, color.h);
-
-  // 最亮 (lightestHex) - 使用 Offset * 2
-  const lightestL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset * 2));
-  const lightestC = Math.max(0, color.c - 0.0032);
-  const lightestHex = oklchToGamutHex(lightestL, lightestC, color.h);
-
-  return {
-    // 順序: 亮到暗，背景是最上方的顏色 (lightestHex)
-    shaderColors: [lighterHex, baseHex, darkerHex, darkestHex],
-    shaderBack: lightestHex
+  const handlePrefixClick = (prefix: string) => {
+    const currentName = inputName;
+    let newName = prefix;
+    const existingPrefix = PREFIXES.find(p => currentName.startsWith(p));
+    if (existingPrefix) {
+       newName = prefix + currentName.substring(existingPrefix.length);
+    } else {
+       newName = prefix + currentName;
+    }
+    if (newName.replace(/\s/g, '').length <= MAX_CHARS) {
+      setInputName(newName);
+    } else {
+      return;
+    }
+    if (textareaRef.current) {
+      textareaRef.current.focus({ preventScroll: true });
+      // 保持游標在最後
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const len = newName.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      scrollToBottom();
+    }
   };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    // 簡單過濾換行符，保持單純
+    const cleanVal = val.replace(/\n/g, '');
+    const nonSpaceCount = cleanVal.replace(/\s/g, '').length;
+
+    if (nonSpaceCount <= MAX_CHARS || cleanVal.length < inputName.length) {
+      setInputName(cleanVal);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // ⚠️⚠️⚠️ CRITICAL FIX FOR IME (Input Method Editor) ⚠️⚠️⚠️
+    // ⚠️ DO NOT REMOVE THIS CHECK! 請勿刪除此檢查！⚠️
+    // 當使用者正在使用注音/拼音輸入法「選字」並按下 Enter 時，isComposing 會是 true。
+    // 這時候的 Enter 是為了確認選字，絕對不能送出表單。
+    if (e.nativeEvent.isComposing) {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      // 阻止 textarea 預設的換行行為
+      e.preventDefault();
+      // 使用 requestSubmit() 模擬原生表單送出
+      // 這會觸發 <form> 的 onSubmit 事件
+      formRef.current?.requestSubmit();
+    }
+  };
+  const handleSkipClick = () => {
+    // Mark that the user has learned the skip function
+    hasUsedSkipRef.current = true;
+    setShowSkipHint(false); // Immediately hide hint
+    onSkip();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputName.trim()) return;
+
+    setIsSubmitting(true);
+
+    let cleanedName = inputName.trim().replace(/艷/g, '豔');
+    if (cleanedName.endsWith('色') && cleanedName.length > 1) {
+      cleanedName = cleanedName.slice(0, -1);
+    }
+
+    const isPrefixOnly = PREFIXES.includes(cleanedName) && !STANDALONE_ALLOWED.includes(cleanedName);
+
+    if (isPrefixOnly) {
+      onSubmit(
+        cleanedName,
+        true,
+        "PREFIX_ONLY",
+        `後面好像少了顏色？試試看：${cleanedName}紅、${cleanedName}藍...`
+      );
+      setIsSubmitting(false);
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus({ preventScroll: true });
+          const len = inputName.length;
+          textareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+      return;
+    }
+
+    try {
+      const validation = await validateColorName(color, cleanedName, hueDef.nameEN);
+      onSubmit(cleanedName, validation.isSuspicious, validation.reason, validation.feedback);
+    } catch (err) {
+      console.error(err);
+      onSubmit(cleanedName, false, undefined, "命名已收錄！");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const currentColorCss = toCss(color);
+  const textColorClass = color.l > 0.70 ? 'text-black/55' : 'text-white/70';
+  const hexValue = oklchToHex(color.l, color.c, color.h);
+  // Base Text (The Color Code)
+  const baseDisplayText = showHex
+    ? hexValue
+    : `oklch(${(color.l*100).toFixed(1)}% ${color.c.toFixed(3)} ${color.h})`;
+  // Rendered Text (Either Feedback or Color Code)
+  const renderedText = copyFeedback || baseDisplayText;
+  const hasContent = inputName.trim().length > 0;
+
+  // Calculate SVG Path for Curved Text
+  const pathStartX = 50 - TEXT_PATH_RADIUS;
+  const pathEndX = 50 + TEXT_PATH_RADIUS;
+  const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
+
+  // 計算圓形顏色題目的高光透明度
+  // 1. L >= 0.275 : 題目太亮了，隱藏高光 (0)
+  // 2. L <= 0.15 : 題目太黑，維持高光最大強度 (0.40)
+  // 3. 0.15 < L < 0.275 : 線性遞減 (Interpolation)
+  //    分母 0.125 是因為 (0.275 - 0.15) 的區間長度
+  const highlightOpacity = color.l >= 0.25
+    ? 0
+    : color.l <= 0.15
+      ? 0.5
+      : 0.5 * (1 - ((color.l - 0.15) / 0.125));
+
+  // Handle Copy Click
+  const handleCopy = () => {
+    // If feedback is showing, ignore clicks
+    if (copyFeedback) return;
+    navigator.clipboard.writeText(baseDisplayText);
+    const randomKaomoji = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
+    setCopyFeedback(`Copied! ${randomKaomoji}`);
+    setTimeout(() => {
+      setCopyFeedback(null);
+    }, 1000);
+  };
+
+  return (
+    <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
+
+      {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
+
+      {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
+      <div
+        className={`
+          relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
+          flex items-center justify-center
+          ${bgBlack ? 'bg-black' : 'bg-white/85'}
+      `}>
+        {/* Toggle Hex/OKLch Button */}
+        <button
+          onClick={() => setShowHex(!showHex)}
+          className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-20
+            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+          `}
+          title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
+        >
+          {showHex ? (
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <polyline points="1 5 1 19 5 19" />
+               <polyline points="17.6666 5 17.6666 19" />
+               <polyline points="17.6666 12 23 12" />
+               <polyline points="23 5 23 19" />
+                 <path d="M13.8398 8.37988C13.7625 7.64464 13.6671 6.8699 13.3242 6.20312C12.878 5.33562 11.9882 4.75 11 4.75C10.0118 4.75 9.12203 5.33562 8.67578 6.20312C8.33288 6.8699 8.23755 7.64464 8.16016 8.37988C8.05798 9.35074 8 10.6296 8 12C8 13.3704 8.05798 14.6493 8.16016 15.6201C8.23755 16.3554 8.33288 17.1301 8.67578 17.7969C9.12203 18.6644 10.0118 19.25 11 19.25C11.9882 19.25 12.878 18.6644 13.3242 17.7969C13.6671 17.1301 13.7625 16.3554 13.8398 15.6201" />
+             </svg>
+          ) : (
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <line x1="5.25" y1="9" x2="19.5" y2="9" />
+               <line x1="4.5" y1="15" x2="18.75" y2="15" />
+               <line x1="10" y1="4" x2="8" y2="20" />
+               <line x1="16" y1="4" x2="14" y2="20" />
+             </svg>
+          )}
+        </button>
+
+        {/* Toggle BG Color Button */}
+        <button
+          onClick={() => setBgBlack(!bgBlack)}
+          className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-20
+            ${bgBlack ? 'bg-white/10 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/15 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+          `}
+          title="切換背景顏色"
+        >
+          {bgBlack ? (
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+             </svg>
+          ) : (
+             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M20.96724 12.76724A9 9 0 1 1 11.23276 3.03276A7 7 0 0 0 20.96724 12.76724z" />
+             </svg>
+          )}
+        </button>
+
+        <div
+          // 關鍵：Ref 移到這裡！
+          ref={visualStageRef}
+          className="w-4/5 h-4/5 rounded-full shadow-[0_36px_64px_-9px_rgba(0,0,0,0.20)] transition-all duration-300 ease-out relative group overflow-hidden"
+          style={{ backgroundColor: currentColorCss }}
+        >
+           {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
+           <div className="absolute inset-0 z-0">
+             <GrainGradient
+               width={dimensions.width}
+               height={dimensions.height}
+               colors={shaderColors}
+               colorBack={shaderBack}
+               softness={0.05}
+               intensity={2}
+               noise={0}
+               shape="wave"
+               speed={3}
+               scale={1}
+               offsetX={randomOffset}
+               offsetY={0}
+             />
+           </div>
+
+           {/* 高光層 (Highlight Layer) - 放在 Shader 之上 (z-10) */}
+           {bgBlack && highlightOpacity > 0 && (
+             <div
+               className="
+                 absolute inset-0 rounded-full pointer-events-none z-10
+                 mix-blend-plus-lighter
+               "
+               style={{
+                 boxShadow: `inset 0 0.3px 1.5px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`
+               }}
+             ></div>
+           )}
+
+           {/* SVG Text Layer (z-20) */}
+           <svg
+             viewBox="0 0 100 100"
+             className={`absolute inset-0 w-full h-full overflow-visible pointer-events-none ${textColorClass}`}
+           >
+              <defs>
+                 <path id="text-curve" d={curvePathD} fill="none" />
+              </defs>
+              <text
+                fontSize={svgFontSize}
+                className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                onClick={handleCopy}
+              >
+                 <textPath href="#text-curve" startOffset="50%">
+                    {renderedText}
+                 </textPath>
+              </text>
+           </svg>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-4">
+
+        {/* Suggested Prefixes */}
+        <div
+          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-5 w-[calc(100%+3rem)]"
+          style={{
+            WebkitMaskImage: `linear-gradient(to right,
+              transparent,
+              rgba(0,0,0, 0.1) 4px,
+              rgba(0,0,0, 0.4) 10px,
+              rgba(0,0,0, 0.8) 18px,
+              black 24px,
+              black calc(100% - 24px),
+              rgba(0,0,0, 0.8) calc(100% - 18px),
+              rgba(0,0,0, 0.4) calc(100% - 10px),
+              rgba(0,0,0, 0.1) calc(100% - 4px),
+              transparent
+            )`,
+            maskImage: `linear-gradient(to right,
+              transparent,
+              rgba(0,0,0, 0.1) 4px,
+              rgba(0,0,0, 0.4) 10px,
+              rgba(0,0,0, 0.8) 18px,
+              black 24px,
+              black calc(100% - 24px),
+              rgba(0,0,0, 0.8) calc(100% - 18px),
+              rgba(0,0,0, 0.4) calc(100% - 10px),
+              rgba(0,0,0, 0.1) calc(100% - 4px),
+              transparent
+            )`
+          }}
+        >
+          {suggestedPrefixesList.map(prefix => (
+            <button
+              key={prefix}
+              type="button"
+              onClick={() => handlePrefixClick(prefix)}
+              onMouseDown={(e) => e.preventDefault()}
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 text-[0.75rem] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+            >
+              {prefix}
+            </button>
+          ))}
+        </div>
+
+        {/* Auto-growing Textarea Form (Flexbox) */}
+        <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
+          {/*
+            Container Setup:
+            - Flexbox (items-end) allows button to stay at bottom while input grows
+            - rounded 圓角 1.875rem = [ 輸入框總高 3.75rem ]/2 = [ icon高度 1.125rem(18px) + 圓按鈕上下padding 1.5rem(p-3*2, 24px) + 輸入框上下padding 1rem(p-2*2, 16px) + border線粗 0.125rem(1px*2) ]/2
+            - gap 文字與按鈕們之間的距離
+            - left padding 文字與邊緣
+            - top/bottom/right padding 圓形按鈕與邊緣
+          */}
+          <div className="flex items-end gap-2 w-full rounded-[1.875rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
+            {/*
+              Input Area (Textarea + Ghost)
+              - flex-1 to fill remaining space
+              - min-w-0 to prevent flex item overflow
+              - ✨ self-stretch: This is the KEY. It forces the text container to height-match
+                the adjacent button if the button is taller.
+                Combined with 'items-center' (on the grid itself), single-line text will center nicely
+                against a huge button, while still allowing the button to stay at the bottom for multi-line text.
+            */}
+            <div className="grid flex-1 min-w-0 relative items-center self-stretch">
+              {/*
+                 Ghost Layer (Visuals):
+                 - Controls height via content
+                 - py-1.5 (6px) vertical padding
+                 - px-0 horizontal padding (container handles left indentation)
+                 - whitespace-pre-wrap & break-words: ensures long text breaks line
+              */}
+              <div
+                className="col-start-1 row-start-1 px-0 py-1.5 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
+                aria-hidden="true"
+              >
+                 <span className={`${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
+                    {inputName || '試試自己取名'}
+                 </span>
+                 {showSuffixHint && (
+                    <span className="text-theme-text-muted text-lg ml-0.5">
+                       什麼色？
+                    </span>
+                 )}
+                 {/* Zero-width space + newline to ensure height growth */}
+                 <span className="inline-block w-0">&#8203;</span>
+              </div>
+
+              {/*
+                 Interactive Layer (Textarea):
+                 - Matches ghost layer positioning and padding exactly
+                 - Added 'whitespace-pre-wrap & break-words' to match Ghost Layer behavior
+              */}
+              <textarea
+                ref={textareaRef}
+                name="color-input"
+                rows={1}
+                value={inputName}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onFocus={scrollToBottom}
+                onClick={scrollToBottom}
+                placeholder=""
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
+                enterKeyHint="send"
+                className={`
+                  col-start-1 row-start-1 w-full h-full
+                  px-0 py-1.5 text-lg
+                  bg-transparent border-none outline-none
+                  resize-none overflow-hidden
+                  text-transparent caret-theme-text-main
+                  whitespace-pre-wrap break-words
+                `}
+              />
+            </div>
+
+            {/*
+               Action Button:
+               - Flex item (no longer absolute)
+               - flex-none to prevent shrinking
+               - self-end (aligned to bottom)
+               - Removed 'transition-colors' to prevent purple-bg flash when text deleted
+            */}
+            <button
+              type={hasContent ? "submit" : "button"}
+              onClick={hasContent ? undefined : handleSkipClick}
+              disabled={isSubmitting}
+              className={`
+                flex-none p-3 rounded-full
+                flex items-center justify-center
+                ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted'}
+                hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed
+              `}
+            >
+              {isSubmitting ? (
+                // Spinner
+                <svg className="animate-spin w-[1.125rem] h-[1.125rem] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : hasContent ? (
+                // Submit Icon (Arrow Up)
+                <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="5 11 12 4 19 11" />
+                  <line x1="12" y1="4" x2="12" y2="20" />
+                </svg>
+              ) : (
+                // Skip Icon (Refresh) with Progressive Disclosure Text
+                <>
+                  <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M 20 12 A 8 8 0 1 1 15.17718 4.65796 M 13 1.15 L 16 4.15 L 13 7.15" />
+                  </svg>
+                  {/* Hug-like Animation Trick */}
+                  <span
+                     className={`
+                       overflow-hidden whitespace-nowrap text-[0.9375rem]/4
+                       transition-all duration-500 ease-in-out
+                       ${showSkipHint && !inputName
+                          ? 'max-w-[4em] opacity-100 ml-0.5'
+                          : 'max-w-0 opacity-0 ml-0'
+                       }
+                     `}
+                  >
+                     略過
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
+
+export default ColorTester;
