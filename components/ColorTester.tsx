@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Swirl } from '@paper-design/shaders-react'; // Import Shader
 import { GrainGradient } from '@paper-design/shaders-react'; // Import Shader
@@ -56,6 +57,15 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   // Shader Random Offset State
   const [randomOffset, setRandomOffset] = useState(0);
 
+  // Shader Key for forcing re-render on visibility change
+  const [shaderKey, setShaderKey] = useState(0);
+  
+  // Controls whether the shader component is mounted
+  const [isShaderVisible, setIsShaderVisible] = useState(true);
+  
+  // Tracks when the user left the tab/app
+  const lastHiddenTimeRef = useRef(0);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   
@@ -69,6 +79,42 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
 
   const hasInteractedRef = useRef(false);
+
+  // 監聽視窗喚醒事件 (解決 WebGL Context Loss 白畫面問題)
+  // 做法：時間差判斷 + 暴力重啟
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // 1. 記下離開時間
+        lastHiddenTimeRef.current = Date.now();
+      } else if (document.visibilityState === 'visible') {
+        // 2. 算算離開多久
+        const timeGone = Date.now() - lastHiddenTimeRef.current;
+        
+        // 3. 判斷是否需要暴力重啟 (門檻: 60秒)
+        if (timeGone > 60000) {
+          // 離開超過一分鐘，Android 可能殺掉了 GPU 資源
+          console.log("Shader Context Lost Prevention: Performing Hard Restart");
+          
+          // 暴力重啟法：先殺掉 DOM
+          setIsShaderVisible(false);
+          
+          // 稍微休息一下讓瀏覽器喘口氣 (200ms)
+          setTimeout(() => {
+            // 再復活，並同時換 key 確保是全新的 WebGL Context
+            setShaderKey(k => k + 1); 
+            setIsShaderVisible(true);
+          }, 200);
+        } else {
+          // < 60秒：大概只是回個訊息，GPU 應該還活著。
+          // 什麼都不做，保持畫面流暢，不要閃爍。
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
 
   // Sync ref with state whenever input changes
   useEffect(() => {
@@ -383,20 +429,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         >
            {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
            <div className="absolute inset-0 z-0">
-             <GrainGradient
-               width={dimensions.width}
-               height={dimensions.height}
-               colors={shaderColors}
-               colorBack={shaderBack}
-               softness={0.05}
-               intensity={2}
-               noise={0}
-               shape="wave"
-               speed={3}
-               scale={1}
-               offsetX={randomOffset}
-               offsetY={0}
-             />
+             {isShaderVisible && (
+               <GrainGradient
+                 key={shaderKey} // 當 key 改變時，強制重新渲染 Shader 以解決 Context Loss
+                 width={dimensions.width}
+                 height={dimensions.height}
+                 colors={shaderColors}
+                 colorBack={shaderBack}
+                 softness={0.05}
+                 intensity={2}
+                 noise={0}
+                 shape="wave"
+                 speed={3}
+                 scale={1}
+                 offsetX={randomOffset}
+                 offsetY={0}
+               />
+             )}
            </div>
 
            {/* 高光層 (Highlight Layer) - 放在 Shader 之上 (z-10) */}
