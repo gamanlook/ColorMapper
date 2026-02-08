@@ -356,7 +356,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({ hue, data, currentColor, widt
 
     layerAxes.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", -48)
+      .attr("y", -44)
       .attr("x", -chartHeight / 2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
