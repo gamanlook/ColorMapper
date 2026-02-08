@@ -111,7 +111,7 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   let l: number, c: number;
   let isValid = false;
   let tryCount = 0;
-  const MAX_TRIES = 100;
+  const MAX_TRIES = 200;
 
   // 輔助函式：投點邏輯
   const trySample = (minL: number, maxL: number, minC: number, maxC: number) => {
@@ -129,10 +129,10 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   // --- MODE 1: PALE / WHITE / HIGH KEY ---
   // 亮色區：想稍微多一點 (14%)
   // L: 0.85 ~ 0.99 (很亮)
-  // C: 0.00 ~ 0.18 (極限)
+  // C: 0.00 ~ 0.27 (極限)
   if (mode < 0.14) {
     while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.85, 0.99, 0.00, 0.18);
+      const res = trySample(0.85, 0.99, 0.00, 0.27);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
@@ -152,12 +152,12 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   }
 
   // --- MODE 3: GRAY / MUTED ---
-  // 灰色區：中等機率 (30%)
+  // 灰色區：中等機率 (35%)
   // L: 0.22 ~ 0.92 (深到亮)
-  // C: 0.00 ~ 0.12 (灰到霧)
-  else if (mode < 0.50) {
+  // C: 0.00 ~ 0.15 (灰到霧)
+  else if (mode < 0.55) {
     while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.22, 0.92, 0.00, 0.12);
+      const res = trySample(0.22, 0.92, 0.00, 0.15);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
@@ -165,7 +165,7 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   }
 
   // --- MODE 4: STANDARD / VIVID ---
-  // 鮮豔/一般區：主力題目 (50%)
+  // 鮮豔/一般區：主力題目 (45%)
   // L: 0.20 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
   // C: 0.06 ~ 0.32 (避開灰，往高飽和投)
   else {
