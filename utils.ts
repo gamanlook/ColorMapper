@@ -305,7 +305,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
   const baseHex = oklchToGamutHex(color.l, color.c, color.h);
 
   // 最暗 (darkestHex)
-  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.6));
+  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 6));
   const darkestC = Math.max(0, color.c + 0.009);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
