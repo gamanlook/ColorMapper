@@ -127,10 +127,10 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   };
 
   // --- MODE 1: PALE / WHITE / HIGH KEY ---
-  // 亮色區：想稍微多一點 (15%)
+  // 亮色區：想稍微多一點 (14%)
   // L: 0.80 ~ 0.99 (很亮)
   // C: 0.00 ~ 0.22 (到亮，沒到螢光)
-  if (mode < 0.15) {
+  if (mode < 0.14) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.80, 0.99, 0.00, 0.22);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
@@ -139,10 +139,10 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
     if (!isValid) { l = 0.95; c = 0.02; } // Fallback
   }
   // --- MODE 2: DARK / SHADOWS ---
-  // 深色區：想稍微少一點，避免一直出髒色 (5%)
+  // 深色區：想稍微少一點，避免一直出髒色 (3%)
   // L: 0.05 ~ 0.20 (很暗)
   // C: 0.00 ~ 0.15 (極限)
-  else if (mode < 0.20) {
+  else if (mode < 0.17) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.05, 0.20, 0.00, 0.15);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
@@ -152,10 +152,10 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   }
 
   // --- MODE 3: GRAY / MUTED ---
-  // 灰色區：中等機率 (30%)
+  // 灰色區：中等機率 (33%)
   // L: 0.20 ~ 0.80 (深到亮)
   // C: 0.00 ~ 0.22 (灰到濃/鮮，沒到豔)
-  else if (mode < 0.55) {
+  else if (mode < 0.50) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.20, 0.80, 0.00, 0.22);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
@@ -305,7 +305,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
   const baseHex = oklchToGamutHex(color.l, color.c, color.h);
 
   // 最暗 (darkestHex)
-  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.75));
+  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.7));
   const darkestC = Math.max(0, color.c + 0.009);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
