@@ -167,12 +167,12 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
   // --- MODE 4: STANDARD / VIVID ---
   // 鮮豔/一般區：主力題目 (50%)
   // L: 0.20 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
-  // C: 0.04 ~ 0.32 (避開灰，往高飽和投)
+  // C: 0.05 ~ 0.32 (避開灰，往高飽和投)
   else {
     while (!isValid && tryCount < MAX_TRIES) {
       // 這裡 Chroma 上限給到 0.32 其實很大(超出 sRGB 很多)，
       // 但透過投點法，它會自動貼合 sRGB 的邊緣形狀，而不會死死卡在邊緣。
-      const res = trySample(0.20, 0.98, 0.04, 0.32);
+      const res = trySample(0.20, 0.98, 0.05, 0.32);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
@@ -280,7 +280,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
     LOW_L_LIMIT: 0.05,
     HIGH_L_LIMIT: 0.87,
     // Darker: 深色題目(L5%)要更多加深、更多反光，淺色題目(L87%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.0385, MIN: 0.013 },
+    DARKER_OFFSET: { MAX: 0.038, MIN: 0.013 },
     LIGHTER_OFFSET: { MAX: 0.0375, MIN: 0.012 }
   };
 
@@ -305,7 +305,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
   const baseHex = oklchToGamutHex(color.l, color.c, color.h);
 
   // 最暗 (darkestHex)
-  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.7));
+  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.65));
   const darkestC = Math.max(0, color.c + 0.009);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
