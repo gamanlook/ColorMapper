@@ -372,9 +372,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
       {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
       <div
         className={`
-          relative aspect-square rounded-[1.875rem] border border-theme-card-border overflow-hidden transition-colors duration-500
+          relative aspect-square rounded-[1.875rem] ring-1 ring-inset ring-theme-card-border overflow-hidden transition-colors duration-500
           flex items-center justify-center
-          ${bgBlack ? 'bg-black' : 'bg-white/85'}
+          ${bgBlack ? 'bg-gradient-to-b from-neutral-900 from-3% to-black/100 to-97%' : 'bg-gradient-to-b from-white/100 from-3% to-white/80 to-97%'}
       `}>
         {/* Toggle Hex/OKLch Button */}
         <button
@@ -424,7 +424,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <div
           // 關鍵：Ref 移到這裡！
           ref={visualStageRef}
-          className="w-4/5 h-4/5 rounded-full shadow-[0_64px_56px_-4px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out relative group overflow-hidden"
+          className="w-4/5 h-4/5 rounded-full shadow-[0_64px_80px_-4px_rgba(0,0,0,0.13)] transition-all duration-300 ease-out relative group overflow-hidden"
           style={{ backgroundColor: currentColorCss }}
         >
            {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
