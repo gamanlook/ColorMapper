@@ -380,7 +380,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button
           onClick={() => setShowHex(!showHex)}
           className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-20
-            ${bgBlack ? 'bg-white/10 border-white/5 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/5 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
         >
@@ -406,7 +406,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
         <button
           onClick={() => setBgBlack(!bgBlack)}
           className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-20
-            ${bgBlack ? 'bg-white/10 border-white/5 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
+            ${bgBlack ? 'bg-white/5 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
           `}
           title="切換背景顏色"
         >
