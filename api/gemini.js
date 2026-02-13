@@ -249,8 +249,7 @@ export default async function handler(req) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
      // 使用你指定的模型
-      //model: "gemini-2.5-flash-lite",
-      model: "gemini-3-pro-preview",
+      model: "gemini-2.0-flash",
       systemInstruction: systemInstructionText,
       generationConfig: {
         responseMimeType: "application/json",
