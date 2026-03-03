@@ -106,7 +106,7 @@ export const findPeakLightnessForHue = (h: number): { l: number, maxC: number } 
 
 // 全面採用「投點法 (Rejection Sampling)」
 // 讓所有區域的顏色分佈都符合面積比例，避免「卡在邊緣」或「奇怪的髒色」。
-export const generateRandomColor = (hueAngle: number): OklchColor => {
+export const generateRandomColor = (hueAngle: number, avoidDark: boolean = false): OklchColor => {
   const mode = Math.random();
   let l: number, c: number;
   let isValid = false;
@@ -126,11 +126,14 @@ export const generateRandomColor = (hueAngle: number): OklchColor => {
     return { l: randL, c: randC, success: false }; // 失敗，重投
   };
 
+  // 第一題避免出現深色題目，所以亮色區要蓋過深色區的機率
+  const mode1Limit = avoidDark ? 0.17 : 0.14;
+
   // --- MODE 1: PALE / WHITE / HIGH KEY ---
   // 亮色區：想稍微多一點 (14%)
   // L: 0.80 ~ 0.99 (很亮)
   // C: 0.00 ~ 0.22 (到亮，沒到螢光)
-  if (mode < 0.14) {
+  if (mode < mode1Limit) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.80, 0.99, 0.00, 0.22);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
@@ -280,7 +283,7 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
     LOW_L_LIMIT: 0.05,
     HIGH_L_LIMIT: 0.87,
     // Darker: 深色題目(L5%)要更多加深、更多反光，淺色題目(L87%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.038, MIN: 0.013 },
+    DARKER_OFFSET: { MAX: 0.038, MIN: 0.0135 },
     LIGHTER_OFFSET: { MAX: 0.0375, MIN: 0.012 }
   };
 

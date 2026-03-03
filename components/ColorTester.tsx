@@ -1,131 +1,102 @@
-
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Swirl } from '@paper-design/shaders-react'; // Import Shader
-import { GrainGradient } from '@paper-design/shaders-react'; // Import Shader
-import { OklchColor, HueDefinition } from '../types';
-import { toCss, suggestPrefixes, oklchToHex, generateShaderPalette } from '../utils';
-import { PREFIXES } from '../constants';
-import { validateColorName } from '../services/geminiService';
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Swirl } from "@paper-design/shaders-react";
+import { GrainGradient } from "@paper-design/shaders-react";
+import { OklchColor, HueDefinition } from "../types";
+import {
+  toCss,
+  suggestPrefixes,
+  oklchToHex,
+  generateShaderPalette,
+} from "../utils";
+import { PREFIXES } from "../constants";
+import { validateColorName } from "../services/geminiService";
 
 interface ColorTesterProps {
   color: OklchColor;
   hueDef: HueDefinition;
-  onSubmit: (name: string, isSuspicious: boolean, reason?: string, feedback?: string) => void;
+  onSubmit: (
+    name: string,
+    isSuspicious: boolean,
+    reason?: string,
+    feedback?: string,
+  ) => void;
   onSkip: () => void;
+  showHex: boolean;
 }
 
-const STANDALONE_ALLOWED = ['白', '淺灰', '灰', '深灰', '暗灰', '黑'];
+const STANDALONE_ALLOWED = ["白", "淺灰", "灰", "深灰", "暗灰", "黑"];
 const MAX_CHARS = 23;
 
-// --- 有關計算題目上的彎曲文字 ---
-// 這裡定義文字圓弧的半徑 (相對於 100x100 的容器)
-// 圓心在 (50, 50)，半徑 44 代表文字會落在直徑 88 的圓周上
 const TEXT_PATH_RADIUS = 44;
-// 想要的字體像素大小 (Target Pixel Size)：
-// 當圓形很寬時 (>= 350px)，字體要是 11px
-// 當圓形很窄時 (<= 225px)，字體要是 8px
-// (註：336/210 是推算出的「圓形寬度」)
 const MAX_FONT_PX = 11;
 const MIN_FONT_PX = 8;
 const MAX_WIDTH_BREAKPOINT = 350;
 const MIN_WIDTH_BREAKPOINT = 225;
 
-// 顏文字庫
 const KAOMOJI = [
-  '(´･ω･` )', '(*´･ч･`*)', '(*´ㅁ`*)',
-  '( ˙꒳˙ )', '(  ᐛ  )', '( ˙ᗜ˙ )'
+  "(´･ω･` )",
+  "(*´･ч･`*)",
+  "(*´ㅁ`*)",
+  "( ˙꒳˙ )",
+  "(  ᐛ  )",
+  "( ˙ᗜ˙ )",
 ];
 
-const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSkip }) => {
-  const [bgBlack, setBgBlack] = useState(false);
-  const [showHex, setShowHex] = useState(false);
-  const [inputName, setInputName] = useState('');
-  const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
+const ColorTester: React.FC<ColorTesterProps> = ({
+  color,
+  hueDef,
+  onSubmit,
+  onSkip,
+  showHex,
+}) => {
+  const [inputName, setInputName] = useState("");
+  const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>(
+    [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // UX State: Skip Button Hint
   const [showSkipHint, setShowSkipHint] = useState(false);
-  // Ref to track if user has EVER used skip in this session (persists across renders)
   const hasUsedSkipRef = useRef(false);
-  // Ref to track latest input name for use in timeouts (avoids stale closures)
   const inputNameRef = useRef(inputName);
-  // Ref to track if the 4-second wait is over for the current color
   const hintTimerExpiredRef = useRef(false);
-
-  // Copy Feedback State
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-
-  // Shader Random Offset State
   const [randomOffset, setRandomOffset] = useState(0);
-
-  // Shader Key for forcing re-render on visibility change
   const [shaderKey, setShaderKey] = useState(0);
-  
-  // Controls whether the shader component is mounted
   const [isShaderVisible, setIsShaderVisible] = useState(true);
-  
-  // Tracks when the user left the tab/app
   const lastHiddenTimeRef = useRef(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  
-  // 只使用這一個 Ref 來監聽「圓形視覺區」
-  // 不再監聽外層 Container，直接綁定在 w-3/4 那個圓球上
   const visualStageRef = useRef<HTMLDivElement>(null);
 
-  // 優化：直接儲存計算好的 SVG Font Size，而不是容器寬度
   const [svgFontSize, setSvgFontSize] = useState(3);
-  // 用於 Shader 的像素尺寸 (預設 300 避免 0)
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
-
   const hasInteractedRef = useRef(false);
 
-  // 監聽視窗喚醒事件 (解決 WebGL Context Loss 白畫面問題)
-  // 做法：時間差判斷 + 暴力重啟
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // 1. 記下離開時間
+      if (document.visibilityState === "hidden") {
         lastHiddenTimeRef.current = Date.now();
-      } else if (document.visibilityState === 'visible') {
-        // 2. 算算離開多久
+      } else if (document.visibilityState === "visible") {
         const timeGone = Date.now() - lastHiddenTimeRef.current;
-        
-        // 3. 判斷是否需要暴力重啟 (門檻: 60秒)
         if (timeGone > 60000) {
-          // 離開超過一分鐘，Android 可能殺掉了 GPU 資源
-          console.log("Shader Context Lost Prevention: Performing Hard Restart");
-          
-          // 暴力重啟法：先殺掉 DOM
           setIsShaderVisible(false);
-          
-          // 稍微休息一下讓瀏覽器喘口氣 (200ms)
           setTimeout(() => {
-            // 再復活，並同時換 key 確保是全新的 WebGL Context
-            setShaderKey(k => k + 1); 
+            setShaderKey((k) => k + 1);
             setIsShaderVisible(true);
           }, 200);
-        } else {
-          // < 60秒：大概只是回個訊息，GPU 應該還活著。
-          // 什麼都不做，保持畫面流暢，不要閃爍。
         }
       }
     };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
-  // Sync ref with state whenever input changes
   useEffect(() => {
     inputNameRef.current = inputName;
     if (inputName) {
-      // User is typing: Hide hint immediately
       setShowSkipHint(false);
     } else {
-      // ✨ FIX: User cleared input.
-      // If the 4s timer has ALREADY expired (and user hasn't learned skip yet),
-      // restore the hint immediately.
       if (hintTimerExpiredRef.current && !hasUsedSkipRef.current) {
         setShowSkipHint(true);
       }
@@ -133,23 +104,16 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   }, [inputName]);
 
   useEffect(() => {
-    setInputName('');
-    // Important: Reset ref immediately for the new cycle
-    inputNameRef.current = '';
+    setInputName("");
+    inputNameRef.current = "";
     setSuggestedPrefixesList(suggestPrefixes(color));
-    // Reset hint state for new color
     setShowSkipHint(false);
-    hintTimerExpiredRef.current = false; // Reset timer status
-    setCopyFeedback(null); // Reset copy feedback
-    
-    // 每次換題，就骰一個 -1 到 1 之間的數字，讓紋理有點變化
-    setRandomOffset((Math.random() * 2) - 1);
+    hintTimerExpiredRef.current = false;
+    setCopyFeedback(null);
+    setRandomOffset(Math.random() * 2 - 1);
 
-    // 4-second timer for progressive disclosure
     const timer = setTimeout(() => {
-      hintTimerExpiredRef.current = true; // Mark timer as expired
-
-      // Use Ref to check the LATEST value
+      hintTimerExpiredRef.current = true;
       if (!inputNameRef.current && !hasUsedSkipRef.current) {
         setShowSkipHint(true);
       }
@@ -158,18 +122,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     return () => clearTimeout(timer);
   }, [color]);
 
-  // ✨ 優化後的 ResizeObserver：直覺式流體排版
   useEffect(() => {
     if (!visualStageRef.current) return;
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        // 取得圓形當下的實際寬度
         const containerWidth = entry.contentRect.width;
-        
+
         if (containerWidth > 0) {
-          // --- 更新 Shader 尺寸 ---
-          // 直接用實際寬度，達成 1:1 像素對應
           setDimensions({ width: containerWidth, height: containerWidth });
 
           let targetPixelSize = MIN_FONT_PX;
@@ -179,33 +139,32 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
           } else if (containerWidth <= MIN_WIDTH_BREAKPOINT) {
             targetPixelSize = MIN_FONT_PX;
           } else {
-            // 線性插值：算出中間值
-            const percentage = (containerWidth - MIN_WIDTH_BREAKPOINT) / (MAX_WIDTH_BREAKPOINT - MIN_WIDTH_BREAKPOINT);
-            targetPixelSize = MIN_FONT_PX + (percentage * (MAX_FONT_PX - MIN_FONT_PX));
+            const percentage =
+              (containerWidth - MIN_WIDTH_BREAKPOINT) /
+              (MAX_WIDTH_BREAKPOINT - MIN_WIDTH_BREAKPOINT);
+            targetPixelSize =
+              MIN_FONT_PX + percentage * (MAX_FONT_PX - MIN_FONT_PX);
           }
 
-          // --- 自動換算成 SVG 單位 ---
-          // 公式原理： (目標像素 / 容器寬度) = (SVG數值 / 100)
-          // 所以：SVG數值 = (目標像素 * 100) / 容器寬度
           const calculatedSvgSize = (targetPixelSize * 100) / containerWidth;
-          
           setSvgFontSize(calculatedSvgSize);
         }
       }
     });
 
     resizeObserver.observe(visualStageRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
+    return () => resizeObserver.disconnect();
   }, []);
 
-  // 產生 Shader 需要的顏色組
-  const { shaderColors, shaderBack } = useMemo(() => generateShaderPalette(color), [color]);
+  const { shaderColors, shaderBack } = useMemo(
+    () => generateShaderPalette(color),
+    [color],
+  );
 
-  const normalizedInput = inputName.replace(/艷/g, '豔');
-  const showSuffixHint = PREFIXES.includes(normalizedInput) && !STANDALONE_ALLOWED.includes(normalizedInput);
+  const normalizedInput = inputName.replace(/艷/g, "豔");
+  const showSuffixHint =
+    PREFIXES.includes(normalizedInput) &&
+    !STANDALONE_ALLOWED.includes(normalizedInput);
 
   const scrollToBottom = () => {
     const doScroll = () => {
@@ -224,20 +183,19 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   const handlePrefixClick = (prefix: string) => {
     const currentName = inputName;
     let newName = prefix;
-    const existingPrefix = PREFIXES.find(p => currentName.startsWith(p));
+    const existingPrefix = PREFIXES.find((p) => currentName.startsWith(p));
     if (existingPrefix) {
-       newName = prefix + currentName.substring(existingPrefix.length);
+      newName = prefix + currentName.substring(existingPrefix.length);
     } else {
-       newName = prefix + currentName;
+      newName = prefix + currentName;
     }
-    if (newName.replace(/\s/g, '').length <= MAX_CHARS) {
+    if (newName.replace(/\s/g, "").length <= MAX_CHARS) {
       setInputName(newName);
     } else {
       return;
     }
     if (textareaRef.current) {
       textareaRef.current.focus({ preventScroll: true });
-      // 保持游標在最後
       setTimeout(() => {
         if (textareaRef.current) {
           const len = newName.length;
@@ -250,9 +208,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
-    // 簡單過濾換行符，保持單純
-    const cleanVal = val.replace(/\n/g, '');
-    const nonSpaceCount = cleanVal.replace(/\s/g, '').length;
+    const cleanVal = val.replace(/\n/g, "");
+    const nonSpaceCount = cleanVal.replace(/\s/g, "").length;
 
     if (nonSpaceCount <= MAX_CHARS || cleanVal.length < inputName.length) {
       setInputName(cleanVal);
@@ -260,26 +217,19 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // ⚠️⚠️⚠️ CRITICAL FIX FOR IME (Input Method Editor) ⚠️⚠️⚠️
-    // ⚠️ DO NOT REMOVE THIS CHECK! 請勿刪除此檢查！⚠️
-    // 當使用者正在使用注音/拼音輸入法「選字」並按下 Enter 時，isComposing 會是 true。
-    // 這時候的 Enter 是為了確認選字，絕對不能送出表單。
     if (e.nativeEvent.isComposing) {
       return;
     }
 
-    if (e.key === 'Enter') {
-      // 阻止 textarea 預設的換行行為
+    if (e.key === "Enter") {
       e.preventDefault();
-      // 使用 requestSubmit() 模擬原生表單送出
-      // 這會觸發 <form> 的 onSubmit 事件
       formRef.current?.requestSubmit();
     }
   };
+
   const handleSkipClick = () => {
-    // Mark that the user has learned the skip function
     hasUsedSkipRef.current = true;
-    setShowSkipHint(false); // Immediately hide hint
+    setShowSkipHint(false);
     onSkip();
   };
 
@@ -289,19 +239,21 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
 
     setIsSubmitting(true);
 
-    let cleanedName = inputName.trim().replace(/艷/g, '豔');
-    if (cleanedName.endsWith('色') && cleanedName.length > 1) {
+    let cleanedName = inputName.trim().replace(/艷/g, "豔");
+    if (cleanedName.endsWith("色") && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
 
-    const isPrefixOnly = PREFIXES.includes(cleanedName) && !STANDALONE_ALLOWED.includes(cleanedName);
+    const isPrefixOnly =
+      PREFIXES.includes(cleanedName) &&
+      !STANDALONE_ALLOWED.includes(cleanedName);
 
     if (isPrefixOnly) {
       onSubmit(
         cleanedName,
         true,
         "PREFIX_ONLY",
-        `後面好像少了顏色？試試看：${cleanedName}紅、${cleanedName}藍...`
+        `後面好像少了顏色？試試看：${cleanedName}紅、${cleanedName}藍...`,
       );
       setIsSubmitting(false);
       setTimeout(() => {
@@ -315,8 +267,17 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     }
 
     try {
-      const validation = await validateColorName(color, cleanedName, hueDef.nameEN);
-      onSubmit(cleanedName, validation.isSuspicious, validation.reason, validation.feedback);
+      const validation = await validateColorName(
+        color,
+        cleanedName,
+        hueDef.nameEN,
+      );
+      onSubmit(
+        cleanedName,
+        validation.isSuspicious,
+        validation.reason,
+        validation.feedback,
+      );
     } catch (err) {
       console.error(err);
       onSubmit(cleanedName, false, undefined, "命名已收錄！");
@@ -326,35 +287,28 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   const currentColorCss = toCss(color);
-  const textColorClass = color.l > 0.70 ? 'text-black/55' : 'text-white/70';
+  const textColorClass = color.l > 0.7 ? "text-black/55" : "text-white/70";
   const hexValue = oklchToHex(color.l, color.c, color.h);
-  // Base Text (The Color Code)
+
   const baseDisplayText = showHex
     ? hexValue
-    : `oklch(${(color.l*100).toFixed(1)}% ${color.c.toFixed(3)} ${color.h})`;
-  // Rendered Text (Either Feedback or Color Code)
+    : `oklch(${(color.l * 100).toFixed(1)}% ${color.c.toFixed(3)} ${color.h})`;
+
   const renderedText = copyFeedback || baseDisplayText;
   const hasContent = inputName.trim().length > 0;
 
-  // Calculate SVG Path for Curved Text
   const pathStartX = 50 - TEXT_PATH_RADIUS;
   const pathEndX = 50 + TEXT_PATH_RADIUS;
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
-  // 計算圓形顏色題目的高光透明度
-  // 1. L >= 0.275 : 題目太亮了，隱藏高光 (0)
-  // 2. L <= 0.15 : 題目太黑，維持高光最大強度 (0.40)
-  // 3. 0.15 < L < 0.275 : 線性遞減 (Interpolation)
-  //    分母 0.125 是因為 (0.275 - 0.15) 的區間長度
-  const highlightOpacity = color.l >= 0.25
-    ? 0
-    : color.l <= 0.15
-      ? 0.5
-      : 0.5 * (1 - ((color.l - 0.15) / 0.125));
+  const highlightOpacity =
+    color.l >= 0.25
+      ? 0
+      : color.l <= 0.15
+        ? 0.5
+        : 0.5 * (1 - (color.l - 0.15) / 0.125);
 
-  // Handle Copy Click
   const handleCopy = () => {
-    // If feedback is showing, ignore clicks
     if (copyFeedback) return;
     navigator.clipboard.writeText(baseDisplayText);
     const randomKaomoji = KAOMOJI[Math.floor(Math.random() * KAOMOJI.length)];
@@ -365,219 +319,107 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-[448px] mx-auto">
-
-      {/* 題目max-w-[448px]是因為對應下面的圖表max-w-[400px]，比例感會比較一致，改font size時也不比較不會走鐘 */}
-
-      {/* Visual Stage, 圓角根據輸入框多圓就要跟著多圓 */}
+    <div className="flex flex-col gap-8 w-full max-w-[448px] mx-auto">
+      {/* Visual Stage */}
       <div
-        className={`
-          relative aspect-square rounded-[1.875rem] ring-1 ring-inset ring-theme-card-border overflow-hidden transition-colors duration-500
-          flex items-center justify-center
-          ${bgBlack ? 'bg-gradient-to-b from-neutral-900 from-3% to-black/100 to-97%' : 'bg-gradient-to-b from-white/100 from-3% to-white/80 to-97%'}
-      `}>
-        {/* Toggle Hex/OKLch Button */}
-        <button
-          onClick={() => setShowHex(!showHex)}
-          className={`absolute top-3 left-3 p-2 rounded-full border transition-all z-20
-            ${bgBlack ? 'bg-white/5 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
-          `}
-          title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
-        >
-          {showHex ? (
-             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <polyline points="1 5 1 19 5 19" />
-               <polyline points="17.6666 5 17.6666 19" />
-               <polyline points="17.6666 12 23 12" />
-               <polyline points="23 5 23 19" />
-                 <path d="M13.8398 8.37988C13.7625 7.64464 13.6671 6.8699 13.3242 6.20312C12.878 5.33562 11.9882 4.75 11 4.75C10.0118 4.75 9.12203 5.33562 8.67578 6.20312C8.33288 6.8699 8.23755 7.64464 8.16016 8.37988C8.05798 9.35074 8 10.6296 8 12C8 13.3704 8.05798 14.6493 8.16016 15.6201C8.23755 16.3554 8.33288 17.1301 8.67578 17.7969C9.12203 18.6644 10.0118 19.25 11 19.25C11.9882 19.25 12.878 18.6644 13.3242 17.7969C13.6671 17.1301 13.7625 16.3554 13.8398 15.6201" />
-             </svg>
-          ) : (
-             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <line x1="5.25" y1="9" x2="19.5" y2="9" />
-               <line x1="4.5" y1="15" x2="18.75" y2="15" />
-               <line x1="10" y1="4" x2="8" y2="20" />
-               <line x1="16" y1="4" x2="14" y2="20" />
-             </svg>
+        ref={visualStageRef}
+        className="w-full aspect-square rounded-full shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] transition-all duration-500 ease-out relative group overflow-hidden"
+        style={{ backgroundColor: currentColorCss }}
+      >
+        {/* Shader Layer */}
+        <div className="absolute inset-0 z-0">
+          {isShaderVisible && (
+            <GrainGradient
+              key={shaderKey}
+              width={dimensions.width}
+              height={dimensions.height}
+              colors={shaderColors}
+              colorBack={shaderBack}
+              softness={0.05}
+              intensity={2}
+              noise={0}
+              shape="wave"
+              speed={3}
+              scale={1}
+              offsetX={randomOffset}
+              offsetY={0}
+            />
           )}
-        </button>
-
-        {/* Toggle BG Color Button */}
-        <button
-          onClick={() => setBgBlack(!bgBlack)}
-          className={`absolute top-3 right-3 p-2 rounded-full border transition-all z-20
-            ${bgBlack ? 'bg-white/5 border-white/10 text-white hover:bg-white/40 hover:border-transparent' : 'bg-white/20 border-slate-600/10 text-slate-600 hover:bg-slate-600/20 hover:border-transparent'}
-          `}
-          title="切換背景顏色"
-        >
-          {bgBlack ? (
-             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-             </svg>
-          ) : (
-             <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-               <path d="M20.96724 12.76724A9 9 0 1 1 11.23276 3.03276A7 7 0 0 0 20.96724 12.76724z" />
-             </svg>
-          )}
-        </button>
-
-        <div
-          // 關鍵：Ref 移到這裡！
-          ref={visualStageRef}
-          className="w-4/5 h-4/5 rounded-full shadow-[0_64px_80px_-4px_rgba(0,0,0,0.13)] transition-all duration-300 ease-out relative group overflow-hidden"
-          style={{ backgroundColor: currentColorCss }}
-        >
-           {/* Shader Layer: 放在最底層 (z-0)，但在背景色之上 */}
-           <div className="absolute inset-0 z-0">
-             {isShaderVisible && (
-               <GrainGradient
-                 key={shaderKey} // 當 key 改變時，強制重新渲染 Shader 以解決 Context Loss
-                 width={dimensions.width}
-                 height={dimensions.height}
-                 colors={shaderColors}
-                 colorBack={shaderBack}
-                 softness={0.05}
-                 intensity={2}
-                 noise={0}
-                 shape="wave"
-                 speed={3}
-                 scale={1}
-                 offsetX={randomOffset}
-                 offsetY={0}
-               />
-             )}
-           </div>
-
-           {/* 高光層 (Highlight Layer) - 放在 Shader 之上 (z-10) */}
-           {bgBlack && highlightOpacity > 0 && (
-             <div
-               className="
-                 absolute inset-0 rounded-full pointer-events-none z-10
-                 mix-blend-plus-lighter
-               "
-               style={{
-                 boxShadow: `inset 0 0.3px 1.5px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`
-               }}
-             ></div>
-           )}
-
-           {/* SVG Text Layer (z-20) */}
-           <svg
-             viewBox="0 0 100 100"
-             className={`absolute inset-0 w-full h-full overflow-visible pointer-events-none ${textColorClass}`}
-           >
-              <defs>
-                 <path id="text-curve" d={curvePathD} fill="none" />
-              </defs>
-              <text
-                fontSize={svgFontSize}
-                className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                onClick={handleCopy}
-              >
-                 <textPath href="#text-curve" startOffset="50%">
-                    {renderedText}
-                 </textPath>
-              </text>
-           </svg>
         </div>
+
+        {/* Highlight Layer */}
+        {highlightOpacity > 0 && (
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none z-10 mix-blend-plus-lighter"
+            style={{
+              boxShadow: `inset 0 0.3px 1.5px rgba(255, 255, 255, ${highlightOpacity.toFixed(3)})`,
+            }}
+          ></div>
+        )}
+
+        {/* SVG Text Layer */}
+        <svg
+          viewBox="0 0 100 100"
+          className={`absolute inset-0 w-full h-full overflow-visible pointer-events-none ${textColorClass}`}
+        >
+          <defs>
+            <path id="text-curve" d={curvePathD} fill="none" />
+          </defs>
+          <text
+            fontSize={svgFontSize}
+            className="font-mono tracking-wider fill-current pointer-events-auto cursor-pointer"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            onClick={handleCopy}
+          >
+            <textPath href="#text-curve" startOffset="50%">
+              {renderedText}
+            </textPath>
+          </text>
+        </svg>
       </div>
 
-      <div className="flex flex-col gap-4">
-
+      <div className="flex flex-col gap-6">
         {/* Suggested Prefixes */}
         <div
-          className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar -mx-6 px-5 w-[calc(100%+3rem)]"
+          className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
           style={{
-            WebkitMaskImage: `linear-gradient(to right,
-              transparent,
-              rgba(0,0,0, 0.1) 4px,
-              rgba(0,0,0, 0.4) 10px,
-              rgba(0,0,0, 0.8) 18px,
-              black 24px,
-              black calc(100% - 24px),
-              rgba(0,0,0, 0.8) calc(100% - 18px),
-              rgba(0,0,0, 0.4) calc(100% - 10px),
-              rgba(0,0,0, 0.1) calc(100% - 4px),
-              transparent
-            )`,
-            maskImage: `linear-gradient(to right,
-              transparent,
-              rgba(0,0,0, 0.1) 4px,
-              rgba(0,0,0, 0.4) 10px,
-              rgba(0,0,0, 0.8) 18px,
-              black 24px,
-              black calc(100% - 24px),
-              rgba(0,0,0, 0.8) calc(100% - 18px),
-              rgba(0,0,0, 0.4) calc(100% - 10px),
-              rgba(0,0,0, 0.1) calc(100% - 4px),
-              transparent
-            )`
+            WebkitMaskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
+            maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
           }}
         >
-          {suggestedPrefixesList.map(prefix => (
+          {suggestedPrefixesList.map((prefix) => (
             <button
               key={prefix}
               type="button"
               onClick={() => handlePrefixClick(prefix)}
               onMouseDown={(e) => e.preventDefault()}
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-3.5 py-1.5 text-[0.75rem] bg-theme-brand-bg text-theme-brand-text hover:opacity-80 active:opacity-60 rounded-full transition-colors border border-transparent"
+              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
             >
               {prefix}
             </button>
           ))}
         </div>
 
-        {/* Auto-growing Textarea Form (Flexbox) */}
+        {/* Input Form */}
         <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
-          {/*
-            Container Setup:
-            - Flexbox (items-end) allows button to stay at bottom while input grows
-            - rounded 圓角 1.875rem = [ 輸入框總高 3.75rem ]/2 = [ icon高度 1.125rem(18px) + 圓按鈕上下padding 1.5rem(p-3*2, 24px) + 輸入框上下padding 1rem(p-2*2, 16px) + border線粗 0.125rem(1px*2) ]/2
-            - gap 文字與按鈕們之間的距離
-            - left padding 文字與邊緣
-            - top/bottom/right padding 圓形按鈕與邊緣
-          */}
-          <div className="flex items-end gap-2 w-full rounded-[1.875rem] border border-theme-input-border bg-theme-input transition-colors pl-6 pr-2 py-2">
-            {/*
-              Input Area (Textarea + Ghost)
-              - flex-1 to fill remaining space
-              - min-w-0 to prevent flex item overflow
-              - ✨ self-stretch: This is the KEY. It forces the text container to height-match
-                the adjacent button if the button is taller.
-                Combined with 'items-center' (on the grid itself), single-line text will center nicely
-                against a huge button, while still allowing the button to stay at the bottom for multi-line text.
-            */}
+          <div className="flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset ring-white/10 bg-white/10 transition-colors pl-6 pr-2 py-2 focus-within:ring-white/20">
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
-              {/*
-                 Ghost Layer (Visuals):
-                 - Controls height via content
-                 - py-1.5 (6px) vertical padding
-                 - px-0 horizontal padding (container handles left indentation)
-                 - whitespace-pre-wrap & break-words: ensures long text breaks line
-              */}
               <div
-                className="col-start-1 row-start-1 px-0 py-1.5 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
+                className="col-start-1 row-start-1 px-0 py-2 text-xl whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
                 aria-hidden="true"
               >
-                 <span className={`${inputName ? 'text-theme-text-main' : 'text-theme-text-muted'}`}>
-                    {inputName || '試試自己取名'}
-                 </span>
-                 {showSuffixHint && (
-                    <span className="text-theme-text-muted text-lg ml-0.5">
-                       什麼色？
-                    </span>
-                 )}
-                 {/* Zero-width space + newline to ensure height growth */}
-                 <span className="inline-block w-0">&#8203;</span>
+                <span
+                  className={`${inputName ? "text-theme-text-main" : "text-theme-text-muted"}`}
+                >
+                  {inputName || "試試自己取名"}
+                </span>
+                {showSuffixHint && (
+                  <span className="text-theme-text-muted text-xl ml-0.5">什麼色？</span>
+                )}
+                <span className="inline-block w-0">&#8203;</span>
               </div>
 
-              {/*
-                 Interactive Layer (Textarea):
-                 - Matches ghost layer positioning and padding exactly
-                 - Added 'whitespace-pre-wrap & break-words' to match Ghost Layer behavior
-              */}
               <textarea
                 ref={textareaRef}
                 name="color-input"
@@ -595,63 +437,85 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
                 enterKeyHint="send"
                 className={`
                   col-start-1 row-start-1 w-full h-full
-                  px-0 py-1.5 text-lg
+                  px-0 py-2 text-xl font-normal
                   bg-transparent border-none outline-none
                   resize-none overflow-hidden
-                  text-transparent caret-theme-text-main
+                  text-transparent caret-white
                   whitespace-pre-wrap break-words
                 `}
               />
             </div>
 
-            {/*
-               Action Button:
-               - Flex item (no longer absolute)
-               - flex-none to prevent shrinking
-               - self-end (aligned to bottom)
-               - Removed 'transition-colors' to prevent purple-bg flash when text deleted
-            */}
             <button
               type={hasContent ? "submit" : "button"}
               onClick={hasContent ? undefined : handleSkipClick}
               disabled={isSubmitting}
               className={`
                 flex-none p-3 rounded-full
-                flex items-center justify-center
-                ${hasContent ? 'bg-theme-brand text-white' : 'bg-theme-input-action text-theme-text-muted'}
-                hover:opacity-80 disabled:opacity-30 disabled:cursor-not-allowed
+                flex items-center justify-center transition-[background-color,box-shadow,opacity] duration-300 ease-out
+                ${hasContent ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]" : "bg-white/10 text-theme-text-soft hover:bg-white/20"}
+                disabled:opacity-30 disabled:cursor-not-allowed
               `}
             >
               {isSubmitting ? (
-                // Spinner
-                <svg className="animate-spin w-[1.125rem] h-[1.125rem] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin w-5 h-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               ) : hasContent ? (
-                // Submit Icon (Arrow Up)
-                <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="5 11 12 4 19 11" />
                   <line x1="12" y1="4" x2="12" y2="20" />
                 </svg>
               ) : (
-                // Skip Icon (Refresh) with Progressive Disclosure Text
                 <>
-                  <svg className="w-[1.125rem] h-[1.125rem]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    className="w-5 h-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M 20 12 A 8 8 0 1 1 15.17718 4.65796 M 13 1.15 L 16 4.15 L 13 7.15" />
                   </svg>
-                  {/* Hug-like Animation Trick */}
                   <span
-                     className={`
+                    className={`
                        overflow-hidden whitespace-nowrap text-[0.9375rem]/4
-                       transition-all duration-500 ease-in-out
-                       ${showSkipHint && !inputName
-                          ? 'max-w-[4em] opacity-100 ml-0.5'
-                          : 'max-w-0 opacity-0 ml-0'
+                       transition-[max-width,opacity,margin-left] duration-500 ease-in-out
+                       ${
+                         showSkipHint && !inputName
+                           ? "max-w-[4em] opacity-100 ml-0.5"
+                           : "max-w-0 opacity-0 ml-0"
                        }
                      `}
                   >
-                     略過
+                    略過
                   </span>
                 </>
               )}
@@ -662,5 +526,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({ color, hueDef, onSubmit, onSk
     </div>
   );
 };
+
 
 export default ColorTester;
