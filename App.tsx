@@ -457,6 +457,22 @@ function App() {
 
   return (
     <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
+      {/* Immersive Dynamic Background */}
+      <div
+        className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% 30%, ${dynamicBgColor} 0%, transparent 70%)`,
+        }}
+      />
+
+      {/* Noise Overlay for texture */}
+      <div
+        className="absolute inset-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(noiseSvg)}")`,
+        }}
+      ></div>
+
       {toast && (
         <Toast
           data={toast}
@@ -472,9 +488,9 @@ function App() {
         style={{ display: "none" }}
       />
 
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col lg:flex-row">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row">
         {/* Left Pane: Color Tester (Hero) */}
-        <div className="w-full flex flex-col p-6 lg:p-12">
+        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 lg:border-r border-white/10">
           {/* Header */}
           {renderHeader("left")}
 
@@ -598,9 +614,107 @@ function App() {
           </div>
 
           {/* Footer of Left Pane */}
-          <div className="mt-8 flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
+          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
             <span>OKLch Color Space</span>
             <span>AI Verified</span>
+          </div>
+        </div>
+
+        {/* Right Pane: Semantic Map */}
+        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
+          {/* Invisible Header for alignment on desktop */}
+          {renderHeader("right")}
+
+          <div className="flex-1 flex flex-col pt-0 pb-8 lg:pt-8 relative">
+            <div className="flex justify-between items-end mb-10 gap-2">
+              <div className="min-w-0 flex-1">
+                <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
+                  Consensus Map
+                </h2>
+                <p className="text-2xl font-bold tracking-tight truncate">
+                  色彩分布
+                </p>
+              </div>
+
+              {/* View Filter Dropdown */}
+              <div className="relative flex-shrink-0 group">
+                <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
+                  <span className="text-xs/3 font-medium whitespace-nowrap">
+                    {getViewHueLabel()}
+                  </span>
+                  <svg
+                    className="w-4 h-4 text-theme-text-soft flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </div>
+                <select
+                  value={viewHueAngle}
+                  onChange={(e) => setViewHueAngle(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                >
+                  {HUES.map((h) => (
+                    <option key={h.id} value={h.angle}>
+                      {h.nameZH} ({h.angle}°)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <SemanticMap
+                hue={viewHueAngle}
+                data={entries}
+                currentColor={currentColor}
+                width={448}
+                height={448}
+              />
+              <div className="mt-8 flex gap-8 text-[0.625rem] font-mono tracking-wide text-theme-text-muted uppercase">
+                <div className="flex items-center gap-2">
+                  <span className="w-px h-3 bg-theme-text-muted"></span>
+                  <span>L：Lightness(%) 體感亮度</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-px h-3 bg-theme-text-muted rotate-90"></span>
+                  <span>C：Chroma 濃豔值</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Invisible Footer for alignment on desktop */}
+          <div className="hidden lg:flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase invisible pointer-events-none select-none" aria-hidden="true">
+            <span>OKLch Color Space</span>
+            <span>AI Verified</span>
+          </div>
+
+          {/* Admin / Debug Tools */}
+          <div className="absolute bottom-4 right-4 flex flex-wrap gap-2 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity z-50">
+            <button
+              onClick={() => triggerToastTest(false)}
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+            >
+              Test Success
+            </button>
+            <button
+              onClick={() => triggerToastTest(true)}
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+            >
+              Test Reject
+            </button>
+            <button
+              onClick={handlePrune}
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+            >
+              Prune Data
+            </button>
           </div>
         </div>
       </div>
