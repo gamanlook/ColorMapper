@@ -296,7 +296,7 @@ function App() {
       <div
         className={`flex flex-col gap-1 transition-opacity ${
           isProfileExpanded 
-            ? "opacity-0 duration-200 delay-0 min-[480px]:opacity-100 pointer-events-none min-[480px]:pointer-events-auto" 
+            ? "opacity-0 duration-300 min-[480px]:opacity-100 pointer-events-none min-[480px]:pointer-events-auto" 
             : "opacity-100 duration-500 delay-300"
         } ${pane === "right" ? "invisible pointer-events-none select-none" : ""}`}
         aria-hidden={pane === "right" ? "true" : undefined}
@@ -457,15 +457,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
-      {/* Noise Overlay for texture */}
-      <div
-        className="absolute inset-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(noiseSvg)}")`,
-          backgroundRepeat: "repeat",
-        }}
-      ></div>
-
       {toast && (
         <Toast
           data={toast}
