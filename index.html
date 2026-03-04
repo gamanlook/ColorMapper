@@ -1,13 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
   <head>
+    <!-- 1. 核心與視口設定 -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content" />
-    <meta name="theme-color" content="#212121" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Color Mapper</title>
     
+    <!-- 2. 瀏覽器 UI 主題色 -->
+    <meta name="theme-color" content="#212121" />
+    
+    <!-- 3. 網頁標題與圖示 -->
+    <title>Color Mapper</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- 4. Open Graph 社群分享預覽卡片 -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://color-mapper.vercel.app" />
+    <meta property="og:title" content="顏色命名實驗 SemanticColorMapper" />
+    <meta property="og:description" content="協助建立人類對顏色的感知地圖。你會如何形容這個顏色？" />
+    <meta property="og:image" content="https://color-mapper.vercel.app/og-image.png" />
+
     <!-- 
       暫時封印 Web Fonts，目前全依賴系統內建字體 (System Fonts)
       
