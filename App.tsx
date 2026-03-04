@@ -456,7 +456,7 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-theme-page text-white relative overflow-x-hidden selection:bg-white/30">
+    <div className="min-h-screen bg-theme-page text-white relative selection:bg-white/30">
       {/* Immersive Dynamic Background (Restored huge size, extended top for rubber-banding) */}
       <div
         className="absolute -top-[10rem] left-0 right-0 bottom-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
