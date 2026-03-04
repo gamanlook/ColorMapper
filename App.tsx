@@ -457,16 +457,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
-      {/* Immersive Dynamic Background (Giant Circle Approach) */}
-      <div
-        className="absolute left-1/2 w-[150vw] h-[150vw] min-w-[800px] min-h-[800px] max-w-[1400px] max-h-[1400px] opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
-        style={{
-          top: "90vh",
-          transform: "translate(-50%, -50%)",
-          background: `radial-gradient(circle, ${dynamicBgColor} 0%, transparent 70%)`,
-        }}
-      />
-
       {/* Noise Overlay for texture */}
       <div
         className="absolute inset-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
