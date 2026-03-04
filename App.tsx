@@ -185,7 +185,7 @@ function App() {
     const testColor = currentColor || generateRandomColor(25, false);
     setToast({
       color: testColor,
-      name: suspicious ? "奇怪的名字" : "標準色名",
+      name: suspicious ? "測試：奇怪名" : "測試：標準色名",
       hueDef: HUES.find((h) => h.angle === testColor.h) || HUES[0],
       isSuspicious: suspicious,
       feedback: suspicious
