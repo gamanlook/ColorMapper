@@ -461,7 +461,7 @@ function App() {
       <div
         className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 50% 60%, ${dynamicBgColor} 0%, transparent 80%)`,
+          background: `radial-gradient(circle at 50% 45%, ${dynamicBgColor} 0%, transparent 70%)`,
         }}
       />
 
