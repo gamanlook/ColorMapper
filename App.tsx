@@ -456,7 +456,7 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-theme-page text-white relative overflow-x-hidden selection:bg-white/30">
+    <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
       {/* Immersive Dynamic Background */}
       <div
         className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
@@ -490,7 +490,7 @@ function App() {
 
       <div className="relative z-10 w-full max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row">
         {/* Left Pane: Color Tester (Hero) */}
-        <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 lg:p-12 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:border-r border-white/10">
+        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 lg:border-r border-white/10">
           {/* Header */}
           {renderHeader("left")}
 
@@ -621,7 +621,7 @@ function App() {
         </div>
 
         {/* Right Pane: Semantic Map */}
-        <div className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 lg:p-12 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
+        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
           {/* Invisible Header for alignment on desktop */}
           {renderHeader("right")}
 
