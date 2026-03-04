@@ -456,18 +456,19 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
-      {/* Immersive Dynamic Background */}
+    <div className="min-h-screen bg-theme-page text-white relative overflow-x-hidden selection:bg-white/30">
+      {/* Immersive Dynamic Background (Restored huge size, extended top for rubber-banding) */}
       <div
-        className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
+        className="absolute -top-[10rem] left-0 right-0 bottom-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 50% 30%, ${dynamicBgColor} 0%, transparent 70%)`,
+          //目標要往下走 10rem，但 CSS 的 30% 已經幫我們多走了 3rem，所以我們還差 7rem
+          background: `radial-gradient(circle at 50% calc(30% + 7rem), ${dynamicBgColor} 0%, transparent 70%)`,
         }}
       />
 
-      {/* Noise Overlay for texture */}
+      {/* Noise Overlay for texture (Extended top for rubber-banding) */}
       <div
-        className="absolute inset-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
+        className="absolute -top-[10rem] left-0 right-0 bottom-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
         style={{
           backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(noiseSvg)}")`,
         }}
