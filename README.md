@@ -12,7 +12,7 @@
 
 <br>
 
-<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/7bb45f09-8d5a-414d-a1f8-bbc4900e9c2b" />
+<img width="1200" height="630" alt="image" src="https://github.com/user-attachments/assets/fa95eb49-6e4c-453f-be71-07fc7665c397" />
 
 <br>
 
