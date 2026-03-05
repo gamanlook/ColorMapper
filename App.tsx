@@ -275,7 +275,7 @@ function App() {
   // SVG 噪點設定
   const noiseSvg = `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <filter id="noiseFilter" filterRes="200">
+      <filter id="noiseFilter" filterRes="600">
         <feTurbulence
           type="fractalNoise"
           baseFrequency="5"
