@@ -587,7 +587,7 @@ function App() {
           </div>
 
           {/* Footer of Left Pane */}
-          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
+          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase">
             <span>OKLch Color Space</span>
             <span>AI Verified</span>
           </div>
