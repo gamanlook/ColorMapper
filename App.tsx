@@ -16,13 +16,13 @@ function App() {
   const [entries, setEntries] = useState<ColorEntry[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isCloudMode, setIsCloudMode] = useState(false);
-  const [currentHueIndex, setCurrentHueIndex] = useState<number>(0);
+  const[currentHueIndex, setCurrentHueIndex] = useState<number>(0);
   const [currentColor, setCurrentColor] = useState<OklchColor | null>(null);
   const [isFirstQuestion, setIsFirstQuestion] = useState(true);
   const [quizFilter, setQuizFilter] = useState<number | "all">("all");
   const [viewHueAngle, setViewHueAngle] = useState<number>(HUES[0].angle);
   const [showHex, setShowHex] = useState(false);
-  const [toast, setToast] = useState<ToastData | null>(null);
+  const[toast, setToast] = useState<ToastData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
 
@@ -63,7 +63,7 @@ function App() {
 
     const cleanup = checkFirebase();
     return () => cleanup();
-  }, []);
+  },[]);
 
   useEffect(() => {
     if (!currentColor) {
@@ -71,7 +71,7 @@ function App() {
       setCurrentHueIndex(randIdx);
       setCurrentColor(generateRandomColor(HUES[randIdx].angle, true));
     }
-  }, []);
+  },[]);
 
   useEffect(() => {
     if (!isCloudMode && hasLoaded && entries.length > 0) {
@@ -99,7 +99,7 @@ function App() {
         (currentHueIndex + 1) % len,
       ]);
 
-      const candidates: number[] = [];
+      const candidates: number[] =[];
       for (let i = 0; i < len; i++) {
         if (!forbiddenIndices.has(i)) {
           candidates.push(i);
@@ -242,7 +242,7 @@ function App() {
         } else {
           setEntries((prev) => {
             const currentHumanEntries = prev.filter((entry) => !entry.isSeed);
-            const merged = [...currentHumanEntries, ...importedData];
+            const merged =[...currentHumanEntries, ...importedData];
             const uniqueMap = new Map();
             merged.forEach((item) => {
               if (item.id) uniqueMap.set(item.id, item);
@@ -310,7 +310,6 @@ function App() {
             : "max-w-[40px] gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
         } ${pane === "left" ? "lg:hidden" : ""}`}
         style={{
-          // 顏色圖層疊加。上層：白 5% (用相同的起終點做出純色漸層)。下層：題目顏色 10%
           background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), color-mix(in srgb, ${dynamicBgColor} 10%, transparent)`
         }}
       >
@@ -344,19 +343,12 @@ function App() {
               </mask>
             </defs>
             <g clipPath={`url(#circleClip-${pane})`}>
-              {/* 1. 最底層背景 (0.1) */}
               <circle cx="18" cy="18" r="18" fill="white" fillOpacity="0.1" />
-              {/* 2. 身體 (0.2) - 獨立拆分，被頭部挖洞 */}
               <ellipse cx="16.5" cy="34" rx="14.5" ry="11" fill="white" fillOpacity="0.2" mask={`url(#cutHead-${pane})`} />
-              {/* 3. 脖子 (0.2) - 獨立拆分，被頭部挖洞 */}
               <ellipse cx="17" cy="26" rx="5" ry="4" fill="white" fillOpacity="0.2" mask={`url(#cutHead-${pane})`} />
-              {/* 4. 頭部 (0.9) - 被外眼圈挖洞 */}
               <circle cx="18" cy="16" r="11" fill="white" fillOpacity="0.9" mask={`url(#cutOuterEye-${pane})`} />
-              {/* 5. 外眼圈 (0.5) - 被中眼圈挖洞 */}
               <circle cx="20" cy="15" r="6" fill="white" fillOpacity="0.5" mask={`url(#cutInnerEye-${pane})`} />
-              {/* 6. 中眼圈 (0.2) - 被瞳孔挖洞 */}
               <circle cx="20" cy="15" r="4" fill="white" fillOpacity="0.2" mask={`url(#cutPupil-${pane})`} />
-              {/* 7. 瞳孔 - 因為被挖空了，直接透視到最底層背景 */}
             </g>
           </svg>
         </button>
@@ -480,90 +472,155 @@ function App() {
       />
 
       <div className="relative z-10 w-full max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row">
-        {/* Left Pane: Color Tester (Hero) */}
+        
+        {/* ======================= Left Pane ======================= */}
         <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 lg:border-r border-white/10">
+          
           {/* Header */}
           {renderHeader("left")}
 
-          {/* Main Tester Area */}
-          <div className="flex-1 flex flex-col pt-8 pb-8 relative">
-            <div className="flex justify-between items-end mb-8 gap-2">
-              <div className="min-w-0 flex-1">
-                <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
-                  Perception Test
-                </h2>
-                <p className="text-2xl font-bold tracking-tight truncate">
-                  形容顏色
-                </p>
+          <div className="flex-1 flex flex-col pt-8 pb-8 lg:pb-16 relative justify-center items-center">
+            
+            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[640px]">
+              
+              <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
+                    Perception Test
+                  </h2>
+                  <p className="text-2xl font-bold tracking-tight truncate">
+                    形容顏色
+                  </p>
+                </div>
+
+                {/* Quiz Filter Dropdown */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowHex(!showHex)}
+                    className="relative p-0.5 rounded-full bg-white/5 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/10"
+                    title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
+                  >
+                    {/* Sliding Background */}
+                    <div
+                      className={`absolute left-0.5 top-0.5 w-8 h-8 bg-white/15 rounded-full transition-transform duration-300 ease-out ${
+                        showHex ? "translate-x-7" : "translate-x-0"
+                      }`}
+                    ></div>
+
+                    {/* Icon Group Wrapper */}
+                    <div className="relative z-10 flex -space-x-1">
+                      {/* LCH Icon */}
+                      <div
+                        className={`w-8 h-8 flex items-center justify-center rounded-full transition-opacity duration-300 ${
+                          !showHex ? "opacity-100" : "opacity-60"
+                        }`}
+                      >
+                        <svg className="w-4 h-4 text-theme-text-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="1 5 1 19 5 19" />
+                          <polyline points="17.5 5 17.5 19" />
+                          <polyline points="17.5 12 23 12" />
+                          <polyline points="23 5 23 19" />
+                          <path d="M 13.8398 8.3799 C 13.7624 7.6446 13.6671 6.8699 13.3242 6.2031 C 12.878 5.3356 11.9882 4.75 11 4.75 C 10.0118 4.75 9.122 5.3356 8.6758 6.2031 C 8.3329 6.8699 8.2376 7.6446 8.1602 8.3799 C 8.058 9.3507 8 10.6296 8 12 C 8 13.3704 8.058 14.6493 8.1602 15.6201 C 8.2376 16.3554 8.3329 17.1301 8.6758 17.7969 C 9.122 18.6644 10.0118 19.25 11 19.25 C 11.9882 19.25 12.878 18.6644 13.3242 17.7969 C 13.6671 17.1301 13.7624 16.3554 13.8398 15.6201" />
+                        </svg>
+                      </div>
+
+                      {/* #Hex Icon */}
+                      <div
+                        className={`w-8 h-8 flex items-center justify-center rounded-full transition-opacity duration-300 ${
+                          showHex ? "opacity-100" : "opacity-60"
+                        }`}
+                      >
+                        <svg className="w-4 h-4 text-theme-text-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="5.25" y1="9" x2="19.5" y2="9" />
+                          <line x1="4.5" y1="15" x2="18.75" y2="15" />
+                          <line x1="10" y1="4" x2="8" y2="20" />
+                          <line x1="16" y1="4" x2="14" y2="20" />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+
+                  <div className="relative flex-shrink-0 group">
+                    <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
+                      <span className="text-xs/3 font-medium whitespace-nowrap">
+                        {getQuizFilterLabel()}
+                      </span>
+                      <svg
+                        className="w-4 h-4 text-theme-text-soft flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                    <select
+                      value={quizFilter === "all" ? "all" : quizFilter}
+                      onChange={(e) => handleQuizFilterChange(e.target.value)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    >
+                      <option value="all">隨機出題</option>
+                      {HUES.map((h) => (
+                        <option key={h.id} value={h.angle}>
+                          {h.nameZH} ({h.angle}°)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              {/* Quiz Filter Dropdown */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowHex(!showHex)}
-                  className="relative p-0.5 rounded-full bg-white/5 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/10"
-                  title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
-                >
-                  {/* Sliding Background */}
-                  <div
-                    className={`absolute left-0.5 top-0.5 w-8 h-8 bg-white/15 rounded-full transition-transform duration-300 ease-out ${
-                      showHex ? "translate-x-7" : "translate-x-0"
-                    }`}
-                  ></div>
+              {currentColor && (
+                <ColorTester
+                  color={currentColor}
+                  hueDef={currentHueDef}
+                  onSubmit={handleSubmit}
+                  onSkip={handleNextColor}
+                  showHex={showHex}
+                />
+              )}
+            </div>
+            {/* End of Magic Green Box */}
+          </div>
 
-                  {/* Icon Group Wrapper */}
-                  <div className="relative z-10 flex -space-x-1">
-                    {/* LCH Icon */}
-                    <div
-                      className={`w-8 h-8 flex items-center justify-center rounded-full transition-opacity duration-300 ${
-                        !showHex ? "opacity-100" : "opacity-60"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4 text-theme-text-main"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="1 5 1 19 5 19" />
-                        <polyline points="17.5 5 17.5 19" />
-                        <polyline points="17.5 12 23 12" />
-                        <polyline points="23 5 23 19" />
-                        <path d="M 13.8398 8.3799 C 13.7624 7.6446 13.6671 6.8699 13.3242 6.2031 C 12.878 5.3356 11.9882 4.75 11 4.75 C 10.0118 4.75 9.122 5.3356 8.6758 6.2031 C 8.3329 6.8699 8.2376 7.6446 8.1602 8.3799 C 8.058 9.3507 8 10.6296 8 12 C 8 13.3704 8.058 14.6493 8.1602 15.6201 C 8.2376 16.3554 8.3329 17.1301 8.6758 17.7969 C 9.122 18.6644 10.0118 19.25 11 19.25 C 11.9882 19.25 12.878 18.6644 13.3242 17.7969 C 13.6671 17.1301 13.7624 16.3554 13.8398 15.6201" />
-                      </svg>
-                    </div>
+          {/* Footer of Left Pane */}
+          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
+            <span>OKLch Color Space</span>
+            <span>AI Verified</span>
+          </div>
+        </div>
 
-                    {/* #Hex Icon */}
-                    <div
-                      className={`w-8 h-8 flex items-center justify-center rounded-full transition-opacity duration-300 ${
-                        showHex ? "opacity-100" : "opacity-60"
-                      }`}
-                    >
-                      <svg
-                        className="w-4 h-4 text-theme-text-main"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="5.25" y1="9" x2="19.5" y2="9" />
-                        <line x1="4.5" y1="15" x2="18.75" y2="15" />
-                        <line x1="10" y1="4" x2="8" y2="20" />
-                        <line x1="16" y1="4" x2="14" y2="20" />
-                      </svg>
-                    </div>
-                  </div>
-                </button>
 
+        {/* ======================= Right Pane ======================= */}
+        {/* 手機版設定：h-auto 已經確保了「內容有多少就長多高，Hug content」。
+            電腦版設定：保留 lg:min-h-screen 來跟左邊切齊。 */}
+        <div className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
+          
+          {/* Invisible Header for alignment on desktop */}
+          {renderHeader("right")}
+
+          <div className="flex-1 flex flex-col pt-0 pb-20 lg:pt-8 lg:pb-16 relative lg:justify-center lg:items-center">
+            
+            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[640px]">
+              
+              <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
+                    Consensus Map
+                  </h2>
+                  <p className="text-2xl font-bold tracking-tight truncate">
+                    色彩分布
+                  </p>
+                </div>
+
+                {/* View Filter Dropdown */}
                 <div className="relative flex-shrink-0 group">
                   <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
                     <span className="text-xs/3 font-medium whitespace-nowrap">
-                      {getQuizFilterLabel()}
+                      {getViewHueLabel()}
                     </span>
                     <svg
                       className="w-4 h-4 text-theme-text-soft flex-shrink-0"
@@ -578,11 +635,10 @@ function App() {
                     </svg>
                   </div>
                   <select
-                    value={quizFilter === "all" ? "all" : quizFilter}
-                    onChange={(e) => handleQuizFilterChange(e.target.value)}
+                    value={viewHueAngle}
+                    onChange={(e) => setViewHueAngle(Number(e.target.value))}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   >
-                    <option value="all">隨機出題</option>
                     {HUES.map((h) => (
                       <option key={h.id} value={h.angle}>
                         {h.nameZH} ({h.angle}°)
@@ -591,93 +647,29 @@ function App() {
                   </select>
                 </div>
               </div>
-            </div>
 
-            {currentColor && (
-              <ColorTester
-                color={currentColor}
-                hueDef={currentHueDef}
-                onSubmit={handleSubmit}
-                onSkip={handleNextColor}
-                showHex={showHex}
-              />
-            )}
-          </div>
-
-          {/* Footer of Left Pane */}
-          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase">
-            <span>OKLch Color Space</span>
-            <span>AI Verified</span>
-          </div>
-        </div>
-
-        {/* Right Pane: Semantic Map */}
-        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
-          {/* Invisible Header for alignment on desktop */}
-          {renderHeader("right")}
-
-          <div className="flex-1 flex flex-col pt-0 pb-8 lg:pt-8 relative">
-            <div className="flex justify-between items-end mb-8 gap-2">
-              <div className="min-w-0 flex-1">
-                <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
-                  Consensus Map
-                </h2>
-                <p className="text-2xl font-bold tracking-tight truncate">
-                  色彩分布
-                </p>
-              </div>
-
-              {/* View Filter Dropdown */}
-              <div className="relative flex-shrink-0 group">
-                <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
-                  <span className="text-xs/3 font-medium whitespace-nowrap">
-                    {getViewHueLabel()}
-                  </span>
-                  <svg
-                    className="w-4 h-4 text-theme-text-soft flex-shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                <select
-                  value={viewHueAngle}
-                  onChange={(e) => setViewHueAngle(Number(e.target.value))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                >
-                  {HUES.map((h) => (
-                    <option key={h.id} value={h.angle}>
-                      {h.nameZH} ({h.angle}°)
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center pt-2">
-              <SemanticMap
-                hue={viewHueAngle}
-                data={entries}
-                currentColor={currentColor}
-                width={448}
-                height={448}
-              />
-              <div className="mt-8 flex gap-8 text-[0.625rem] font-mono tracking-wide text-theme-text-muted uppercase">
-                <div className="flex items-center gap-2">
-                  <span className="w-px h-3 bg-theme-text-muted"></span>
-                  <span>L：Lightness(%) 體感亮度</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-px h-3 bg-theme-text-muted rotate-90"></span>
-                  <span>C：Chroma 濃豔值</span>
+              <div className="flex flex-col items-center pt-2">
+                <SemanticMap
+                  hue={viewHueAngle}
+                  data={entries}
+                  currentColor={currentColor}
+                  width={448}
+                  height={448}
+                />
+                <div className="mt-8 flex gap-8 text-[0.625rem] font-mono tracking-wide text-theme-text-muted uppercase">
+                  <div className="flex items-center gap-2">
+                    <span className="w-px h-3 bg-theme-text-muted"></span>
+                    <span>L：Lightness(%) 體感亮度</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-px h-3 bg-theme-text-muted rotate-90"></span>
+                    <span>C：Chroma 濃豔值</span>
+                  </div>
                 </div>
               </div>
+
             </div>
+            {/* End of Magic Green Box */}
           </div>
 
           {/* Invisible Footer for alignment on desktop */}
