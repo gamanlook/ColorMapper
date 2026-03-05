@@ -304,11 +304,15 @@ function App() {
       </div>
 
       <div
-        className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center bg-white/5 ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-[40px] ${
+        className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-[40px] ${
           isProfileExpanded
             ? "max-w-[500px] gap-1"
             : "max-w-[40px] gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
         } ${pane === "left" ? "lg:hidden" : ""}`}
+        style={{
+          // 顏色圖層疊加。上層：白 5% (用相同的起終點做出純色漸層)。下層：題目顏色 10%
+          background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), color-mix(in srgb, ${dynamicBgColor} 10%, transparent)`
+        }}
       >
         <button
           onClick={() => setIsProfileExpanded(!isProfileExpanded)}
@@ -452,7 +456,7 @@ function App() {
 
       {/* Noise Overlay for texture */}
       <div
-        className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.35] pointer-events-none mix-blend-overlay"
         style={{
           backgroundImage: `url("/noise.jpg")`,
           backgroundRepeat: "repeat",
