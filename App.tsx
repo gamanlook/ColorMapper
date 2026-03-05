@@ -461,7 +461,7 @@ function App() {
       <div
         className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 50% 45%, ${dynamicBgColor} 0%, transparent 80%)`,
+          background: `radial-gradient(circle at 50% 42%, ${dynamicBgColor} 0%, transparent 80%)`,
         }}
       />
 
@@ -626,7 +626,7 @@ function App() {
           {renderHeader("right")}
 
           <div className="flex-1 flex flex-col pt-0 pb-8 lg:pt-8 relative">
-            <div className="flex justify-between items-end mb-10 gap-2">
+            <div className="flex justify-between items-end mb-8 gap-2">
               <div className="min-w-0 flex-1">
                 <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
                   Consensus Map
@@ -668,7 +668,7 @@ function App() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center pt-2">
               <SemanticMap
                 hue={viewHueAngle}
                 data={entries}
