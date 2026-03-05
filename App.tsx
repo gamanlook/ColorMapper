@@ -275,7 +275,7 @@ function App() {
   // SVG 噪點設定
   const noiseSvg = `
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <filter id="noiseFilter">
+      <filter id="noiseFilter" filterRes="200">
         <feTurbulence
           type="fractalNoise"
           baseFrequency="5"
@@ -614,7 +614,7 @@ function App() {
           </div>
 
           {/* Footer of Left Pane */}
-          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
+          <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase">
             <span>OKLch Color Space</span>
             <span>AI Verified</span>
           </div>
