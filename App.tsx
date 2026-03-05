@@ -272,21 +272,6 @@ function App() {
 
   const dynamicBgColor = currentColor ? toCss(currentColor) : "transparent";
 
-  // SVG 噪點設定
-  const noiseSvg = `
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <filter id="noiseFilter"">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="5"
-          numOctaves="1"
-          stitchTiles="stitch"
-        />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-    </svg>
-  `;
-
   const renderHeader = (pane: "left" | "right") => (
     <header
       className={`relative flex justify-between items-start ${
@@ -467,9 +452,11 @@ function App() {
 
       {/* Noise Overlay for texture */}
       <div
-        className="absolute inset-0 opacity-[0.9] pointer-events-none mix-blend-overlay"
+        className="absolute inset-0 opacity-30 pointer-events-none mix-blend-overlay"
         style={{
-          backgroundImage: `url("data:image/svg+xml,${encodeURIComponent(noiseSvg)}")`,
+          backgroundImage: `url("/noise.jpg")`,
+          backgroundRepeat: "repeat",
+          backgroundSize: "64px 64px",
         }}
       ></div>
 
