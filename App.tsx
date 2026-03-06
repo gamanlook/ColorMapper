@@ -274,7 +274,7 @@ function App() {
 
   const renderHeader = (pane: "left" | "right") => (
     <header
-      className={`relative flex justify-between items-start ${
+      className={`relative flex justify-between items-end ${
         pane === "right" ? "hidden lg:flex" : ""
       }`}
     >
@@ -304,10 +304,10 @@ function App() {
       </div>
 
       <div
-        className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-[40px] ${
+        className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-10 ${
           isProfileExpanded
             ? "max-w-[500px] gap-1"
-            : "max-w-[40px] gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
+            : "max-w-10 gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
         } ${pane === "left" ? "lg:hidden" : ""}`}
         style={{
           background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), color-mix(in srgb, ${dynamicBgColor} 10%, transparent)`
@@ -481,7 +481,7 @@ function App() {
 
           <div className="flex-1 flex flex-col pt-8 pb-8 lg:pb-16 relative justify-center items-center">
             
-            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[640px]">
+            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[42rem]">
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
@@ -583,7 +583,6 @@ function App() {
                 />
               )}
             </div>
-            {/* End of Magic Green Box */}
           </div>
 
           {/* Footer of Left Pane */}
@@ -604,7 +603,7 @@ function App() {
 
           <div className="flex-1 flex flex-col pt-0 pb-20 lg:pt-8 lg:pb-16 relative lg:justify-center lg:items-center">
             
-            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[640px]">
+            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[42rem]">
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
@@ -669,7 +668,6 @@ function App() {
               </div>
 
             </div>
-            {/* End of Magic Green Box */}
           </div>
 
           {/* Invisible Footer for alignment on desktop */}
