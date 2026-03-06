@@ -29,19 +29,71 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
   height = 360,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [hoveredCluster, setHoveredCluster] = useState<SemanticCluster | null>(
-    null,
-  );
+  
+  // D3 偵測到的目標
+  const [hoveredCluster, setHoveredCluster] = useState<SemanticCluster | null>(null);
+
+  // ==========================================
+  // ✨ Tooltip 動畫狀態機 (支援進退場與高度形變)
+  // ==========================================
+  const[tooltipData, setTooltipData] = useState<SemanticCluster | null>(null);
+  const[isTooltipVisible, setIsTooltipVisible] = useState(false);
+  const [isTooltipRendered, setIsTooltipRendered] = useState(false);
+  const exitTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 用來記錄「實際像素高度」的 state 與內部內容的 ref
+  const [tooltipHeight, setTooltipHeight] = useState<number | undefined>(undefined);
+  const tooltipContentRef = useRef<HTMLDivElement>(null);
+
+  // 隱形皮尺：動態測量內容高度，讓 CSS 可以執行 transition 形變
+  useEffect(() => {
+    if (!tooltipContentRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      // 取得內部容器瞬間渲染出來的精確高度
+      const newHeight = tooltipContentRef.current?.offsetHeight;
+      if (newHeight) {
+        setTooltipHeight(newHeight);
+      }
+    });
+    
+    observer.observe(tooltipContentRef.current);
+    return () => observer.disconnect();
+  }, [isTooltipRendered]);
+
+  // 進退場狀態控制
+  useEffect(() => {
+    if (hoveredCluster) {
+      if (exitTimeoutRef.current) clearTimeout(exitTimeoutRef.current);
+      
+      setTooltipData(hoveredCluster);
+      setIsTooltipRendered(true);
+      
+      const enterTimer = setTimeout(() => {
+        setIsTooltipVisible(true);
+      }, 10);
+      return () => clearTimeout(enterTimer);
+    } else {
+      setIsTooltipVisible(false);
+      
+      exitTimeoutRef.current = setTimeout(() => {
+        setIsTooltipRendered(false);
+        setTooltipData(null);
+        setTooltipHeight(undefined);
+      }, 300);
+    }
+  }, [hoveredCluster]);
+  // ==========================================
 
   const hueData = useMemo(() => {
     return data.filter((d) => d.color.h === hue && !d.isSuspicious);
   }, [data, hue]);
 
   const semanticClusters = useMemo(() => {
-    if (hueData.length === 0) return [];
+    if (hueData.length === 0) return[];
 
     const rawGroups = d3.group(hueData, (d) => d.name);
-    let clusters: any[] = [];
+    let clusters: any[] =[];
 
     rawGroups.forEach((entries, name) => {
       const avgL = d3.mean(entries, (d) => d.color.l) || 0;
@@ -88,7 +140,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         const newC = (c1.c * c1.totalVotes + c2.c * c2.totalVotes) / totalVotes;
 
         const mergedCluster = {
-          names: [...c1.names, ...c2.names],
+          names:[...c1.names, ...c2.names],
           l: newL,
           c: newC,
           totalVotes: totalVotes,
@@ -153,7 +205,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
       .attr("class", "layer-hover");
     const layerTarget = mainChartGroup
       .append("g")
-      .attr("class", "layer-target");
+      .attr("class", "layer-target")
+      .style("pointer-events", "none");
     const layerAxes = mainChartGroup.append("g").attr("class", "layer-axes");
 
     const gamutPoints: [number, number][] = [];
@@ -211,7 +264,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         let labelY = yScale(cluster.l);
         const polygon = voronoi.cellPolygon(i);
         if (polygon && polygon.length > 0) {
-          const [px, py] = d3.polygonCentroid(polygon);
+          const[px, py] = d3.polygonCentroid(polygon);
           if (!isNaN(px) && !isNaN(py)) {
             labelX = px;
             labelY = py;
@@ -248,7 +301,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
             d3.select(`#label-${hue}-${i}`).attr("opacity", 0);
 
             // Draw 3-layer text in layerHover
-            // Layer 1: Multiply Shadow
             layerHover
               .append("text")
               .attr("x", labelX)
@@ -264,7 +316,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
               .text(cluster.displayLabel)
               .attr("pointer-events", "none");
 
-            // Layer 2: Color Burn Shadow
             layerHover
               .append("text")
               .attr("x", labelX)
@@ -280,7 +331,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
               .text(cluster.displayLabel)
               .attr("pointer-events", "none");
 
-            // Layer 3: Main White Text
             layerHover
               .append("text")
               .attr("x", labelX)
@@ -304,7 +354,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
             d3.select(`#label-${hue}-${i}`).attr("opacity", 1);
           });
 
-        // Base Label (Only main white text, shadows are added on hover)
         layerLabels
           .append("text")
           .attr("id", `label-${hue}-${i}`)
@@ -342,7 +391,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
     if (currentColor && currentColor.h === hue) {
       const cx = xScale(currentColor.c);
       const cy = yScale(currentColor.l);
-      const isBright = currentColor.l > 0.5;
 
       const pulseG = layerTarget.append("g");
       pulseG
@@ -413,7 +461,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
       .attr("stroke", "currentColor");
   }, [hue, hueData, currentColor, width, height, semanticClusters]);
 
-
   return (
     <div className="relative flex justify-center w-full max-w-[480px]">
       <div className="isolate w-full">
@@ -425,44 +472,108 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         />
       </div>
 
-      {hoveredCluster && (
-        <div className="absolute -bottom-4 -right-2 bg-theme-toast-bg backdrop-blur-2xl p-4 pb-0 rounded-2xl shadow-2xl border border-theme-toast-border text-sm z-10 pointer-events-none transform transition-all duration-200 min-w-[180px]">
-          <div className="font-bold text-text-main mb-2 flex items-center gap-2 text-lg">
-            <span
-              className="w-5 h-5 rounded-full border border-white/30 shadow-sm"
-              style={{
-                backgroundColor: toCss({
-                  l: hoveredCluster.l,
-                  c: hoveredCluster.c,
-                  h: hue,
-                }),
-              }}
-            ></span>
-            {hoveredCluster.displayLabel}
+      {/* Tooltip */}
+      {isTooltipRendered && tooltipData && (
+        <div 
+          className={`
+            absolute -bottom-4 -right-2 z-10 pointer-events-none 
+            bg-theme-toast-bg rounded-2xl shadow-2xl border border-theme-toast-border 
+            text-sm min-w-[180px] overflow-hidden
+            transform will-change-[transform,height,opacity] 
+            /* 這裡刪除了原本的 transition-all duration-500，交給下方的 style 獨立控制 */
+            ${
+              isTooltipVisible
+                ? "translate-y-0 opacity-100 backdrop-blur-2xl scale-100"
+                : "translate-y-4 opacity-0 backdrop-blur-none scale-95"
+            }
+          `}
+          style={{ 
+            height: tooltipHeight ? `${tooltipHeight + 2}px` : "auto",
+            // 高度 (A到B形變) 給 1000ms
+            transition: `
+              height 1000ms cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 500ms cubic-bezier(0.16, 1, 0.3, 1), 
+              backdrop-filter 500ms cubic-bezier(0.16, 1, 0.3, 1),
+              -webkit-backdrop-filter 500ms cubic-bezier(0.16, 1, 0.3, 1)
+            `
+          }}
+        >
+          {/*
+            ==================================================
+            📐 第一層：隱形皮尺區 (Measuring Div)用來讓 Observer 瞬間量出正確的未來高度。
+            注意：這裡的結構要跟下面完全同步！
+            ==================================================
+          */}
+          <div
+            ref={tooltipContentRef}
+            className="invisible absolute top-0 left-0 w-full p-4 pb-0 flex flex-col"
+            aria-hidden="true"
+          >
+            <div className="font-bold text-lg mb-2 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full border" />
+              {tooltipData.displayLabel}
+            </div>
+            <div className="space-y-1.5 pb-3">
+              {tooltipData.composition.map((item, idx) => (
+                <div key={`measure-${item.name}`} className="flex justify-between text-xs">
+                  <span>{item.name}</span>
+                  <span>{item.percentage}%</span>
+                </div>
+              ))}
+            </div>
+            <div className="py-3 border-t text-[0.625rem] font-mono tracking-wider uppercase">
+              Total Votes: {tooltipData.totalVotes}
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            {hoveredCluster.composition.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center text-xs"
-              >
-                <span
-                  className={
-                    idx === 0 ? "text-white font-medium" : "text-white/50"
-                  }
-                >
-                  {item.name}
-                </span>
-                <span className="text-white/50 ml-4 font-mono">
-                  {item.percentage}%
-                </span>
+          {/*
+            ==================================================
+            📺 第二層：實際顯示區 (Display Div)
+            ==================================================
+          */}
+          <div className="absolute inset-0 w-full h-full flex flex-col p-4 pb-0">
+            
+            {/* Header：禁止壓縮 (shrink-0) */}
+            <div className="font-bold text-text-main mb-2 flex items-center gap-2 text-lg shrink-0">
+              <span
+                className="w-5 h-5 rounded-full border border-white/30 shadow-sm transition-colors duration-0"
+                style={{
+                  backgroundColor: toCss({
+                    l: tooltipData.l,
+                    c: tooltipData.c,
+                    h: hue,
+                  }),
+                }}
+              ></span>
+              {tooltipData.displayLabel}
+            </div>
+
+            {/* List：形變空間 */}
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              {/* 透過 absolute 確保內容不會因為容器縮小而被暴力壓扁 */}
+              <div className="space-y-1.5 pb-3 absolute top-0 left-0 w-full">
+                {tooltipData.composition.map((item, idx) => (
+                  <div
+                    key={`display-${item.name}`} 
+                    className="flex justify-between items-center text-xs"
+                  >
+                    <span className={idx === 0 ? "text-white font-medium" : "text-white/50"}>
+                      {item.name}
+                    </span>
+                    <span className="text-white/50 ml-4 font-mono">
+                      {item.percentage}%
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="mt-3 py-3 border-t border-white/10 text-[0.625rem] font-mono tracking-wider text-white/30 uppercase">
-            Total Votes: {hoveredCluster.totalVotes}
+            {/* Footer：永遠平滑地黏在板子最底端 */}
+            <div className="py-3 border-t border-white/10 text-[0.625rem] font-mono tracking-wider text-white/30 uppercase shrink-0 transition-colors duration-0">
+              Total Votes: {tooltipData.totalVotes}
+            </div>
+            
           </div>
         </div>
       )}
