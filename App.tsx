@@ -270,7 +270,7 @@ function App() {
     return hue ? `${hue.nameZH} (${hue.angle}°)` : "";
   };
 
-  const dynamicBgColor = currentColor ? toCss(currentColor) : "transparent";
+  const oklchValues = currentColor ? `${currentColor.l} ${currentColor.c} ${currentColor.h}` : "0 0 0";
 
   const renderHeader = (pane: "left" | "right") => (
     <header
@@ -310,7 +310,7 @@ function App() {
             : "max-w-10 gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
         } ${pane === "left" ? "lg:hidden" : ""}`}
         style={{
-          background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), color-mix(in srgb, ${dynamicBgColor} 10%, transparent)`
+          background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), oklch(${oklchValues} / 0.1)`
         }}
       >
         <button
@@ -442,7 +442,7 @@ function App() {
       <div
         className="absolute inset-0 opacity-40 transition-colors duration-1000 ease-in-out pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 50% 45%, ${dynamicBgColor} 0%, transparent 80%)`,
+          background: `radial-gradient(circle at 50% 45%, oklch(${oklchValues}) 0%, transparent 80%)`,
         }}
       />
 
