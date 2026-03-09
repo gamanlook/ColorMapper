@@ -507,22 +507,22 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
           */}
           <div
             ref={tooltipContentRef}
-            className="invisible absolute top-0 left-0 w-full p-4 pb-0 flex flex-col"
+            className="invisible w-max min-w-[180px] max-w-[240px] p-4 pb-0 flex flex-col"
             aria-hidden="true"
           >
-            <div className="font-bold text-lg mb-2 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full border" />
-              {tooltipData.displayLabel}
+            <div className="font-bold text-lg/5 mb-3 flex items-start gap-2 shrink-0">
+              <span className="w-5 h-5 rounded-full border shrink-0" />
+              <span className="break-words">{tooltipData.displayLabel}</span>
             </div>
             <div className="space-y-1.5 pb-3">
               {tooltipData.composition.map((item, idx) => (
-                <div key={`measure-${item.name}`} className="flex justify-between text-xs">
-                  <span>{item.name}</span>
-                  <span>{item.percentage}%</span>
+                <div key={`measure-${item.name}`} className="flex justify-between items-start text-xs gap-4">
+                  <span className="break-words">{item.name}</span>
+                  <span className="shrink-0 font-mono">{item.percentage}%</span>
                 </div>
               ))}
             </div>
-            <div className="py-3 border-t text-[0.625rem] font-mono tracking-wider uppercase">
+            <div className="py-3 border-t text-[0.625rem] font-mono tracking-wider uppercase shrink-0">
               Total Votes: {tooltipData.totalVotes}
             </div>
           </div>
@@ -535,9 +535,9 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
           <div className="absolute inset-0 w-full h-full flex flex-col p-4 pb-0">
             
             {/* Header：禁止壓縮 (shrink-0) */}
-            <div className="font-bold text-text-main mb-2 flex items-center gap-2 text-lg shrink-0">
+            <div className="font-bold text-text-main mb-3 flex items-start gap-2 text-lg/5 shrink-0">
               <span
-                className="w-5 h-5 rounded-full border border-white/30 shadow-sm transition-colors duration-0"
+                className="w-5 h-5 rounded-full border border-white/30 shadow-sm transition-colors duration-0 shrink-0"
                 style={{
                   backgroundColor: toCss({
                     l: tooltipData.l,
@@ -546,7 +546,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
                   }),
                 }}
               ></span>
-              {tooltipData.displayLabel}
+              <span className="break-words">{tooltipData.displayLabel}</span>
             </div>
 
             {/* List：形變空間 */}
@@ -556,12 +556,12 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
                 {tooltipData.composition.map((item, idx) => (
                   <div
                     key={`display-${item.name}`} 
-                    className="flex justify-between items-center text-xs"
+                    className="flex justify-between items-start text-xs gap-4"
                   >
-                    <span className={idx === 0 ? "text-white font-medium" : "text-white/50"}>
+                    <span className={`break-words ${idx === 0 ? "text-white font-medium" : "text-white/50"}`}>
                       {item.name}
                     </span>
-                    <span className="text-white/50 ml-4 font-mono">
+                    <span className="text-white/50 shrink-0 font-mono">
                       {item.percentage}%
                     </span>
                   </div>
