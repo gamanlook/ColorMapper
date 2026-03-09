@@ -69,7 +69,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
     <div
       onClick={handleClick}
       className={`
-        fixed bottom-6 right-6 z-50 cursor-pointer 
+        fixed bottom-4 right-4 lg:bottom-8 lg:right-8 z-50 cursor-pointer 
         will-change-transform transform 
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
