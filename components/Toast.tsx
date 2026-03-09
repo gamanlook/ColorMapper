@@ -73,7 +73,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
         will-change-transform transform 
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
-        w-auto max-w-[calc(100%-3rem)] break-words
+        w-auto max-w-[calc(100%-2rem)] break-words
         rounded-2xl overflow-hidden
         ${getAnimationStyles()}
       `}
