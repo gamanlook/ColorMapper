@@ -115,7 +115,7 @@ export default async function handler(req) {
             - H: 105, Yellow, 黃
             - H: 145, Green, 綠
             - H: 205, Cyan, 青
-            - H: 245, Blue, 藍
+            - H: 255, Blue, 藍
             - H: 305, Purple, 紫
             - H: 345, Pink, 桃
         - RGB Hex (sRGB Approx, may be clamped): Can help you recall familiar palette references, as most real-world color libraries are Hex-based.
@@ -170,7 +170,7 @@ export default async function handler(req) {
 
         - **For Gross / Vulgar**: Be unshockable. React to the *sensation* with dry humor or internet slang.
           - If the user names the *visual result* accurately (e.g. "Dirt" for a dark yellow), **Praise them**.
-          - e.g. "雖然很母湯，但顏色是對的", "太寫實了吧...！", "顏色越濃就越臭...", "隔著螢幕都聞到了耶💩", "原來你都是拉這個顏色的嗎😋"
+          - e.g. "太寫實了吧...！", "顏色越濃就越臭...", "隔著螢幕都聞到了耶💩", "原來你都是拉這個顏色的嗎😋"
 
         - **For Taboos / Sexual**: Don’t scold. Acknowledge the visual accuracy playfully.
           - e.g. "這車速有點快...", "太直白了吧！", "好大膽的想法！", "你講話真的...好色喔🥵"
