@@ -49,6 +49,11 @@
 
 - `2026/03/09（一）序` **✅UI 2.0 — 沉浸式重塑與細節地獄**
   - 這次的更新我們告別了過去的框架，從視覺排版到微小動畫，進行了一次（多次）徹底的「質感大翻修」
+  - 翻修前：\
+    <img width="756" height="472" alt="image" src="https://github.com/user-attachments/assets/e34c24ef-2b16-4c71-b9b6-c79302542d0f" />
+  - 翻修後：\
+    <img width="756" height="472" alt="image" src="https://github.com/user-attachments/assets/4e482373-cc5d-457f-a2b9-ddfe71e41eb0" />
+
 
 - `2026/03/09（一）part.1` **🌌全螢幕深色沉浸體驗**
   - 重新定義了網站的視覺基調，讓網頁不再只是瀏覽器裡的一個視窗，而是一個完整的沉浸式空間
