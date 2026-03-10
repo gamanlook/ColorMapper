@@ -112,7 +112,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
             {data.isSuspicious ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className={`w-6 h-6 ${excludeIconColor} animate-[sink_0.6s_cubic-bezier(0.34,2,0.64,1)_0.2s_both]`}
+                className={`w-5 h-5 ${excludeIconColor} animate-[sink_0.6s_cubic-bezier(0.34,2,0.64,1)_0.2s_both]`}
                 viewBox="0 0 24 24"
                 fill="none"
               >
@@ -123,7 +123,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
             ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6 animate-[springUp_0.6s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]"
+                className="w-5 h-5 animate-[springUp_0.6s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]"
                 style={includeIconColor}
                 viewBox="0 0 24 24"
                 fill="none"
