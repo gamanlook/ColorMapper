@@ -477,7 +477,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         <div 
           className={`
             absolute -bottom-4 -right-2 z-10 pointer-events-none 
-            bg-theme-toast-bg rounded-2xl shadow-2xl border border-theme-toast-border 
+            bg-theme-tooltip-bg rounded-2xl shadow-2xl border border-theme-tooltip-border 
             text-sm min-w-[180px] overflow-hidden
             transform will-change-[transform,height,opacity] 
             /* 這裡刪除了原本的 transition-all duration-500，交給下方的 style 獨立控制 */
