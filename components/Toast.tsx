@@ -65,67 +65,79 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
     }
   };
 
+  const excludeIconColor = data.color.l > 0.7 ? "text-black/80" : "text-white/95";
+  const includeIconColor = data.color.l > 0.7 ? { color: `oklch(0.40 0.18 ${data.color.h} / 90%)` } : { color: "rgba(255, 255, 255, 0.95)" };
+
   return (
     <div
       onClick={handleClick}
       className={`
-        fixed bottom-4 right-4 lg:bottom-8 lg:right-8 z-50 cursor-pointer 
+        fixed bottom-4 right-4 lg:bottom-8 lg:left-1/2 lg:-translate-x-1/2 z-50 cursor-pointer 
         will-change-transform transform 
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
-        w-auto max-w-[calc(100%-2rem)] break-words
+        w-max max-w-[min(calc(100vw-2rem),480px)] break-words
         rounded-2xl overflow-hidden
         ${getAnimationStyles()}
       `}
     >
+      <style>{`
+        @keyframes sink {
+          0% { transform: translateY(0px); }
+          100% { transform: translateY(6px); }
+        }
+        @keyframes springUp {
+          0% { transform: translateY(6px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes draw {
+          to { stroke-dashoffset: 0; }
+        }
+      `}</style>
       <div
         className={`
         bg-theme-toast-bg
         shadow-2xl shadow-black/50 
         border border-theme-toast-border 
         rounded-2xl
-        p-4 pr-6 flex items-center gap-4 
-        hover:bg-theme-toast-bg 
-        transition-colors duration-300
+        p-4 pr-6 lg:p-5 lg:pr-7 flex items-center gap-4
       `}
       >
         {/* Color Circle with Badge */}
         <div className="relative flex-shrink-0">
           <div
-            className="w-16 h-16 rounded-full shadow-inner border border-white/20"
+            className="w-16 h-16 rounded-full shadow-inner border border-white/20 flex items-center justify-center"
             style={{ backgroundColor: colorCss }}
-          ></div>
-
-          {/* Status Badge */}
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#111] border border-white/10 rounded-full flex items-center justify-center shadow-lg">
+          >
             {data.isSuspicious ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
+                className={`w-6 h-6 ${excludeIconColor} animate-[sink_0.6s_cubic-bezier(0.34,2,0.64,1)_0.2s_both]`}
                 viewBox="0 0 24 24"
                 fill="none"
-                className="stroke-red-400"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <circle cx="6.5" cy="7.5" r="2.5" fill="currentColor"/>
+                <circle cx="17.5" cy="7.5" r="2.5" fill="currentColor"/>
+                <path d="M 6 18 C 9 15 15 15 18 18" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
+                className="w-6 h-6 animate-[springUp_0.6s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]"
+                style={includeIconColor}
                 viewBox="0 0 24 24"
                 fill="none"
-                className="stroke-emerald-400"
-                strokeWidth="3"
+                stroke="currentColor"
+                strokeWidth="3.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <polyline points="4 12 10 19 20 6"></polyline>
+                <polyline 
+                  points="4 12.5 10 19.5 20 6.5"
+                  strokeDasharray="28"
+                  strokeDashoffset="28"
+                  className="animate-[draw_0.3s_ease-out_0.2s_both]"
+                ></polyline>
               </svg>
             )}
           </div>
@@ -133,13 +145,17 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
 
         {/* Text Content */}
         <div className="flex flex-col min-w-0">
-          <div className="font-bold text-theme-text-main text-lg leading-tight break-words">
+          <div className="font-bold text-theme-text-main text-lg leading-tight break-words mb-0.5">
             {data.name}
           </div>
           <div className="text-xs font-mono tracking-wider text-theme-text-muted uppercase mb-1 truncate">
-            {data.hueDef.nameZH} {data.hueDef.nameEN} ({data.hueDef.angle}°)
+            {data.isSuspicious ? (
+              <span className="text-red-400 font-bold">不收錄</span>
+            ) : (
+              <>{data.hueDef.nameZH} {data.hueDef.nameEN} ({data.hueDef.angle}°)</>
+            )}
           </div>
-          <div className="text-sm text-theme-text-main break-words">
+          <div className="text-sm lg:text-base text-theme-text-main break-words">
             {data.feedback}
           </div>
         </div>
