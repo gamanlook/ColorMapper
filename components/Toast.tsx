@@ -30,7 +30,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
 
     const exitTimer = setTimeout(() => {
       handleExit();
-    }, 4500);
+    }, 6500);
 
     return () => {
       clearTimeout(enterTimer);
