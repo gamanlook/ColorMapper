@@ -58,11 +58,13 @@
   <br>
   <img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/c2a53845-ad12-4a11-8da1-a905ddb90776" />
   <br>
+  <br>
 
 - `2026/03/09（一）總言` **✅UI 2.0 — 沉浸式重塑與細節地獄**
   - 這次的更新我們告別了過去的框架，從視覺排版到微小動畫，進行了一次（多次）徹底的「質感大翻修」
   <br>
   <img width="672" height="840" alt="image" src="https://github.com/user-attachments/assets/daf920ee-c3a3-408a-8008-77d45eeb6f79" />
+  <br>
   <br>
 
 - `2026/03/09（一）part.1` **🌌全螢幕深色沉浸體驗**
