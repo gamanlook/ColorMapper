@@ -474,7 +474,7 @@ function App() {
       <div className="relative z-10 w-full max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row">
         
         {/* ======================= Left Pane ======================= */}
-        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 lg:border-r border-white/10">
+        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 lg:border-r border-white/10">
           
           {/* Header */}
           {renderHeader("left")}
@@ -596,7 +596,7 @@ function App() {
         {/* ======================= Right Pane ======================= */}
         {/* 手機版設定：h-auto 已經確保了「內容有多少就長多高，Hug content」。
             電腦版設定：保留 lg:min-h-screen 來跟左邊切齊。 */}
-        <div className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:p-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
+        <div className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
           
           {/* Invisible Header for alignment on desktop */}
           {renderHeader("right")}
