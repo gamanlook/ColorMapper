@@ -57,7 +57,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
       case "entering":
         return "translate-y-12 opacity-0 backdrop-blur-[0px] scale-95";
       case "active":
-        return "translate-y-0 opacity-100 backdrop-blur-[80px] scale-100";
+        return "translate-y-0 opacity-100 backdrop-blur-[40px] scale-100";
       case "exiting":
         return "translate-y-4 opacity-0 backdrop-blur-[0px] scale-95";
       default:
