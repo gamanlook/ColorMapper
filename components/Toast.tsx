@@ -57,7 +57,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
       case "entering":
         return "translate-y-12 opacity-0 backdrop-blur-[0px] scale-95";
       case "active":
-        return "translate-y-0 opacity-100 backdrop-blur-2xl scale-100";
+        return "translate-y-0 opacity-100 backdrop-blur-[80px] scale-100";
       case "exiting":
         return "translate-y-4 opacity-0 backdrop-blur-[0px] scale-95";
       default:
@@ -78,7 +78,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
         transition-all duration-700 
         ease-[cubic-bezier(0.16,1,0.3,1)]
         w-max max-w-[min(calc(100vw-2rem),480px)] break-words
-        rounded-2xl overflow-hidden
+        rounded-3xl overflow-hidden
         ${getAnimationStyles()}
       `}
     >
@@ -100,7 +100,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
         bg-theme-toast-bg
         shadow-2xl shadow-black/50 
         border border-theme-toast-border 
-        rounded-2xl
+        rounded-3xl
         p-4 pr-6 lg:p-5 lg:pr-7 flex items-center gap-4
       `}
       >
