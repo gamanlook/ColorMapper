@@ -65,8 +65,9 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
     }
   };
 
+  const includeIconL = data.color.l * 0.5 + 0.05;
   const excludeIconColor = data.color.l > 0.7 ? "text-black/80" : "text-white/95";
-  const includeIconColor = data.color.l > 0.7 ? { color: `oklch(0.40 0.18 ${data.color.h} / 90%)` } : { color: "rgba(255, 255, 255, 0.95)" };
+  const includeIconColor = data.color.l > 0.7 ? { color: `oklch(${includeIconL} 0.18 ${data.color.h})` } : { color: "rgba(255, 255, 255, 0.95)" };
 
   return (
     <div
@@ -87,7 +88,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
           100% { transform: translateY(6px); }
         }
         @keyframes springUp {
-          0% { transform: translateY(6px); }
+          0% { transform: translateY(24px); }
           100% { transform: translateY(0px); }
         }
         @keyframes draw {
@@ -123,7 +124,7 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
             ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-5 h-5 animate-[springUp_0.6s_cubic-bezier(0.34,1.56,0.64,1)_0.2s_both]"
+                className="w-5 h-5 animate-[springUp_0.6s_cubic-bezier(0.20,1.28,0.56,1)_0.2s_both]"
                 style={includeIconColor}
                 viewBox="0 0 24 24"
                 fill="none"
