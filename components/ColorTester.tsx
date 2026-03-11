@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Swirl } from "@paper-design/shaders-react";
 import { GrainGradient } from "@paper-design/shaders-react";
 import { OklchColor, HueDefinition } from "../types";
 import {
@@ -42,6 +41,25 @@ const KAOMOJI = [
   "( ˙ᗜ˙ )",
 ];
 
+const PLACEHOLDERS = [
+  "試試替這顏色取名",
+  "這顏色聯想到了什麼",
+  "水果、品牌、美妝⋯",
+  "有像什麼食物顏色嗎",
+  "卡通人物配色也行",
+  "善用上面的前綴詞",
+  "命名可以搞怪一點",
+  "故意亂回答看看",
+  "寫個超誇張的回答",
+  "試試更精準的形容",
+  "心中的第一想法是⋯",
+  "快搬出所有刁鑽詞彙",
+  "取名再大點一點如何",
+  "第一眼聯想到什麼",
+  "名字越荒謬越好玩⋯",
+  "有趣的聯想＋顏色⋯"
+];
+
 const ColorTester: React.FC<ColorTesterProps> = ({
   color,
   hueDef,
@@ -63,6 +81,35 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const [shaderKey, setShaderKey] = useState(0);
   const [isShaderVisible, setIsShaderVisible] = useState(true);
   const lastHiddenTimeRef = useRef(0);
+
+  const [placeholderText, setPlaceholderText] = useState(PLACEHOLDERS[0]);
+  const shuffledPlaceholdersRef = useRef<string[]>([]);
+  const placeholderIndexRef = useRef(0);
+
+  const updatePlaceholder = () => {
+    if (
+      shuffledPlaceholdersRef.current.length === 0 ||
+      placeholderIndexRef.current >= PLACEHOLDERS.length
+    ) {
+      const shuffled = [...PLACEHOLDERS].sort(() => Math.random() - 0.5);
+      shuffledPlaceholdersRef.current = shuffled;
+      placeholderIndexRef.current = 0;
+    }
+
+    setPlaceholderText((prev) => {
+      let next = shuffledPlaceholdersRef.current[placeholderIndexRef.current];
+      // 避免重新洗牌後，第一句跟上一句重複
+      if (next === prev && placeholderIndexRef.current === 0 && PLACEHOLDERS.length > 1) {
+        const firstItem = shuffledPlaceholdersRef.current.shift();
+        if (firstItem) {
+          shuffledPlaceholdersRef.current.push(firstItem);
+        }
+        next = shuffledPlaceholdersRef.current[0];
+      }
+      placeholderIndexRef.current += 1;
+      return next;
+    });
+  };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -263,6 +310,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
           textareaRef.current.setSelectionRange(len, len);
         }
       }, 0);
+      updatePlaceholder();
       return;
     }
 
@@ -278,9 +326,11 @@ const ColorTester: React.FC<ColorTesterProps> = ({
         validation.reason,
         validation.feedback,
       );
+      updatePlaceholder();
     } catch (err) {
       console.error(err);
       onSubmit(cleanedName, false, undefined, "命名已收錄！");
+      updatePlaceholder();
     } finally {
       setIsSubmitting(false);
     }
@@ -412,7 +462,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
                 <span
                   className={`${inputName ? "text-theme-text-main" : "text-theme-text-muted"}`}
                 >
-                  {inputName || "試試自己取名"}
+                  {inputName || placeholderText}
                 </span>
                 {showSuffixHint && (
                   <span className="text-theme-text-muted text-xl ml-0.5">什麼色？</span>
