@@ -539,7 +539,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
                 onMouseDown={(e) => e.preventDefault()}
                 className="last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
               >
-                也能自行輸入⋯
+                或輸入你的創意⋯
               </button>
             </div>
           )}
