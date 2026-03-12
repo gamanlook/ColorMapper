@@ -24,7 +24,7 @@ interface ColorTesterProps {
   entries?: ColorEntry[];
 }
 
-const STANDALONE_ALLOWED = ["白", "淺灰", "灰", "深灰", "暗灰", "黑"];
+const STANDALONE_ALLOWED =["白", "淺灰", "灰", "深灰", "暗灰", "黑"];
 const MAX_CHARS = 23;
 
 const TEXT_PATH_RADIUS = 44;
@@ -33,7 +33,7 @@ const MIN_FONT_PX = 8;
 const MAX_WIDTH_BREAKPOINT = 350;
 const MIN_WIDTH_BREAKPOINT = 225;
 
-const KAOMOJI = [
+const KAOMOJI =[
   "(´･ω･` )",
   "(*´･ч･`*)",
   "(*´ㅁ`*)",
@@ -42,20 +42,30 @@ const KAOMOJI = [
   "( ˙ᗜ˙ )",
 ];
 
-const INSPIRATIONS = [
-  "可以⋯形容詞+顏色",
+const INSPIRATIONS =[
+  "可以⋯形容詞＋顏色",
   "像是⋯水果顏色？",
   "或是⋯彩妝色？",
   "也許是⋯品牌顏色？",
   "或⋯卡通人物配色？",
+  "不然⋯亂輸入看看？",
   "還是⋯大自然顏色？"
 ];
 
-const CHALLENGE_MESSAGES = [
-  "抓到訣竅了！這題交給你自由發揮",
+const CHALLENGE_MESSAGES =[
   "很棒！挑戰完全自己發明一個詞吧",
-  "看來你很會，這題自己取名看看！"
+  "抓到訣竅了！這題交給你自由發揮",
+  "不錯喔！接下來這題自己取名怎麼樣"
 ];
+
+const shuffleArray = (array: string[]) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
 
 const ColorTester: React.FC<ColorTesterProps> = ({
   color,
@@ -63,12 +73,10 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   onSubmit,
   onSkip,
   showHex,
-  entries = [],
+  entries =[],
 }) => {
   const [inputName, setInputName] = useState("");
-  const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>(
-    [],
-  );
+  const[suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSkipHint, setShowSkipHint] = useState(false);
   const hasUsedSkipRef = useRef(false);
@@ -76,45 +84,61 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const hintTimerExpiredRef = useRef(false);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
   const [randomOffset, setRandomOffset] = useState(0);
-  const [shaderKey, setShaderKey] = useState(0);
+  const[shaderKey, setShaderKey] = useState(0);
   const [isShaderVisible, setIsShaderVisible] = useState(true);
   const lastHiddenTimeRef = useRef(0);
 
   const [showChallengeChip, setShowChallengeChip] = useState(false);
   const [challengeMessage, setChallengeMessage] = useState(CHALLENGE_MESSAGES[0]);
   const [isInputGlowing, setIsInputGlowing] = useState(false);
-  const usedPrefixesRef = useRef<boolean>(false);
+  
+  const usedSuggestedWordRef = useRef<boolean>(false);
+  const hasClickedSuggestionRef = useRef<boolean>(false);
 
   const [placeholderText, setPlaceholderText] = useState("試試替這顏色取名");
-  const [isPlaceholderFading, setIsPlaceholderFading] = useState(false);
+  const[isPlaceholderFading, setIsPlaceholderFading] = useState(false);
+  
+  const shuffledInspirationsRef = useRef<string[]>([]);
+  const inspirationIndexRef = useRef(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const visualStageRef = useRef<HTMLDivElement>(null);
 
-  const [svgFontSize, setSvgFontSize] = useState(3);
+  const[svgFontSize, setSvgFontSize] = useState(3);
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
   const hasInteractedRef = useRef(false);
 
   useEffect(() => {
+    // 初始化洗牌
+    if (shuffledInspirationsRef.current.length === 0) {
+      shuffledInspirationsRef.current = shuffleArray(INSPIRATIONS);
+    }
+
     let interval: NodeJS.Timeout;
     let timeout: NodeJS.Timeout;
-    let index = 0;
+    let isDefaultTurn = true;
 
     const startCarousel = () => {
       interval = setInterval(() => {
         setIsPlaceholderFading(true);
         timeout = setTimeout(() => {
-          index++;
-          if (index % 2 === 0) {
-            setPlaceholderText("試試替這顏色取名");
+          if (isDefaultTurn) {
+            const currentInspiration = shuffledInspirationsRef.current[inspirationIndexRef.current];
+            setPlaceholderText(currentInspiration);
+            
+            inspirationIndexRef.current++;
+            if (inspirationIndexRef.current >= shuffledInspirationsRef.current.length) {
+              shuffledInspirationsRef.current = shuffleArray(INSPIRATIONS);
+              inspirationIndexRef.current = 0;
+            }
           } else {
-            const inspirationIndex = Math.floor(index / 2) % INSPIRATIONS.length;
-            setPlaceholderText(`${INSPIRATIONS[inspirationIndex]}`);
+            setPlaceholderText("試試替這顏色取名");
           }
+          isDefaultTurn = !isDefaultTurn;
           setIsPlaceholderFading(false);
-        }, 300); // Wait for fade out
-      }, 5000); // Change every 5 seconds
+        }, 300);
+      }, 5000);
     };
 
     startCarousel();
@@ -123,7 +147,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, []);
+  },[]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -143,7 +167,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
+  },[]);
 
   useEffect(() => {
     inputNameRef.current = inputName;
@@ -156,14 +180,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     }
   }, [inputName]);
 
+  // 當「顏色」改變時 (切換下一題)
   useEffect(() => {
     setInputName("");
     inputNameRef.current = "";
     
-    // Check if user has been relying too much on prefixes
-    // This is a simple heuristic: if they used a prefix in the last turn,
-    // there's a 30% chance to show the challenge chip.
-    if (usedPrefixesRef.current && Math.random() < 0.3) {
+    // 如果上一題有點擊建議按鈕，這題100%出現鼓勵句
+    if (usedSuggestedWordRef.current) {
       setShowChallengeChip(true);
       setChallengeMessage(CHALLENGE_MESSAGES[Math.floor(Math.random() * CHALLENGE_MESSAGES.length)]);
       setIsInputGlowing(true);
@@ -171,33 +194,51 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     } else {
       setShowChallengeChip(false);
     }
-    usedPrefixesRef.current = false; // Reset for this turn
+    usedSuggestedWordRef.current = false; 
     
-    // Idea 1: Community Answers + Fallback
-    const humanEntries = entries.filter(e => !e.isSeed);
+    const humanEntries = entries.filter(e => !e.isSeed && !e.isSuspicious && e.color.h === color.h);
+    
     const withDistance = humanEntries.map(e => {
       const dL = e.color.l - color.l;
       const dC = e.color.c - color.c;
-      const dH = (e.color.h - color.h) / 360;
-      const distance = Math.sqrt(dL*dL + dC*dC + dH*dH);
+      // 因為已經限制在同色相，dH 其實為 0，但保留算式也無妨
+      const distance = Math.sqrt(dL*dL + dC*dC); 
       return { ...e, distance };
     });
     
     withDistance.sort((a, b) => a.distance - b.distance);
     
+    // 過濾太遠的顏色
+    const validRawAnswers = withDistance.filter(item => item.distance <= 0.15);
+    
     const uniqueNames = new Set<string>();
-    const communityAnswers: string[] = [];
-    for (const item of withDistance) {
-      if (item.distance > 0.15) continue;
-      if (!uniqueNames.has(item.name)) {
-        uniqueNames.add(item.name);
-        communityAnswers.push(item.name);
-        if (communityAnswers.length >= 4) break;
+    const communityAnswers: string[] =[];
+
+    if (validRawAnswers.length > 0) {
+      // 把「距離最近、最精準」的第一名永遠抓進來
+      const firstBestMatch = validRawAnswers[0].name;
+      uniqueNames.add(firstBestMatch);
+      communityAnswers.push(firstBestMatch);
+
+      // 把剩下的答案先「去重複」，做成盲盒籤筒
+      const remainingUniqueAnswers: string[] =[];
+      for (let i = 1; i < validRawAnswers.length; i++) {
+        const name = validRawAnswers[i].name;
+        if (!uniqueNames.has(name)) {
+          uniqueNames.add(name);
+          remainingUniqueAnswers.push(name);
+        }
       }
+
+      const shuffledRemaining = shuffleArray(remainingUniqueAnswers);
+      const randomPicks = shuffledRemaining.slice(0, 3);
+      
+      communityAnswers.push(...randomPicks);
     }
     
     const defaultPrefixes = suggestPrefixes(color);
-    const combined = [...communityAnswers];
+    const combined =[...communityAnswers];
+    
     for (const p of defaultPrefixes) {
       if (combined.length >= 4) break;
       if (!combined.includes(p)) {
@@ -206,6 +247,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     }
     
     setSuggestedPrefixesList(combined);
+
     
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false;
@@ -254,7 +296,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
 
     resizeObserver.observe(visualStageRef.current);
     return () => resizeObserver.disconnect();
-  }, []);
+  },[]);
 
   const { shaderColors, shaderBack } = useMemo(
     () => generateShaderPalette(color),
@@ -281,7 +323,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   };
 
   const handlePrefixClick = (prefix: string) => {
-    usedPrefixesRef.current = true;
+    hasClickedSuggestionRef.current = true;
+    
     const currentName = inputName;
     let newName = prefix;
     const existingPrefix = PREFIXES.find((p) => currentName.startsWith(p));
@@ -296,7 +339,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       return;
     }
     
-    // Check if it's an incomplete prefix
     const isComplete = !PREFIXES.includes(prefix) || STANDALONE_ALLOWED.includes(prefix);
     if (!isComplete) {
       setIsInputGlowing(true);
@@ -361,6 +403,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     if (cleanedName.endsWith("色") && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
+
+    if (hasClickedSuggestionRef.current) {
+      usedSuggestedWordRef.current = true;
+    } else {
+      usedSuggestedWordRef.current = false;
+    }
+    hasClickedSuggestionRef.current = false;
 
     const isPrefixOnly =
       PREFIXES.includes(cleanedName) &&
@@ -498,19 +547,23 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       </div>
 
       <div className="flex flex-col gap-6">
-        {/* Suggested Prefixes or Challenge Chip */}
         <div className="relative min-h-[32px] flex items-center justify-center">
           {showChallengeChip ? (
-            <div className="flex items-center gap-3 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-main rounded-full animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <span>{challengeMessage}</span>
+            <div className="flex items-stretch text-xs bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-main rounded-full animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center pl-4 pr-3.5 py-2">
+                {challengeMessage}
+              </div>
+              {/* 垂直分隔線 */}
+              <div className="w-px bg-white/10 my-[1px]" />
+              {/* 關閉按鈕 */}
               <button
                 type="button"
                 onClick={() => setShowChallengeChip(false)}
-                className="w-4 h-4 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
-                aria-label="Close challenge"
+                className="flex items-center justify-center pl-1.5 pr-2 hover:bg-white/10 text-theme-text-muted transition-colors rounded-r-full"
+                aria-label="關閉提示"
               >
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M 7 7 L 17 17 M 17 7 L 7 17" />
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M 6 6 L 18 18 M 18 6 L 6 18" />
                 </svg>
               </button>
             </div>
@@ -539,7 +592,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
                 onMouseDown={(e) => e.preventDefault()}
                 className="last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
               >
-                或輸入你的創意⋯
+                輸入你的創意⋯
               </button>
             </div>
           )}
@@ -550,13 +603,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({
           <div 
             className={`flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/20 ${
               isInputGlowing 
-                ? "bg-white/15 ring-white/30 shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
+                ? "bg-white/30 ring-white/30 shadow-[0_0_24px_rgba(255,255,255,0.3)]" 
                 : "bg-white/10 ring-white/10"
             }`}
           >
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
               <div
-                className="col-start-1 row-start-1 px-0 py-2 text-xl whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
+                className="col-start-1 row-start-1 px-0 py-2 text-lg whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
                 aria-hidden="true"
               >
                 <span
@@ -565,7 +618,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
                   {inputName || placeholderText}
                 </span>
                 {showSuffixHint && (
-                  <span className="text-theme-text-muted text-xl ml-0.5">什麼色？</span>
+                  <span className="text-theme-text-muted text-lg ml-0.5">什麼色？</span>
                 )}
                 <span className="inline-block w-0">&#8203;</span>
               </div>
@@ -587,7 +640,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
                 enterKeyHint="send"
                 className={`
                   col-start-1 row-start-1 w-full h-full
-                  px-0 py-2 text-xl font-normal
+                  px-0 py-2 text-lg font-normal
                   bg-transparent border-none outline-none
                   resize-none overflow-hidden
                   text-transparent caret-white
@@ -676,6 +729,5 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     </div>
   );
 };
-
 
 export default ColorTester;
