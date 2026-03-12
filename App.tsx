@@ -580,6 +580,7 @@ function App() {
                   onSubmit={handleSubmit}
                   onSkip={handleNextColor}
                   showHex={showHex}
+                  entries={entries}
                 />
               )}
             </div>
