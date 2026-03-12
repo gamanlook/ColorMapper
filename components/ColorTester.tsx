@@ -138,7 +138,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
           isDefaultTurn = !isDefaultTurn;
           setIsPlaceholderFading(false);
         }, 300);
-      }, 5000);
+      }, 7000);
     };
 
     startCarousel();
