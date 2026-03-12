@@ -53,7 +53,7 @@ const INSPIRATIONS =[
 ];
 
 const CHALLENGE_MESSAGES =[
-  "很棒！挑戰完全自己發明一個詞吧",
+  "很棒！來挑戰自己發明一個詞吧",
   "抓到訣竅了！這題交給你自由發揮",
   "不錯喔！接下來這題自己取名怎麼樣"
 ];
@@ -189,8 +189,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     if (usedSuggestedWordRef.current) {
       setShowChallengeChip(true);
       setChallengeMessage(CHALLENGE_MESSAGES[Math.floor(Math.random() * CHALLENGE_MESSAGES.length)]);
-      setIsInputGlowing(true);
-      setTimeout(() => setIsInputGlowing(false), 2000);
     } else {
       setShowChallengeChip(false);
     }
@@ -544,22 +542,19 @@ const handlePrefixClick = (prefix: string) => {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="relative min-h-[32px] flex items-center justify-center">
+        <div className="relative h-8 flex items-center justify-center">
           {showChallengeChip ? (
-            <div className="flex items-stretch text-xs bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-main rounded-full animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center pl-4 pr-3.5 py-2">
+            <div className="flex items-center p-1 gap-1 bg-white/5 ring-1 ring-inset ring-white/10 rounded-full animate-in fade-in duration-200">
+              <span className="pl-2.5 text-xs font-medium text-theme-text-soft">
                 {challengeMessage}
-              </div>
-              {/* 垂直分隔線 */}
-              <div className="w-px bg-white/10 my-[1px]" />
-              {/* 關閉按鈕 */}
+              </span>
               <button
                 type="button"
                 onClick={() => setShowChallengeChip(false)}
-                className="flex items-center justify-center pl-1.5 pr-2 hover:bg-white/10 text-theme-text-muted transition-colors rounded-r-full"
-                aria-label="關閉提示"
+                className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-theme-text-soft transition-colors shrink-0"
+                title="關閉提示"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M 6 6 L 18 18 M 18 6 L 6 18" />
                 </svg>
               </button>
@@ -578,7 +573,7 @@ const handlePrefixClick = (prefix: string) => {
                   type="button"
                   onClick={() => handlePrefixClick(prefix)}
                   onMouseDown={(e) => e.preventDefault()}
-                  className="first:ml-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+                  className="first:ml-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
                 >
                   {prefix}
                 </button>
