@@ -461,6 +461,11 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
       .attr("stroke", "currentColor");
   }, [hue, hueData, currentColor, width, height, semanticClusters]);
 
+  const MAX_TOOLTIP_ITEMS = 7;
+  const showCollapse = tooltipData ? tooltipData.composition.length > MAX_TOOLTIP_ITEMS + 1 : false;
+  const visibleItems = tooltipData ? (showCollapse ? tooltipData.composition.slice(0, MAX_TOOLTIP_ITEMS) : tooltipData.composition) : [];
+  const hiddenItems = tooltipData ? (showCollapse ? tooltipData.composition.slice(MAX_TOOLTIP_ITEMS) : []) : [];
+
   return (
     <div className="relative flex justify-center w-full max-w-[480px]">
       <div className="isolate w-full">
@@ -515,12 +520,20 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
               <span className="break-words">{tooltipData.displayLabel}</span>
             </div>
             <div className="space-y-1.5 pb-3">
-              {tooltipData.composition.map((item, idx) => (
+              {visibleItems.map((item, idx) => (
                 <div key={`measure-${item.name}`} className="flex justify-between items-start text-xs gap-4">
                   <span className="break-words">{item.name}</span>
                   <span className="shrink-0 font-mono">{item.percentage}%</span>
                 </div>
               ))}
+              {showCollapse && (
+                <div className="flex justify-between items-start text-xs gap-4 text-white/50">
+                  <span className="break-words">+{hiddenItems.length} 其他命名</span>
+                  <span className="shrink-0 font-mono">
+                    {Math.round(hiddenItems.reduce((sum, item) => sum + item.percentage, 0))}%
+                  </span>
+                </div>
+              )}
             </div>
             <div className="py-3 border-t text-[0.625rem] font-mono tracking-wider uppercase shrink-0">
               Total Votes: {tooltipData.totalVotes}
@@ -553,7 +566,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
             <div className="flex-1 min-h-0 overflow-hidden relative">
               {/* 透過 absolute 確保內容不會因為容器縮小而被暴力壓扁 */}
               <div className="space-y-1.5 pb-3 absolute top-0 left-0 w-full">
-                {tooltipData.composition.map((item, idx) => (
+                {visibleItems.map((item, idx) => (
                   <div
                     key={`display-${item.name}`} 
                     className="flex justify-between items-start text-xs gap-4"
@@ -566,6 +579,14 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
                     </span>
                   </div>
                 ))}
+                {showCollapse && (
+                  <div className="flex justify-between items-start text-xs gap-4 text-white/50">
+                    <span className="break-words">+{hiddenItems.length} 其他命名</span>
+                    <span className="shrink-0 font-mono">
+                      {Math.round(hiddenItems.reduce((sum, item) => sum + item.percentage, 0))}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
