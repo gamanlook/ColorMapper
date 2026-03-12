@@ -322,29 +322,26 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     }
   };
 
-  const handlePrefixClick = (prefix: string) => {
+const handlePrefixClick = (prefix: string) => {
     hasClickedSuggestionRef.current = true;
     
-    const currentName = inputName;
+    // 直接讓新名字等於你點擊的那個詞
     let newName = prefix;
-    const existingPrefix = PREFIXES.find((p) => currentName.startsWith(p));
-    if (existingPrefix) {
-      newName = prefix + currentName.substring(existingPrefix.length);
-    } else {
-      newName = prefix + currentName;
-    }
+
     if (newName.replace(/\s/g, "").length <= MAX_CHARS) {
       setInputName(newName);
     } else {
       return;
     }
     
+    // 如果點擊的是「前綴字(淺/深)」，讓輸入框發光提示使用者繼續輸入
     const isComplete = !PREFIXES.includes(prefix) || STANDALONE_ALLOWED.includes(prefix);
     if (!isComplete) {
       setIsInputGlowing(true);
       setTimeout(() => setIsInputGlowing(false), 1500);
     }
     
+    // 讓輸入框保持 focus，並把游標移到最後面
     if (textareaRef.current) {
       textareaRef.current.focus({ preventScroll: true });
       setTimeout(() => {
