@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { GrainGradient } from "@paper-design/shaders-react";
-import { OklchColor, HueDefinition } from "../types";
+import { OklchColor, HueDefinition, ColorEntry } from "../types";
 import {
   toCss,
   suggestPrefixes,
@@ -21,6 +21,7 @@ interface ColorTesterProps {
   ) => void;
   onSkip: () => void;
   showHex: boolean;
+  entries?: ColorEntry[];
 }
 
 const STANDALONE_ALLOWED = ["白", "淺灰", "灰", "深灰", "暗灰", "黑"];
@@ -41,24 +42,19 @@ const KAOMOJI = [
   "( ˙ᗜ˙ )",
 ];
 
-const PLACEHOLDERS = [
-  "試試替這顏色取名",
-  "這顏色聯想到了什麼",
-  "有些顏色跟水果很像",
-  "彩妝色也能拿來命名",
-  "卡通人物+顏色也行",
-  "有像什麼食物顏色嗎",
-  "善用上面的前綴詞",
-  "可以搞怪的顏色命名",
-  "故意亂回答顏色看看",
-  "顏色名越誇張越有趣",
-  "精準形容顏色看看",
-  "寫下心中直覺顏色",
-  "試試3C風格顏色取名",
-  "大膽定義這顏色名字",
-  "第一眼聯想到什麼色",
-  "顏色取名越荒謬越讚",
-  "有趣的聯想+顏色⋯"
+const INSPIRATIONS = [
+  "[形容詞/感覺]+[顏色]",
+  "像是⋯水果顏色？",
+  "或是⋯彩妝色？",
+  "也許是⋯品牌顏色？",
+  "可能⋯卡通人物配色？",
+  "還是⋯大自然顏色？"
+];
+
+const CHALLENGE_MESSAGES = [
+  "抓到訣竅了！這題交給你自由發揮",
+  "很棒！挑戰完全自己發明一個詞吧",
+  "看來你很會，這題自己取名看看！"
 ];
 
 const ColorTester: React.FC<ColorTesterProps> = ({
@@ -67,6 +63,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   onSubmit,
   onSkip,
   showHex,
+  entries = [],
 }) => {
   const [inputName, setInputName] = useState("");
   const [suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>(
@@ -83,34 +80,13 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const [isShaderVisible, setIsShaderVisible] = useState(true);
   const lastHiddenTimeRef = useRef(0);
 
-  const [placeholderText, setPlaceholderText] = useState(PLACEHOLDERS[0]);
-  const shuffledPlaceholdersRef = useRef<string[]>([]);
-  const placeholderIndexRef = useRef(0);
+  const [showChallengeChip, setShowChallengeChip] = useState(false);
+  const [challengeMessage, setChallengeMessage] = useState(CHALLENGE_MESSAGES[0]);
+  const [isInputGlowing, setIsInputGlowing] = useState(false);
+  const usedPrefixesRef = useRef<boolean>(false);
 
-  const updatePlaceholder = () => {
-    if (
-      shuffledPlaceholdersRef.current.length === 0 ||
-      placeholderIndexRef.current >= PLACEHOLDERS.length
-    ) {
-      const shuffled = [...PLACEHOLDERS].sort(() => Math.random() - 0.5);
-      shuffledPlaceholdersRef.current = shuffled;
-      placeholderIndexRef.current = 0;
-    }
-
-    setPlaceholderText((prev) => {
-      let next = shuffledPlaceholdersRef.current[placeholderIndexRef.current];
-      // 避免重新洗牌後，第一句跟上一句重複
-      if (next === prev && placeholderIndexRef.current === 0 && PLACEHOLDERS.length > 1) {
-        const firstItem = shuffledPlaceholdersRef.current.shift();
-        if (firstItem) {
-          shuffledPlaceholdersRef.current.push(firstItem);
-        }
-        next = shuffledPlaceholdersRef.current[0];
-      }
-      placeholderIndexRef.current += 1;
-      return next;
-    });
-  };
+  const [placeholderText, setPlaceholderText] = useState("試試替這顏色取名");
+  const [isPlaceholderFading, setIsPlaceholderFading] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -119,6 +95,35 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const [svgFontSize, setSvgFontSize] = useState(3);
   const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
   const hasInteractedRef = useRef(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout;
+    let index = 0;
+
+    const startCarousel = () => {
+      interval = setInterval(() => {
+        setIsPlaceholderFading(true);
+        timeout = setTimeout(() => {
+          index++;
+          if (index % 2 === 0) {
+            setPlaceholderText("試試替這顏色取名");
+          } else {
+            const inspirationIndex = Math.floor(index / 2) % INSPIRATIONS.length;
+            setPlaceholderText(`${INSPIRATIONS[inspirationIndex]}`);
+          }
+          setIsPlaceholderFading(false);
+        }, 300); // Wait for fade out
+      }, 5000); // Change every 5 seconds
+    };
+
+    startCarousel();
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -154,7 +159,54 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   useEffect(() => {
     setInputName("");
     inputNameRef.current = "";
-    setSuggestedPrefixesList(suggestPrefixes(color));
+    
+    // Check if user has been relying too much on prefixes
+    // This is a simple heuristic: if they used a prefix in the last turn,
+    // there's a 30% chance to show the challenge chip.
+    if (usedPrefixesRef.current && Math.random() < 0.3) {
+      setShowChallengeChip(true);
+      setChallengeMessage(CHALLENGE_MESSAGES[Math.floor(Math.random() * CHALLENGE_MESSAGES.length)]);
+      setIsInputGlowing(true);
+      setTimeout(() => setIsInputGlowing(false), 2000);
+    } else {
+      setShowChallengeChip(false);
+    }
+    usedPrefixesRef.current = false; // Reset for this turn
+    
+    // Idea 1: Community Answers + Fallback
+    const humanEntries = entries.filter(e => !e.isSeed);
+    const withDistance = humanEntries.map(e => {
+      const dL = e.color.l - color.l;
+      const dC = e.color.c - color.c;
+      const dH = (e.color.h - color.h) / 360;
+      const distance = Math.sqrt(dL*dL + dC*dC + dH*dH);
+      return { ...e, distance };
+    });
+    
+    withDistance.sort((a, b) => a.distance - b.distance);
+    
+    const uniqueNames = new Set<string>();
+    const communityAnswers: string[] = [];
+    for (const item of withDistance) {
+      if (item.distance > 0.15) continue;
+      if (!uniqueNames.has(item.name)) {
+        uniqueNames.add(item.name);
+        communityAnswers.push(item.name);
+        if (communityAnswers.length >= 4) break;
+      }
+    }
+    
+    const defaultPrefixes = suggestPrefixes(color);
+    const combined = [...communityAnswers];
+    for (const p of defaultPrefixes) {
+      if (combined.length >= 4) break;
+      if (!combined.includes(p)) {
+        combined.push(p);
+      }
+    }
+    
+    setSuggestedPrefixesList(combined);
+    
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false;
     setCopyFeedback(null);
@@ -168,7 +220,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [color]);
+  }, [color, entries]);
 
   useEffect(() => {
     if (!visualStageRef.current) return;
@@ -229,6 +281,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   };
 
   const handlePrefixClick = (prefix: string) => {
+    usedPrefixesRef.current = true;
     const currentName = inputName;
     let newName = prefix;
     const existingPrefix = PREFIXES.find((p) => currentName.startsWith(p));
@@ -242,6 +295,14 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     } else {
       return;
     }
+    
+    // Check if it's an incomplete prefix
+    const isComplete = !PREFIXES.includes(prefix) || STANDALONE_ALLOWED.includes(prefix);
+    if (!isComplete) {
+      setIsInputGlowing(true);
+      setTimeout(() => setIsInputGlowing(false), 1500);
+    }
+    
     if (textareaRef.current) {
       textareaRef.current.focus({ preventScroll: true });
       setTimeout(() => {
@@ -252,6 +313,15 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       }, 0);
       scrollToBottom();
     }
+  };
+
+  const handleCustomInputClick = () => {
+    setIsInputGlowing(true);
+    setTimeout(() => setIsInputGlowing(false), 1500);
+    if (textareaRef.current) {
+      textareaRef.current.focus({ preventScroll: true });
+    }
+    scrollToBottom();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -311,7 +381,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
           textareaRef.current.setSelectionRange(len, len);
         }
       }, 0);
-      updatePlaceholder();
       return;
     }
 
@@ -327,11 +396,9 @@ const ColorTester: React.FC<ColorTesterProps> = ({
         validation.reason,
         validation.feedback,
       );
-      updatePlaceholder();
     } catch (err) {
       console.error(err);
       onSubmit(cleanedName, false, undefined, "命名已收錄！");
-      updatePlaceholder();
     } finally {
       setIsSubmitting(false);
     }
@@ -431,37 +498,69 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       </div>
 
       <div className="flex flex-col gap-6">
-        {/* Suggested Prefixes */}
-        <div
-          className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]"
-          style={{
-            WebkitMaskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
-            maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
-          }}
-        >
-          {suggestedPrefixesList.map((prefix) => (
-            <button
-              key={prefix}
-              type="button"
-              onClick={() => handlePrefixClick(prefix)}
-              onMouseDown={(e) => e.preventDefault()}
-              className="first:ml-auto last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+        {/* Suggested Prefixes or Challenge Chip */}
+        <div className="relative min-h-[32px] flex items-center justify-center">
+          {showChallengeChip ? (
+            <div className="flex items-center gap-3 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-main rounded-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <span>{challengeMessage}</span>
+              <button
+                type="button"
+                onClick={() => setShowChallengeChip(false)}
+                className="w-4 h-4 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors"
+                aria-label="Close challenge"
+              >
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M 7 7 L 17 17 M 17 7 L 7 17" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div
+              className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)] animate-in fade-in duration-300"
+              style={{
+                WebkitMaskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
+                maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
+              }}
             >
-              {prefix}
-            </button>
-          ))}
+              {suggestedPrefixesList.map((prefix) => (
+                <button
+                  key={prefix}
+                  type="button"
+                  onClick={() => handlePrefixClick(prefix)}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="first:ml-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+                >
+                  {prefix}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={handleCustomInputClick}
+                onMouseDown={(e) => e.preventDefault()}
+                className="last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+              >
+                也能自行輸入⋯
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Input Form */}
         <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
-          <div className="flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset ring-white/10 bg-white/10 transition-colors pl-6 pr-2 py-2 focus-within:ring-white/20">
+          <div 
+            className={`flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/20 ${
+              isInputGlowing 
+                ? "bg-white/15 ring-white/30 shadow-[0_0_15px_rgba(255,255,255,0.15)]" 
+                : "bg-white/10 ring-white/10"
+            }`}
+          >
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
               <div
                 className="col-start-1 row-start-1 px-0 py-2 text-xl whitespace-pre-wrap break-words invisible-scrollbar pointer-events-none"
                 aria-hidden="true"
               >
                 <span
-                  className={`${inputName ? "text-theme-text-main" : "text-theme-text-muted"}`}
+                  className={`transition-opacity duration-300 ${inputName ? "text-theme-text-main opacity-100" : `text-theme-text-muted ${isPlaceholderFading ? "opacity-0" : "opacity-100"}`}`}
                 >
                   {inputName || placeholderText}
                 </span>
