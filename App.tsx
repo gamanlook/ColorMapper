@@ -617,34 +617,48 @@ function App() {
                 </div>
 
                 {/* View Filter Dropdown */}
-                <div className="relative flex-shrink-0 group">
-                  <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
-                    <span className="text-xs/3 font-medium whitespace-nowrap">
-                      {getViewHueLabel()}
-                    </span>
-                    <svg
-                      className="w-4 h-4 text-theme-text-soft flex-shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                <div className="flex items-center gap-2">
+                  {currentColor && viewHueAngle !== currentColor.h && (
+                    <button
+                      type="button"
+                      onClick={() => setViewHueAngle(currentColor.h)}
+                      className="p-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-theme-text-main shrink-0"
+                      title="回到目前題目色相"
                     >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <path d="M9 13 4 8l5-5 M4 8h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
+                      </svg>
+                    </button>
+                  )}
+                  <div className="relative flex-shrink-0 group">
+                    <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
+                      <span className="text-xs/3 font-medium whitespace-nowrap">
+                        {getViewHueLabel()}
+                      </span>
+                      <svg
+                        className="w-4 h-4 text-theme-text-soft flex-shrink-0"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                    <select
+                      value={viewHueAngle}
+                      onChange={(e) => setViewHueAngle(Number(e.target.value))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    >
+                      {HUES.map((h) => (
+                        <option key={h.id} value={h.angle}>
+                          {h.nameZH} ({h.angle}°)
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <select
-                    value={viewHueAngle}
-                    onChange={(e) => setViewHueAngle(Number(e.target.value))}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  >
-                    {HUES.map((h) => (
-                      <option key={h.id} value={h.angle}>
-                        {h.nameZH} ({h.angle}°)
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
 
