@@ -550,7 +550,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
           <div 
             className={`flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/20 ${
               isInputGlowing 
-                ? "bg-white/15 ring-white/30 shadow-[0_0_15px_rgba(255,255,255,0.15)]" 
+                ? "bg-white/15 ring-white/30 shadow-[0_0_15px_rgba(255,255,255,0.3)]" 
                 : "bg-white/10 ring-white/10"
             }`}
           >
