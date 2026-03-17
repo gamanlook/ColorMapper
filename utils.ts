@@ -194,7 +194,7 @@ export const suggestPrefixes = (color: OklchColor): string[] => {
   // Use the centralized SEMANTIC_SPECS from constants.ts
   const weightedResults = SEMANTIC_SPECS.map(item => {
     const dL = item.l - l;
-    const dC = (item.c - c) * 2.5; // Weight chroma differences more heavily
+    const dC = (item.c - c) * 3; // 濃豔值(彩度C)0.33 視為 100%
     const distance = Math.sqrt(dL * dL + dC * dC);
     return { ...item, distance };
   });
