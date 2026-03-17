@@ -198,7 +198,8 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     
     const withDistance = humanEntries.map(e => {
       const dL = e.color.l - color.l;
-      const dC = e.color.c - color.c;
+      // 濃豔值(彩度C)0.33 視為 100%
+      const dC = (e.color.c - color.c) * 3;
       // 因為已經限制在同色相，dH 其實為 0，但保留算式也無妨
       const distance = Math.sqrt(dL*dL + dC*dC); 
       return { ...e, distance };
