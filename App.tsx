@@ -419,7 +419,7 @@ function App() {
           <button
             onClick={() => setIsProfileExpanded(false)}
             className={`w-8 h-8 flex items-center justify-center rounded-full bg-white/5 transition-colors text-white/60 hover:text-white shrink-0 min-[480px]:hidden ml-1`}
-            title="Close"
+            title="收合"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path
@@ -562,9 +562,9 @@ function App() {
                       onChange={(e) => handleQuizFilterChange(e.target.value)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     >
-                      <option value="all">隨機出題</option>
+                      <option value="all" className="bg-[#333333] text-white">隨機出題</option>
                       {HUES.map((h) => (
-                        <option key={h.id} value={h.angle}>
+                        <option key={h.id} value={h.angle} className="bg-[#333333] text-white">
                           {h.nameZH} ({h.angle}°)
                         </option>
                       ))}
@@ -653,7 +653,7 @@ function App() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     >
                       {HUES.map((h) => (
-                        <option key={h.id} value={h.angle}>
+                        <option key={h.id} value={h.angle} className="bg-[#333333] text-white">
                           {h.nameZH} ({h.angle}°)
                         </option>
                       ))}
