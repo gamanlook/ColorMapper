@@ -39,36 +39,35 @@ export const SEED_DATA_POINTS = 144;
  */
 export const SEMANTIC_SPECS = [
   // --- Grayscale / Neutral (Low Chroma) ---
-  { prefix: '白', l: 0.96, c: 0.01, desc: 'White' },
-  { prefix: '淺灰', l: 0.85, c: 0.015, desc: 'Light Gray' },
-  { prefix: '灰', l: 0.60, c: 0.015, desc: 'Gray' },
-  { prefix: '深灰', l: 0.35, c: 0.015, desc: 'Dark Gray' },
-  { prefix: '暗灰', l: 0.22, c: 0.015, desc: 'Dim Gray' },
-  { prefix: '黑', l: 0.10, c: 0.01, desc: 'Black' },
+  { prefix: '白', l: 0.95, c: 0.01, desc: 'White' },
+  { prefix: '淺灰', l: 0.80, c: 0.01, desc: 'Light Gray' },
+  { prefix: '灰', l: 0.67, c: 0.01, desc: 'Gray' },
+  { prefix: '深灰', l: 0.40, c: 0.01, desc: 'Dark Gray' },
+  { prefix: '暗灰', l: 0.25, c: 0.01, desc: 'Dim Gray' },
+  { prefix: '黑', l: 0.15, c: 0.01, desc: 'Black' },
 
-  // --- Low Saturation / Foggy (Chroma 0.02 - 0.08) ---
-  { prefix: '淺霧', l: 0.75, c: 0.04, desc: 'Pale Foggy' },
-  { prefix: '霧', l: 0.55, c: 0.05, desc: 'Foggy/Muted' },
-  { prefix: '深霧', l: 0.35, c: 0.05, desc: 'Deep Foggy' },
-  { prefix: '墨', l: 0.15, c: 0.06, desc: 'Ink (Dark & slightly colored)' },
+  // --- Low Saturation / Muted (Chroma 0.05 - 0.12) ---
+  { prefix: '淺霧', l: 0.75, c: 0.05, desc: 'Soft / Pale Muted' },
+  { prefix: '霧', l: 0.60, c: 0.055, desc: 'Muted / Dusty' }, 
+  { prefix: '深霧', l: 0.45, c: 0.06, desc: 'Dull / Smoky' },
 
-  // --- High Lightness (L > 0.7) ---
-  { prefix: '淡', l: 0.90, c: 0.05, desc: 'Pale (P)' },
-  { prefix: '淺', l: 0.82, c: 0.10, desc: 'Light (L)' },
-  { prefix: '亮', l: 0.85, c: 0.16, desc: 'Bright (B)' },
-  { prefix: '螢光', l: 0.88, c: 0.26, desc: 'Fluorescent/Neon' },
+  // --- High Lightness (L > 0.8) ---
+  { prefix: '淡', l: 0.90, c: 0.05, desc: 'Pale' },
+  { prefix: '淺', l: 0.87, c: 0.10, desc: 'Light' },
+  { prefix: '亮', l: 0.85, c: 0.17, desc: 'Bright' },
+  { prefix: '螢光', l: 0.85, c: 0.22, desc: 'Neon' },
 
-  // --- Mid Lightness (L 0.4 - 0.7) ---
-  { prefix: '明', l: 0.65, c: 0.12, desc: 'Luminous/Clear' },
-  { prefix: '鮮', l: 0.65, c: 0.22, desc: 'Strong (S)' },
-  { prefix: '豔', l: 0.60, c: 0.28, desc: 'Vivid (V)' },
-  { prefix: '純', l: 0.50, c: 0.30, desc: 'Pure' },
-  { prefix: '正', l: 0.50, c: 0.28, desc: 'Standard/Base' },
+  // --- Mid Lightness (L 0.4 - 0.8) ---
+  { prefix: '明', l: 0.70, c: 0.12, desc: 'Clear' },
+  { prefix: '鮮', l: 0.70, c: 0.17, desc: 'Strong' },
+  { prefix: '豔', l: 0.60, c: 0.22, desc: 'Vivid' },
+  { prefix: '純', l: 0.50, c: 0.22, desc: 'Pure' },
 
-  // --- Low Lightness (L < 0.5) ---
-  { prefix: '濃', l: 0.45, c: 0.22, desc: 'Deep/Rich' },
-  { prefix: '深', l: 0.35, c: 0.15, desc: 'Deep (D)' },
-  { prefix: '暗', l: 0.25, c: 0.10, desc: 'Dark' },
+  // --- Low Lightness (L < 0.55) ---
+  { prefix: '濃', l: 0.55, c: 0.17, desc: 'Rich' },
+  { prefix: '深', l: 0.40, c: 0.17, desc: 'Deep' },
+  { prefix: '暗', l: 0.33, c: 0.12, desc: 'Dark' },
+  { prefix: '墨', l: 0.20, c: 0.07, desc: 'Ink / Very Dark' },
 ];
 
 // Automatically extract the list of prefixes from the specs above
