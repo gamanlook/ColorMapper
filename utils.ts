@@ -228,13 +228,13 @@ export const generateSeedData = (): ColorEntry[] => {
     };
 
     // 1. PEAK / TIP CLUSTER
-    let tipPrefix = '正';
+    let tipPrefix = '純';
     if (peakL >= 0.88) tipPrefix = '螢光';
     else if (peakL >= 0.80) tipPrefix = '亮';
     else if (peakL <= 0.35) tipPrefix = '濃';
     else if (peakMaxC > 0.28) tipPrefix = '豔';
     else if (peakMaxC > 0.22) tipPrefix = '鮮';
-    else tipPrefix = '正';
+    else tipPrefix = '純';
     addRelativeCluster(2, peakL, 0.05, 0.9, 0.05, tipPrefix);
 
     // 2. LIGHT (淺)
@@ -245,7 +245,7 @@ export const generateSeedData = (): ColorEntry[] => {
     const deepL = peakL * 0.5;
     addRelativeCluster(2, deepL, 0.05, 0.5, 0.1, '深');
 
-    // 4. MIST (霧)
+    // 4. MUTED (霧)
     addRelativeCluster(2, peakL, 0.1, 0.20, 0.05, '霧');
 
   });
