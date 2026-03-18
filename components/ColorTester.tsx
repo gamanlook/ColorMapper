@@ -555,52 +555,73 @@ const handlePrefixClick = (prefix: string) => {
       </div>
 
       <div className="flex flex-col gap-6">
-        <div className="relative h-8 flex items-center justify-center">
-          {showChallengeChip ? (
-            <div className="flex items-center p-1 gap-1 bg-white/5 ring-1 ring-inset ring-white/10 rounded-full animate-in fade-in duration-200">
-              <span className="pl-2.5 text-xs font-medium text-theme-text-soft">
-                {challengeMessage}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowChallengeChip(false)}
-                className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-theme-text-muted transition-colors shrink-0"
-                title="關閉提示"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M 7 7 L 17 17 M 17 7 L 7 17" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div
-              className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)] animate-in fade-in duration-300"
-              style={{
-                WebkitMaskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
-                maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
-              }}
+        <div className="relative grid place-items-center w-full">
+          {/* Challenge Chip (A) */}
+          <div 
+            aria-hidden={!showChallengeChip}
+            className={`
+              col-start-1 row-start-1 flex items-center p-1 gap-1 bg-white/5 ring-1 ring-inset ring-white/10 rounded-full
+              transition-all ease-out
+              ${showChallengeChip 
+                ? "opacity-100 z-10 translate-y-0 pointer-events-auto duration-300"
+                : "opacity-0 z-0 translate-y-1 pointer-events-none scale-95 duration-0"
+              }
+            `}
+          >
+            <span className="pl-2.5 text-xs font-medium text-theme-text-soft">
+              {challengeMessage}
+            </span>
+            <button
+              type="button"
+              tabIndex={showChallengeChip ? 0 : -1}
+              onClick={() => setShowChallengeChip(false)}
+              className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-theme-text-muted transition-colors shrink-0"
+              title="關閉提示"
             >
-              {suggestedPrefixesList.map((item) => (
-                <button
-                  key={item.text}
-                  type="button"
-                  onClick={() => handlePrefixClick(item.text)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  className="first:ml-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
-                >
-                  {item.text}{item.isPrefix && !STANDALONE_ALLOWED.includes(item.text) ? '⋯' : ''}
-                </button>
-              ))}
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M 7 7 L 17 17 M 17 7 L 7 17" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Suggestion List (B) */}
+          <div
+            aria-hidden={showChallengeChip}
+            className={`
+              col-start-1 row-start-1 flex flex-nowrap gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 w-[calc(100%+3rem)]
+              transition-all ease-out
+              ${!showChallengeChip 
+                ? "opacity-100 z-10 translate-y-0 pointer-events-auto duration-300"
+                : "opacity-0 z-0 -translate-y-1 pointer-events-none scale-95 duration-0"
+              }
+            `}
+            style={{
+              WebkitMaskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
+              maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
+            }}
+          >
+            {suggestedPrefixesList.map((item) => (
               <button
+                key={item.text}
                 type="button"
-                onClick={handleCustomInputClick}
+                tabIndex={!showChallengeChip ? 0 : -1}
+                onClick={() => handlePrefixClick(item.text)}
                 onMouseDown={(e) => e.preventDefault()}
-                className="last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+                className="first:ml-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
               >
-                輸入你的創意⋯
+                {item.text}{item.isPrefix && !STANDALONE_ALLOWED.includes(item.text) ? '⋯' : ''}
               </button>
-            </div>
-          )}
+            ))}
+            <button
+              type="button"
+              tabIndex={!showChallengeChip ? 0 : -1}
+              onClick={handleCustomInputClick}
+              onMouseDown={(e) => e.preventDefault()}
+              className="last:mr-auto whitespace-nowrap flex-shrink-0 px-4 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
+            >
+              輸入你的創意⋯
+            </button>
+          </div>
         </div>
 
         {/* Input Form */}
