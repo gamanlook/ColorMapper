@@ -76,7 +76,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   entries =[],
 }) => {
   const [inputName, setInputName] = useState("");
-  const[suggestedPrefixesList, setSuggestedPrefixesList] = useState<string[]>([]);
+  const[suggestedPrefixesList, setSuggestedPrefixesList] = useState<{text: string, isPrefix: boolean}[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSkipHint, setShowSkipHint] = useState(false);
   const hasUsedSkipRef = useRef(false);
@@ -129,7 +129,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
             
             inspirationIndexRef.current++;
             if (inspirationIndexRef.current >= shuffledInspirationsRef.current.length) {
-              shuffledInspirationsRef.current = shuffleArray(INSPIRATIONS);
+              // Just loop back to the beginning of the already-shuffled array
               inspirationIndexRef.current = 0;
             }
           } else {
@@ -236,12 +236,12 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     }
     
     const defaultPrefixes = suggestPrefixes(color);
-    const combined =[...communityAnswers];
+    const combined = communityAnswers.map(ans => ({ text: ans, isPrefix: false }));
     
     for (const p of defaultPrefixes) {
       if (combined.length >= 4) break;
-      if (!combined.includes(p)) {
-        combined.push(p);
+      if (!combined.some(item => item.text === p)) {
+        combined.push({ text: p, isPrefix: true });
       }
     }
     
@@ -354,6 +354,12 @@ const handlePrefixClick = (prefix: string) => {
   };
 
   const handleCustomInputClick = () => {
+    // If the input exactly matches one of the suggested prefixes, clear it
+    // so the user can see the placeholder inspirations.
+    if (suggestedPrefixesList.some(item => item.text === inputName)) {
+      setInputName("");
+    }
+    
     setIsInputGlowing(true);
     setTimeout(() => setIsInputGlowing(false), 1500);
     if (textareaRef.current) {
@@ -552,11 +558,11 @@ const handlePrefixClick = (prefix: string) => {
               <button
                 type="button"
                 onClick={() => setShowChallengeChip(false)}
-                className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-theme-text-soft transition-colors shrink-0"
+                className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-theme-text-muted transition-colors shrink-0"
                 title="關閉提示"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M 6 6 L 18 18 M 18 6 L 6 18" />
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M 7 7 L 17 17 M 17 7 L 7 17" />
                 </svg>
               </button>
             </div>
@@ -568,15 +574,15 @@ const handlePrefixClick = (prefix: string) => {
                 maskImage: `linear-gradient(to right, transparent, rgba(0,0,0, 0.1) 4px, rgba(0,0,0, 0.4) 10px, rgba(0,0,0, 0.8) 18px, black 24px, black calc(100% - 24px), rgba(0,0,0, 0.8) calc(100% - 18px), rgba(0,0,0, 0.4) calc(100% - 10px), rgba(0,0,0, 0.1) calc(100% - 4px), transparent)`,
               }}
             >
-              {suggestedPrefixesList.map((prefix) => (
+              {suggestedPrefixesList.map((item) => (
                 <button
-                  key={prefix}
+                  key={item.text}
                   type="button"
-                  onClick={() => handlePrefixClick(prefix)}
+                  onClick={() => handlePrefixClick(item.text)}
                   onMouseDown={(e) => e.preventDefault()}
                   className="first:ml-auto whitespace-nowrap flex-shrink-0 px-3.5 py-2 text-xs font-medium bg-white/5 ring-1 ring-inset ring-white/10 text-theme-text-soft hover:bg-white/10 rounded-full transition-colors"
                 >
-                  {prefix}
+                  {item.text}{item.isPrefix && !STANDALONE_ALLOWED.includes(item.text) ? '⋯' : ''}
                 </button>
               ))}
               <button
