@@ -208,7 +208,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     withDistance.sort((a, b) => a.distance - b.distance);
     
     // 過濾太遠的顏色
-    const validRawAnswers = withDistance.filter(item => item.distance <= 0.1);
+    const validRawAnswers = withDistance.filter(item => item.distance <= 0.13);
     
     const uniqueNames = new Set<string>();
     const communityAnswers: string[] =[];
