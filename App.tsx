@@ -489,7 +489,7 @@ function App() {
                     Perception Test
                   </h2>
                   <p className="text-2xl font-bold tracking-tight truncate">
-                    形容顏色
+                    色彩命名
                   </p>
                 </div>
 
@@ -612,7 +612,7 @@ function App() {
                     Consensus Map
                   </h2>
                   <p className="text-2xl font-bold tracking-tight truncate">
-                    色彩分布
+                    命名共識
                   </p>
                 </div>
 
