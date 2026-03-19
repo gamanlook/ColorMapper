@@ -281,8 +281,8 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
   // Dynamic Contrast Configuration
   const SHADER_PARAMS = {
     LOW_L_LIMIT: 0.10,
-    HIGH_L_LIMIT: 0.87,
-    // Darker: 深色題目(L10%)要更多加深、更多反光，淺色題目(L87%)要更少陰影感、更少提亮
+    HIGH_L_LIMIT: 0.90,
+    // Darker: 深色題目(L10%)要更多加深、更多反光，淺色題目(L90%)要更少陰影感、更少提亮
     DARKER_OFFSET: { MAX: 0.0335, MIN: 0.014 },
     LIGHTER_OFFSET: { MAX: 0.037, MIN: 0.012 }
   };
