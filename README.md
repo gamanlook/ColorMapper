@@ -39,7 +39,7 @@
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, clsx
 - **Graphics & Effects**: D3.js (d3-delaunay), Paper Shaders
-- **AI Integration**: Google Generative AI SDK (gemini-2.5-flash-lite)
+- **AI Integration**: Google Generative AI SDK (gemini-flash-lite)
 - **Backend / Database**: Firebase Realtime Database
 - **Deployment**: Vercel
 
