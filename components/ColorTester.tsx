@@ -309,7 +309,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     [color],
   );
 
-  const normalizedInput = inputName.replace(/艷/g, "豔");
+  const normalizedInput = inputName.replace(/艷/g, "豔").toUpperCase();
   const showSuffixHint =
     PREFIXES.includes(normalizedInput) &&
     !STANDALONE_ALLOWED.includes(normalizedInput);
@@ -408,10 +408,12 @@ const handlePrefixClick = (prefix: string) => {
 
     setIsSubmitting(true);
 
+    //將名字整理乾淨後送出
     let cleanedName = inputName.trim().replace(/艷/g, "豔");
     if (cleanedName.endsWith("色") && cleanedName.length > 1) {
       cleanedName = cleanedName.slice(0, -1);
     }
+    cleanedName = cleanedName.toUpperCase();
 
     if (hasClickedSuggestionRef.current) {
       usedSuggestedWordRef.current = true;
