@@ -284,7 +284,7 @@ export const generateShaderPalette = (color: OklchColor, spreadMultiplier: numbe
     HIGH_L_LIMIT: 0.90,
     // Darker: 深色題目(L10%)要更多加深、更多反光，淺色題目(L90%)要更少陰影感、更少提亮
     DARKER_OFFSET: { MAX: 0.027, MIN: 0.017 },
-    LIGHTER_OFFSET: { MAX: 0.032, MIN: 0.012 }
+    LIGHTER_OFFSET: { MAX: 0.029, MIN: 0.012 }
   };
 
   // 計算動態 Offset
