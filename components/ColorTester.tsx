@@ -108,7 +108,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const visualStageRef = useRef<HTMLDivElement>(null);
 
   const[svgFontSize, setSvgFontSize] = useState(3);
-  const [dimensions, setDimensions] = useState({ width: 300, height: 300 });
   const hasInteractedRef = useRef(false);
 
   useEffect(() => {
@@ -252,8 +251,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
         const containerWidth = entry.contentRect.width;
 
         if (containerWidth > 0) {
-          setDimensions({ width: containerWidth, height: containerWidth });
-
           let targetPixelSize = MIN_FONT_PX;
 
           if (containerWidth >= MAX_WIDTH_BREAKPOINT) {
@@ -484,8 +481,8 @@ const handlePrefixClick = (prefix: string) => {
         <div className="absolute inset-0 z-0">
           <AnimatedBackground
             targetColor={color}
-            width={dimensions.width}
-            height={dimensions.height}
+            width="100%"
+            height="100%"
           />
         </div>
 

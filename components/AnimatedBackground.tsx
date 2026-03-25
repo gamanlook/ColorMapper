@@ -5,8 +5,8 @@ import { generateShaderPalette } from "../utils";
 
 interface AnimatedBackgroundProps {
   targetColor: OklchColor;
-  width: number;
-  height: number;
+  width?: number | string;
+  height?: number | string;
 }
 
 // Helper to lerp between two numbers
@@ -250,8 +250,9 @@ export const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({
   return (
     <GrainGradient
       key={shaderKey}
-      width={width}
-      height={height}
+      width={width ?? "100%"}
+      height={height ?? "100%"}
+      fit="cover"
       colors={shaderColors}
       colorBack={shaderBack}
       softness={softness}
