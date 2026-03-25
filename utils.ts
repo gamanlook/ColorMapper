@@ -276,15 +276,15 @@ const mapRange = (value: number, inMin: number, inMax: number, outMin: number, o
 // 產生 Shader Palette 需要的顏色組
 // 使用ToGamut，不使用clip，而是用同亮度的極限C取代
 // 使用動態亮度，越亮的題目不需要太大的對比，越暗的題目需要強化對比
-export const generateShaderPalette = (color: OklchColor): { shaderColors: string[], shaderBack: string } => {
+export const generateShaderPalette = (color: OklchColor, spreadMultiplier: number = 1): { shaderColors: string[], shaderBack: string } => {
   
   // Dynamic Contrast Configuration
   const SHADER_PARAMS = {
     LOW_L_LIMIT: 0.10,
     HIGH_L_LIMIT: 0.90,
     // Darker: 深色題目(L10%)要更多加深、更多反光，淺色題目(L90%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.0335, MIN: 0.014 },
-    LIGHTER_OFFSET: { MAX: 0.037, MIN: 0.012 }
+    DARKER_OFFSET: { MAX: 0.032, MIN: 0.018 },
+    LIGHTER_OFFSET: { MAX: 0.034, MIN: 0.012 }
   };
 
   // 計算動態 Offset
@@ -307,23 +307,39 @@ export const generateShaderPalette = (color: OklchColor): { shaderColors: string
   // 基礎色 (baseHex)
   const baseHex = oklchToGamutHex(color.l, color.c, color.h);
 
+  // 根據底色亮度，決定「流沙動畫」是往亮擴張還是往暗擴張
+  let darkMultiplier = spreadMultiplier;
+  let lightMultiplier = spreadMultiplier;
+
+  if (spreadMultiplier > 1) {
+    if (color.l < 0.5) {
+      // 暗色背景：往亮處呼吸。壓抑暗色擴張。
+      darkMultiplier = 1 + (spreadMultiplier - 1) * 0.15; 
+      lightMultiplier = spreadMultiplier; 
+    } else {
+      // 亮色背景：往暗處呼吸。壓抑亮色擴張。
+      darkMultiplier = spreadMultiplier; 
+      lightMultiplier = 1 + (spreadMultiplier - 1) * 0.15; 
+    }
+  }
+
   // 最暗 (darkestHex)
-  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2.5));
-  const darkestC = Math.max(0, color.c + 0.008);
+  const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2 * darkMultiplier));
+  const darkestC = Math.max(0, color.c + 0.008 * darkMultiplier);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
   // 暗一點、濃一點 (darkerHex)
-  const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset));
-  const darkerC = Math.max(0, color.c + 0.0028);
+  const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * darkMultiplier));
+  const darkerC = Math.max(0, color.c + 0.003 * darkMultiplier);
   const darkerHex = oklchToGamutHex(darkerL, darkerC, color.h);
 
   // 亮一點 (lighterHex)
-  const lighterL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset));
+  const lighterL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset * lightMultiplier));
   const lighterC = Math.max(0, color.c - 0.0012);
   const lighterHex = oklchToGamutHex(lighterL, lighterC, color.h);
 
   // 最亮 (lightestHex)
-  const lightestL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset * 2));
+  const lightestL = Math.max(0, Math.min(0.9999, color.l + dynamicLighterOffset * 2 * lightMultiplier));
   const lightestC = Math.max(0, color.c - 0.0032);
   const lightestHex = oklchToGamutHex(lightestL, lightestC, color.h);
 

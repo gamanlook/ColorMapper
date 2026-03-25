@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { GrainGradient } from "@paper-design/shaders-react";
+import { AnimatedBackground } from "./AnimatedBackground";
 import { OklchColor, HueDefinition, ColorEntry } from "../types";
 import {
   toCss,
   suggestPrefixes,
   oklchToHex,
-  generateShaderPalette,
 } from "../utils";
 import { PREFIXES } from "../constants";
 import { validateColorName } from "../services/geminiService";
@@ -90,10 +89,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const inputNameRef = useRef(inputName);
   const hintTimerExpiredRef = useRef(false);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-  const [randomOffset, setRandomOffset] = useState(0);
-  const[shaderKey, setShaderKey] = useState(0);
-  const [isShaderVisible, setIsShaderVisible] = useState(true);
-  const lastHiddenTimeRef = useRef(0);
 
   const [showChallengeChip, setShowChallengeChip] = useState(false);
   const [challengeMessage, setChallengeMessage] = useState(CHALLENGE_MESSAGES[0]);
@@ -154,26 +149,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  },[]);
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        lastHiddenTimeRef.current = Date.now();
-      } else if (document.visibilityState === "visible") {
-        const timeGone = Date.now() - lastHiddenTimeRef.current;
-        if (timeGone > 60000) {
-          setIsShaderVisible(false);
-          setTimeout(() => {
-            setShaderKey((k) => k + 1);
-            setIsShaderVisible(true);
-          }, 200);
-        }
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
   },[]);
 
   useEffect(() => {
@@ -258,7 +233,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     setShowSkipHint(false);
     hintTimerExpiredRef.current = false;
     setCopyFeedback(null);
-    setRandomOffset(Math.random() * 2 - 1);
 
     const timer = setTimeout(() => {
       hintTimerExpiredRef.current = true;
@@ -303,11 +277,6 @@ const ColorTester: React.FC<ColorTesterProps> = ({
     resizeObserver.observe(visualStageRef.current);
     return () => resizeObserver.disconnect();
   },[]);
-
-  const { shaderColors, shaderBack } = useMemo(
-    () => generateShaderPalette(color),
-    [color],
-  );
 
   const normalizedInput = inputName.replace(/艷/g, "豔").toUpperCase();
   const showSuffixHint =
@@ -410,9 +379,16 @@ const handlePrefixClick = (prefix: string) => {
 
     //將名字整理乾淨後送出
     let cleanedName = inputName.trim().replace(/艷/g, "豔");
-    if (cleanedName.endsWith("色") && cleanedName.length > 1) {
-      cleanedName = cleanedName.slice(0, -1);
+    
+    const suffixRegex = /(的顏色|顏色|色)$/;
+    const match = cleanedName.match(suffixRegex);
+    if (match) {
+      const suffix = match[0];
+      if (cleanedName.length > suffix.length) {
+        cleanedName = cleanedName.replace(suffixRegex, '');
+      }
     }
+    
     cleanedName = cleanedName.toUpperCase();
 
     if (hasClickedSuggestionRef.current) {
@@ -506,23 +482,11 @@ const handlePrefixClick = (prefix: string) => {
       >
         {/* Shader Layer */}
         <div className="absolute inset-0 z-0">
-          {isShaderVisible && (
-            <GrainGradient
-              key={shaderKey}
-              width={dimensions.width}
-              height={dimensions.height}
-              colors={shaderColors}
-              colorBack={shaderBack}
-              softness={0.05}
-              intensity={2}
-              noise={0}
-              shape="wave"
-              speed={3}
-              scale={1}
-              offsetX={randomOffset}
-              offsetY={0}
-            />
-          )}
+          <AnimatedBackground
+            targetColor={color}
+            width={dimensions.width}
+            height={dimensions.height}
+          />
         </div>
 
         {/* Highlight Layer */}
