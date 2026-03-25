@@ -34,7 +34,7 @@ const easeOutCubic = (x: number): number => {
 // Animation config
 const ANIMATION_CONFIG = {
   WASH_DURATION: 150, // ms
-  HOLD_DURATION_INITIAL: 500, // ms (剛進站時 State B 維持的時間)
+  HOLD_DURATION_INITIAL: 1000, // ms (剛進站時 State B 維持的時間)
   HOLD_DURATION_NORMAL: 50, // ms (後續換顏色時 State B 幾乎不停留，馬上進入餘波)
   SETTLE_DURATION: 1600, // ms
   SPEED_NORMAL: 3,
