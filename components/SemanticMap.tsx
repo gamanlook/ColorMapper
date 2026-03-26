@@ -392,29 +392,6 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
       const cx = xScale(currentColor.c);
       const cy = yScale(currentColor.l);
 
-      const pulseG = layerTarget.append("g");
-      pulseG
-        .append("circle")
-        .attr("cx", cx)
-        .attr("cy", cy)
-        .attr("r", 8)
-        .attr("fill", "none")
-        .attr("stroke", "white")
-        .attr("stroke-width", 1)
-        .append("animate")
-        .attr("attributeName", "r")
-        .attr("values", "8; 28")
-        .attr("dur", "1.5s")
-        .attr("repeatCount", "indefinite");
-
-      pulseG
-        .select("circle")
-        .append("animate")
-        .attr("attributeName", "opacity")
-        .attr("values", "0.8; 0")
-        .attr("dur", "1.5s")
-        .attr("repeatCount", "indefinite");
-
       layerTarget
         .append("circle")
         .attr("cx", cx)
