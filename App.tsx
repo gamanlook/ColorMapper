@@ -25,6 +25,7 @@ function App() {
   const[toast, setToast] = useState<ToastData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const [lastValidSubmission, setLastValidSubmission] = useState<ColorEntry | null>(null);
 
   useEffect(() => {
     const checkFirebase = () => {
@@ -178,6 +179,13 @@ function App() {
     } else {
       setEntries((prev) => [...prev, newEntry]);
     }
+    
+    if (!isSuspicious) {
+      setLastValidSubmission(newEntry);
+    } else {
+      setLastValidSubmission(null);
+    }
+    
     handleNextColor();
   };
 
@@ -485,7 +493,7 @@ function App() {
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
-                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
+                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
                     Perception Test
                   </h2>
                   <p className="text-2xl font-bold tracking-tight truncate">
@@ -608,7 +616,7 @@ function App() {
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
-                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-white/50 uppercase">
+                  <h2 className="ml-[0.0625rem] text-[0.625rem] font-mono tracking-widest text-theme-text-muted uppercase">
                     Consensus Map
                   </h2>
                   <p className="text-2xl font-bold tracking-tight truncate">
@@ -622,14 +630,30 @@ function App() {
                     <button
                       type="button"
                       onClick={() => setViewHueAngle(currentColor.h)}
-                      className="p-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center text-theme-text-main shrink-0"
-                      title="回到目前題目色相"
+                      className="pl-3.5 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-1.5 text-theme-text-main shrink-0"
+                      title="返回目前色相"
+                    >
+                      <span className="text-xs/3 font-medium whitespace-nowrap">目前</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <path d="M15 13 20 8l-5-5 M20 8h-10.5a5.5 5.5 0 0 0-5.5 5.5v0a5.5 5.5 0 0 0 5.5 5.5H13" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {currentColor && viewHueAngle === currentColor.h && lastValidSubmission && (
+                    <button
+                      type="button"
+                      onClick={() => setViewHueAngle(lastValidSubmission.color.h)}
+                      className="pl-3 pr-3.5 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center gap-1.5 text-theme-text-main shrink-0"
+                      title="回到上題色相"
                     >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
                         <path d="M9 13 4 8l5-5 M4 8h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
                       </svg>
+                      <span className="text-xs/3 font-medium whitespace-nowrap">上題</span>
                     </button>
                   )}
+
                   <div className="relative flex-shrink-0 group">
                     <div className="flex items-center gap-2 pl-4 pr-3 py-2.5 rounded-full ring-1 ring-inset ring-white/10 bg-white/5 group-hover:bg-white/10 transition-colors cursor-pointer max-w-[140px] sm:max-w-none">
                       <span className="text-xs/3 font-medium whitespace-nowrap">
@@ -669,6 +693,7 @@ function App() {
                   currentColor={currentColor}
                   width={448}
                   height={448}
+                  lastValidSubmission={lastValidSubmission}
                 />
                 <div className="mt-8 flex gap-8 text-[0.625rem] font-mono tracking-wide text-theme-text-muted uppercase">
                   <div className="flex items-center gap-2">

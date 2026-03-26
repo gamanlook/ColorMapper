@@ -11,6 +11,7 @@ interface SemanticMapProps {
   currentColor: OklchColor | null;
   width?: number;
   height?: number;
+  lastValidSubmission?: ColorEntry | null;
 }
 
 interface SemanticCluster {
@@ -27,6 +28,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
   currentColor,
   width = 360,
   height = 360,
+  lastValidSubmission,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -381,7 +383,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .attr("r", 2.5)
         .attr("fill", (d) => toCss(d.color))
         .attr("stroke", (d) =>
-          d.color.l > 0.5 ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.4)",
+          d.color.l > 0.7 ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.4)",
         )
         .attr("stroke-width", 0.5)
         .attr("opacity", 0.9)
@@ -396,11 +398,61 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
-        .attr("r", 6)
+        .attr("r", 7)
         .attr("fill", toCss(currentColor))
         .attr("stroke", "white")
         .attr("stroke-width", 2)
         .attr("filter", "drop-shadow(0px 2px 8px rgba(255,255,255,0.5))");
+    }
+
+    if (lastValidSubmission && lastValidSubmission.color.h === hue) {
+      const cx = xScale(lastValidSubmission.color.c);
+      const cy = yScale(lastValidSubmission.color.l);
+
+      const justNowGroup = layerTarget.append("g");
+
+      justNowGroup
+        .append("circle")
+        .attr("cx", cx)
+        .attr("cy", cy)
+        .attr("r", 6)
+        .attr("fill", toCss(lastValidSubmission.color))
+        .attr("stroke", "white")
+        .attr("stroke-width", 2)
+        .attr("filter", "drop-shadow(0px 2px 8px rgba(255,255,255,0.2))");
+
+      // Label background (Speech bubble shape)
+      const bx = cx + 8;
+      const by = cy - 26;
+      const bw = 32;
+      const bh = 18;
+      const r = 4;
+
+      // Draw a path: bottom-left is sharp, other 3 corners are rounded
+      const bubblePath = `
+        M ${bx},${by + bh}
+        L ${bx},${by + r} A ${r},${r} 0 0,1 ${bx + r},${by}
+        L ${bx + bw - r},${by} A ${r},${r} 0 0,1 ${bx + bw},${by + r}
+        L ${bx + bw},${by + bh - r} A ${r},${r} 0 0,1 ${bx + bw - r},${by + bh}
+        Z
+      `;
+
+      justNowGroup
+        .append("path")
+        .attr("d", bubblePath)
+        .attr("fill", "rgba(255,255,255,0.9)");
+
+      // Label text
+      justNowGroup
+        .append("text")
+        .attr("x", bx + bw / 2)
+        .attr("y", by + bh / 2)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "central")
+        .attr("fill", "black")
+        .attr("font-size", "10px")
+        .attr("font-weight", "500")
+        .text("上題");
     }
 
     const yAxis = d3
@@ -444,7 +496,8 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
   const hiddenItems = tooltipData ? (showCollapse ? tooltipData.composition.slice(MAX_TOOLTIP_ITEMS) : []) : [];
 
   return (
-    <div className="relative flex justify-center w-full max-w-[480px]">
+    <div className="relative flex justify-center w-full" style={{ maxWidth: 'min(480px, max(360px, 55.5vh))' }}>
+    {/* 圖表舞台（有對應的圓形舞台，圓形14:圖表15） */}
       <div className="isolate w-full">
         <svg
           ref={svgRef}

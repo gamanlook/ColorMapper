@@ -470,8 +470,8 @@ const handlePrefixClick = (prefix: string) => {
   };
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-[448px] mx-auto">
-      {/* Visual Stage */}
+    <div className="flex flex-col gap-8 w-full mx-auto" style={{ maxWidth: 'min(448px, max(336px, 51.8vh))' }}>
+    {/* 圓形舞台（有對應的圖表舞台，圓形14:圖表15） */}
       <div
         ref={visualStageRef}
         className="w-full aspect-square rounded-full shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] transition-all duration-500 ease-out relative group overflow-hidden"
