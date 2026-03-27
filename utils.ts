@@ -282,9 +282,13 @@ export const generateShaderPalette = (color: OklchColor, spreadMultiplier: numbe
   const SHADER_PARAMS = {
     LOW_L_LIMIT: 0.10,
     HIGH_L_LIMIT: 0.90,
-    // Darker: 深色題目(L10%)要更多加深、更多反光，淺色題目(L90%)要更少陰影感、更少提亮
-    DARKER_OFFSET: { MAX: 0.023, MIN: 0.017 },
-    LIGHTER_OFFSET: { MAX: 0.022, MIN: 0.012 }
+    // 深色題目(L10%)要更多加深、更多反光，淺色題目(L90%)要更少陰影感、更少提亮
+    DARKER_OFFSET: { MAX: 0.021, MIN: 0.017 },
+    LIGHTER_OFFSET: { MAX: 0.020, MIN: 0.012 },
+    // 灰色題目不加彩度避免髒色，鮮豔題目加彩度增加濃郁感
+    LOW_C_LIMIT: 0.00,
+    HIGH_C_LIMIT: 0.15,
+    DARKER_C_OFFSET: { MIN: 0.000, MAX: 0.014 }
   };
 
   // 計算動態 Offset
@@ -302,6 +306,14 @@ export const generateShaderPalette = (color: OklchColor, spreadMultiplier: numbe
     SHADER_PARAMS.HIGH_L_LIMIT, 
     SHADER_PARAMS.LIGHTER_OFFSET.MAX, 
     SHADER_PARAMS.LIGHTER_OFFSET.MIN
+  );
+
+  const dynamicCOffset = mapRange(
+    color.c,
+    SHADER_PARAMS.LOW_C_LIMIT,
+    SHADER_PARAMS.HIGH_C_LIMIT,
+    SHADER_PARAMS.DARKER_C_OFFSET.MIN,
+    SHADER_PARAMS.DARKER_C_OFFSET.MAX
   );
 
   // 基礎色 (baseHex)
@@ -325,12 +337,12 @@ export const generateShaderPalette = (color: OklchColor, spreadMultiplier: numbe
 
   // 最暗 (darkestHex)
   const darkestL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * 2 * darkMultiplier));
-  const darkestC = Math.max(0, color.c + 0.007 * darkMultiplier);
+  const darkestC = Math.max(0, color.c + dynamicCOffset * 2 * darkMultiplier);
   const darkestHex = oklchToGamutHex(darkestL, darkestC, color.h);
 
   // 暗一點、濃一點 (darkerHex)
   const darkerL = Math.max(0, Math.min(0.9999, color.l - dynamicDarkerOffset * darkMultiplier));
-  const darkerC = Math.max(0, color.c + 0.003 * darkMultiplier);
+  const darkerC = Math.max(0, color.c + dynamicCOffset * darkMultiplier);
   const darkerHex = oklchToGamutHex(darkerL, darkerC, color.h);
 
   // 亮一點 (lighterHex)
