@@ -225,7 +225,12 @@ function App() {
   const handleToastClick = () => {
     if (toast) {
       setViewHueAngle(toast.hueDef.angle);
-      setToast(null);
+      if (window.innerWidth < 1024) {
+        const pane = document.getElementById("consensus-pane");
+        if (pane) {
+          pane.scrollIntoView({ behavior: "smooth" });
+        }
+      }
     }
   };
 
@@ -605,7 +610,7 @@ function App() {
         {/* ======================= Right Pane ======================= */}
         {/* 手機版設定：h-auto 已經確保了「內容有多少就長多高，Hug content」。
             電腦版設定：保留 lg:min-h-screen 來跟左邊切齊。 */}
-        <div className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
+        <div id="consensus-pane" className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
           
           {/* Invisible Header for alignment on desktop */}
           {renderHeader("right")}

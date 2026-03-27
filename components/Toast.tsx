@@ -47,8 +47,9 @@ const Toast: React.FC<ToastProps> = ({ data, onClick, onClose }) => {
 
   const handleClick = () => {
     setAnimationState("exiting");
+    onClick();
     setTimeout(() => {
-      onClick();
+      onClose();
     }, 500);
   };
 
