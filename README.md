@@ -8,7 +8,7 @@
 
 
 
-👉 [查看網頁 Color Mapper](https://color-mapper.vercel.app/)
+👉 [點擊遊玩 Color Mapper](https://color-mapper.vercel.app/)
 
 <br>
 
