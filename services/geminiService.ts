@@ -55,7 +55,7 @@ export const validateColorName = async (
     console.error("Gemini Validation Error:", error);
     return {
       reason: "AI unavailable" as any,
-      feedback: "AI罷工中，先算你過！",
+      feedback: "目前AI伺服器大塞車，先算你過🚦",
       isSuspicious: false,
     };
   }
