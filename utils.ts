@@ -115,37 +115,26 @@ export const generateRandomColor = (hueAngle: number, avoidDark: boolean = false
 
   // 輔助函式：投點邏輯
   const trySample = (minL: number, maxL: number, minC: number, maxC: number) => {
-    // 1. 在矩形範圍內隨機投點
+    // 在矩形範圍內隨機投點
     const randL = minL + Math.random() * (maxL - minL);
     const randC = minC + Math.random() * (maxC - minC);
-    // 2. 檢查是否落在 sRGB 形狀內
+    // 檢查是否落在 sRGB 形狀內
     const limitC = findMaxChroma(randL, hueAngle);
     if (randC <= limitC) {
       return { l: randL, c: randC, success: true };
     }
-    return { l: randL, c: randC, success: false }; // 失敗，重投
+    return { l: randL, c: randC, success: false };
   };
 
-  // 第一題避免出現深色題目，所以亮色區要蓋過深色區的機率
-  const mode1Limit = avoidDark ? 0.17 : 0.15;
+  // 第一題避免出現深色題目，所以若 avoidDark 為 true，黑區機率降為 0
+  const blackLimit = avoidDark ? 0 : 0.02; // 黑區佔 2%
+  const nonBlackLimit = blackLimit + 0.48; // 非黑區佔 48% (累積到 0.50)
 
-  // --- MODE 1: PALE / WHITE / HIGH KEY ---
-  // 亮色區：想稍微多一點 (15%)
-  // L: 0.80 ~ 0.99 (很亮)
-  // C: 0.00 ~ 0.22 (到亮，沒到螢光)
-  if (mode < mode1Limit) {
-    while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.80, 0.99, 0.00, 0.22);
-      if (res.success) { l = res.l; c = res.c; isValid = true; }
-      tryCount++;
-    }
-    if (!isValid) { l = 0.95; c = 0.02; } // Fallback
-  }
-  // --- MODE 2: DARK / SHADOWS ---
-  // 深色區：想稍微少一點，避免一直出髒色 (2%)
+  // --- MODE 1: BLACK / DARK ---
+  // 黑區：極暗，避免一直出髒色 (0~2%)
   // L: 0.10 ~ 0.22 (很暗)
   // C: 0.00 ~ 0.16 (極限)
-  else if (mode < 0.17) {
+  if (mode < blackLimit) {
     while (!isValid && tryCount < MAX_TRIES) {
       const res = trySample(0.10, 0.22, 0.00, 0.16);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
@@ -153,36 +142,33 @@ export const generateRandomColor = (hueAngle: number, avoidDark: boolean = false
     }
     if (!isValid) { l = 0.15; c = 0.02; } // Fallback
   }
-
-  // --- MODE 3: GRAY / MUTED ---
-  // 灰色區：中等機率 (33%)
-  // L: 0.22 ~ 0.80 (深到亮)
-  // C: 0.00 ~ 0.22 (灰到濃/鮮，沒到豔)
-  else if (mode < 0.50) {
+  
+  // --- MODE 2: NON-BLACK ---
+  // 非黑區：包含灰、白 (50~48%)
+  // L: 0.22 ~ 0.99 (排除黑色區)
+  // C: 0.00 ~ 0.23 (沒到螢光)
+  else if (mode < nonBlackLimit) {
     while (!isValid && tryCount < MAX_TRIES) {
-      const res = trySample(0.22, 0.80, 0.00, 0.22);
+      const res = trySample(0.22, 0.99, 0.00, 0.23);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
     if (!isValid) { l = 0.60; c = 0.06; } // Fallback
   }
 
-  // --- MODE 4: STANDARD / VIVID ---
+  // --- MODE 3: VIVID / STANDARD ---
   // 鮮豔/一般區：主力題目 (50%)
-  // L: 0.18 ~ 0.98 (避開極暗，因會出現高亮且飽和的黃綠，需拉到0.98)
-  // C: 0.05 ~ 0.32 (避開灰，往高飽和投)
+  // L: 0.18 ~ 0.99 (排除極暗，因會出現高亮且飽和的黃綠)
+  // C: 0.05 ~ 0.32 (排除灰，往高飽和投)
   else {
     while (!isValid && tryCount < MAX_TRIES) {
-      // 這裡 Chroma 上限給到 0.32 其實很大(超出 sRGB 很多)，
-      // 但透過投點法，它會自動貼合 sRGB 的邊緣形狀，而不會死死卡在邊緣。
-      const res = trySample(0.18, 0.98, 0.05, 0.32);
+      const res = trySample(0.18, 0.99, 0.05, 0.32);
       if (res.success) { l = res.l; c = res.c; isValid = true; }
       tryCount++;
     }
     if (!isValid) { l = 0.60; c = 0.10; } // Fallback
   }
 
-  // 回傳結果
   return { l: l!, c: c!, h: hueAngle };
 };
 
