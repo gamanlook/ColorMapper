@@ -596,38 +596,40 @@ const handlePrefixClick = (prefix: string) => {
         <form ref={formRef} className="scroll-mb-4 relative" onSubmit={handleSubmit}>
           
           {/* Animated Glow Border */}
-          {!hasBeenFocused && (
-            <>
-              {/* Base line (masked to be just a ring) */}
-              <div className="absolute -inset-[0px] z-[0] pointer-events-none">
-                <div
-                  className="w-full h-full rounded-[1.875rem] opacity-100"
-                  style={{
-                    background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.8) 322deg, rgba(255,255,255,0.0) 1turn)`,
-                    animation: 'rotate-gradient 6s linear infinite',
-                    padding: '1px',
-                    WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
-                    WebkitMaskComposite: 'xor',
-                    maskComposite: 'exclude',
-                  }}
-                />
-              </div>
-              {/* Bloom (masked to be just a ring) */}
-              <div className="absolute -inset-[0.075rem] z-[0] pointer-events-none blur-[5px]">
-                <div
-                  className="w-full h-full rounded-[1.95rem] opacity-70"
-                  style={{
-                    background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.9) 322deg, rgba(255,255,255,0.0) 1turn)`,
-                    animation: 'rotate-gradient 6s linear infinite',
-                    padding: '2.5px',
-                    WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
-                    WebkitMaskComposite: 'xor',
-                    maskComposite: 'exclude',
-                  }}
-                />
-              </div>
-            </>
-          )}
+          <div
+            className={`absolute inset-0 z-[0] pointer-events-none transition-opacity duration-[2000ms] ease-out ${
+              hasBeenFocused ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            {/* Base line (masked to be just a ring) */}
+            <div className="absolute -inset-[0px] z-[0] pointer-events-none">
+              <div
+                className="w-full h-full rounded-[1.875rem] opacity-100"
+                style={{
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.8) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                  animation: 'rotate-gradient 6s linear infinite',
+                  padding: '1px',
+                  WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                }}
+              />
+            </div>
+            {/* Bloom (masked to be just a ring) */}
+            <div className="absolute -inset-[0.075rem] z-[0] pointer-events-none blur-[5px]">
+              <div
+                className="w-full h-full rounded-[1.95rem] opacity-70"
+                style={{
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.9) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                  animation: 'rotate-gradient 6s linear infinite',
+                  padding: '2.5px',
+                  WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                }}
+              />
+            </div>
+          </div>
 
           <div 
             className={`
