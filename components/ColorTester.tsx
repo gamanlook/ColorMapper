@@ -631,7 +631,7 @@ const handlePrefixClick = (prefix: string) => {
 
           <div 
             className={`
-              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/30
+              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2
               ${isInputGlowing ? "bg-white/30 ring-white/60 shadow-[0_0_48px_rgba(255,255,255,0.4)]" : ""}
             `}
           >
