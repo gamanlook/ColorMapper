@@ -606,8 +606,8 @@ const handlePrefixClick = (prefix: string) => {
               <div
                 className="w-full h-full rounded-[1.875rem] opacity-100"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 70deg, rgba(255,255,255,0.1) 110deg, rgba(255,255,255,0.2) 190deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.3) 290deg, rgba(255,255,255,0.3) 320deg, rgba(255,255,255,0.0) 1turn)`,
-                  animation: 'rotate-gradient 12s linear infinite',
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.5) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.15) 250deg, rgba(255,255,255,0.15) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                  animation: 'rotate-gradient 8s linear infinite',
                   padding: '1px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
                   WebkitMaskComposite: 'xor',
@@ -618,10 +618,10 @@ const handlePrefixClick = (prefix: string) => {
             {/* Bloom (masked to be just a ring) */}
             <div className="absolute -inset-[0.075rem] z-[0] pointer-events-none blur-[5px]">
               <div
-                className="w-full h-full rounded-[1.95rem] opacity-70"
+                className="w-full h-full rounded-[1.95rem] opacity-100"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 70deg, rgba(255,255,255,0.2) 110deg, rgba(255,255,255,0.3) 190deg, rgba(255,255,255,0.2) 250deg, rgba(255,255,255,0.4) 290deg, rgba(255,255,255,0.4) 320deg, rgba(255,255,255,0.0) 1turn)`,
-                  animation: 'rotate-gradient 12s linear infinite',
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.1) 40deg, rgba(255,255,255,0.5) 90deg, rgba(255,255,255,0.1) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.1) 220deg, rgba(255,255,255,0.2) 250deg, rgba(255,255,255,0.2) 290deg, rgba(255,255,255,0.1) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                  animation: 'rotate-gradient 8s linear infinite',
                   padding: '2.5px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
                   WebkitMaskComposite: 'xor',
