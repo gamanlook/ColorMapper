@@ -274,7 +274,7 @@ export const generateShaderPalette = (color: OklchColor, spreadMultiplier: numbe
     // 灰色題目不加彩度避免髒色，鮮豔題目加彩度增加濃郁感
     LOW_C_LIMIT: 0.00,
     HIGH_C_LIMIT: 0.15,
-    DARKER_C_OFFSET: { MIN: 0.000, MAX: 0.014 }
+    DARKER_C_OFFSET: { MIN: 0.000, MAX: 0.018 }
   };
 
   // 計算動態 Offset
