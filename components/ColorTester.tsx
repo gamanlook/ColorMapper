@@ -606,7 +606,7 @@ const handlePrefixClick = (prefix: string) => {
               <div
                 className="w-full h-full rounded-[1.875rem] opacity-100"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.1) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.4) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.1) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.2) 291deg, rgba(255,255,255,0.4) 340deg, rgba(255,255,255,0.0) 1turn)`,
                   animation: 'rotate-gradient 12s linear infinite',
                   padding: '1px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
@@ -620,7 +620,7 @@ const handlePrefixClick = (prefix: string) => {
               <div
                 className="w-full h-full rounded-[1.95rem] opacity-70"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.2) 115deg, rgba(255,255,255,0.3) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.5) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.2) 115deg, rgba(255,255,255,0.3) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.2) 291deg, rgba(255,255,255,0.5) 340deg, rgba(255,255,255,0.0) 1turn)`,
                   animation: 'rotate-gradient 12s linear infinite',
                   padding: '2.5px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
