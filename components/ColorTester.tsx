@@ -100,6 +100,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
 
   const [placeholderText, setPlaceholderText] = useState("試試替這顏色取名");
   const[isPlaceholderFading, setIsPlaceholderFading] = useState(false);
+  const [hasBeenFocused, setHasBeenFocused] = useState(false);
   
   const shuffledInspirationsRef = useRef<string[]>([]);
   const inspirationIndexRef = useRef(0);
@@ -297,6 +298,7 @@ const ColorTester: React.FC<ColorTesterProps> = ({
 
 const handlePrefixClick = (prefix: string) => {
     hasClickedSuggestionRef.current = true;
+    setHasBeenFocused(true);
     
     // 直接讓新名字等於你點擊的那個詞
     let newName = prefix;
@@ -328,6 +330,7 @@ const handlePrefixClick = (prefix: string) => {
   };
 
   const handleCustomInputClick = () => {
+    setHasBeenFocused(true);
     // If the input exactly matches one of the suggested prefixes, clear it
     // so the user can see the placeholder inspirations.
     if (suggestedPrefixesList.some(item => item.text === inputName)) {
@@ -590,13 +593,47 @@ const handlePrefixClick = (prefix: string) => {
         </div>
 
         {/* Input Form */}
-        <form ref={formRef} className="scroll-mb-4" onSubmit={handleSubmit}>
+        <form ref={formRef} className="scroll-mb-4 relative" onSubmit={handleSubmit}>
+          
+          {/* Animated Glow Border */}
+          {!hasBeenFocused && (
+            <>
+              {/* Base line (masked to be just a ring) */}
+              <div className="absolute -inset-[0px] z-[0] pointer-events-none">
+                <div
+                  className="w-full h-full rounded-[1.875rem] opacity-100"
+                  style={{
+                    background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.8) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                    animation: 'rotate-gradient 8s linear infinite',
+                    padding: '1px',
+                    WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude',
+                  }}
+                />
+              </div>
+              {/* Bloom (masked to be just a ring) */}
+              <div className="absolute -inset-[0.075rem] z-[0] pointer-events-none blur-[5px]">
+                <div
+                  className="w-full h-full rounded-[1.95rem] opacity-70"
+                  style={{
+                    background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 69deg, rgba(255,255,255,0.15) 115deg, rgba(255,255,255,0.2) 193deg, rgba(255,255,255,0.0) 270deg, rgba(255,255,255,0.3) 291deg, rgba(255,255,255,0.9) 322deg, rgba(255,255,255,0.0) 1turn)`,
+                    animation: 'rotate-gradient 8s linear infinite',
+                    padding: '2.5px',
+                    WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude',
+                  }}
+                />
+              </div>
+            </>
+          )}
+
           <div 
-            className={`flex items-end gap-3 w-full rounded-[1.875rem] ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/20 ${
-              isInputGlowing 
-                ? "bg-white/30 ring-white/60 shadow-[0_0_48px_rgba(255,255,255,0.4)]" 
-                : "bg-white/10 ring-white/10"
-            }`}
+            className={`
+              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2 focus-within:ring-white/30
+              ${isInputGlowing ? "bg-white/30 ring-white/60 shadow-[0_0_48px_rgba(255,255,255,0.4)]" : ""}
+            `}
           >
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
               <div
@@ -621,8 +658,14 @@ const handlePrefixClick = (prefix: string) => {
                 value={inputName}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onFocus={scrollToBottom}
-                onClick={scrollToBottom}
+                onFocus={(e) => {
+                  setHasBeenFocused(true);
+                  scrollToBottom();
+                }}
+                onClick={(e) => {
+                  setHasBeenFocused(true);
+                  scrollToBottom();
+                }}
                 placeholder=""
                 autoComplete="off"
                 autoCorrect="off"

@@ -19,7 +19,7 @@
     <meta property="og:title" content="顏色命名實驗 SemanticColorMapper" />
     <meta property="og:description" content="一起來編寫人類的色彩辭典！你會怎麼稱呼這個顏色？" />
     <meta property="og:image" content="https://color-mapper.vercel.app/og-image.png" />
-
+    
     <!--
       Web Fonts，取代系統內建字體，支援 font-weight 100 到 900 的無段微調
       暫時封印（還是會讓人看到字抖抖變化，有點躁），未來若要啟用，請解除註解
@@ -123,6 +123,18 @@
         --color-chart-text-cell-dark: oklch(100% 0 0 / 90%);
       }
       
+      @property --angle {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      
+      @keyframes rotate-gradient {
+        to {
+          --angle: 360deg;
+        }
+      }
+      
       html, body { 
         font-family: -apple-system, "Inter Variable", "Inter", "Helvetica Neue", "Helvetica", "Roboto", "Segoe UI", "PingFang TC", "Noto Sans TC", "Yu Gothic", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
         background-color: var(--color-page-bg);
@@ -156,6 +168,22 @@
       }
     </style>
 
+
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "d3": "https://esm.sh/d3@^7.9.0",
+    "d3-delaunay": "https://esm.sh/d3-delaunay@^6.0.4",
+    "firebase/": "https://esm.sh/firebase@^12.7.0/",
+    "groq-sdk": "https://esm.sh/groq-sdk@^0.37.0",
+    "@paper-design/shaders-react": "https://esm.sh/@paper-design/shaders-react@^0.0.71"
+  }
+}
+</script>
 </head>
   <body>
     <div id="root"></div>
