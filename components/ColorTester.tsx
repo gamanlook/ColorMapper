@@ -606,7 +606,7 @@ const handlePrefixClick = (prefix: string) => {
               <div
                 className="w-full h-full rounded-[1.875rem] opacity-100"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.5) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.15) 250deg, rgba(255,255,255,0.15) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
                   animation: 'rotate-gradient 8s linear infinite',
                   padding: '1px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
@@ -620,7 +620,7 @@ const handlePrefixClick = (prefix: string) => {
               <div
                 className="w-full h-full rounded-[1.95rem] opacity-100"
                 style={{
-                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.1) 40deg, rgba(255,255,255,0.5) 90deg, rgba(255,255,255,0.1) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.1) 220deg, rgba(255,255,255,0.2) 250deg, rgba(255,255,255,0.2) 290deg, rgba(255,255,255,0.1) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                  background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
                   animation: 'rotate-gradient 8s linear infinite',
                   padding: '2.5px',
                   WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
