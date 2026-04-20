@@ -601,32 +601,47 @@ const handlePrefixClick = (prefix: string) => {
               hasBeenFocused ? "opacity-0" : "opacity-100"
             }`}
           >
-            {/* Base line (扁平化：合併為單一層) */}
+            {/* 1. Base line (實體清晰線) */}
             <div
               className="absolute inset-[0px] z-[0] pointer-events-none rounded-[1.875rem]"
               style={{
-                background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
-                animation: 'rotate-gradient 8s linear infinite',
+                WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
                 padding: '1px',
-                WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
-                WebkitMaskComposite: 'xor',
-                maskComposite: 'exclude',
               }}
-            />
+            >
+              <div className="absolute top-1/2 left-1/2 w-[150%] aspect-square -translate-x-1/2 -translate-y-1/2">
+                <div
+                  className="w-full h-full animate-[spin_8s_linear_infinite]"
+                  style={{
+                    background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                  }}
+                />
+              </div>
+            </div>
 
-            {/* Bloom (扁平化：將 blur-[4px] 直接放在帶有動畫與 mask 的同一層) */}
-            <div
-              className="absolute -inset-[1px] z-[0] pointer-events-none rounded-[1.95rem] blur-[4px]"
-              style={{
-                background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.9) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
-                animation: 'rotate-gradient 8s linear infinite',
-                padding: '2.5px',
-                WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
-                WebkitMaskComposite: 'xor',
-                maskComposite: 'exclude',
-                willChange: 'filter', // 加上這個，強迫 Safari 知道濾鏡層需要隨時保持活化
-              }}
-            />
+            {/* 2. Bloom (模糊光暈, 使用 buffer zone 避免 Safari 裁切) */}
+            <div className="absolute -inset-[16px] z-[0] pointer-events-none blur-[4px]">
+              <div
+                className="absolute inset-[15px] w-[calc(100%-30px)] h-[calc(100%-30px)] rounded-[1.95rem]"
+                style={{
+                  WebkitMask: 'linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                  padding: '2.5px',
+                }}
+              >
+                <div className="absolute top-1/2 left-1/2 w-[150%] aspect-square -translate-x-1/2 -translate-y-1/2">
+                  <div
+                    className="w-full h-full animate-[spin_8s_linear_infinite]"
+                    style={{
+                      background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div 
