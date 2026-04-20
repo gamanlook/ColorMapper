@@ -457,11 +457,11 @@ const handlePrefixClick = (prefix: string) => {
   const curvePathD = `M ${pathStartX},50 A ${TEXT_PATH_RADIUS},${TEXT_PATH_RADIUS} 0 0,0 ${pathEndX},50`;
 
   const highlightOpacity =
-    color.l >= 0.25
+    color.l >= 0.30
       ? 0
       : color.l <= 0.15
         ? 0.5
-        : 0.5 * (1 - (color.l - 0.15) / 0.125);
+        : 0.5 * (1 - (color.l - 0.15) / 0.15);
 
   const handleCopy = () => {
     if (copyFeedback) return;
