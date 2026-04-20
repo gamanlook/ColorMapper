@@ -622,7 +622,7 @@ const handlePrefixClick = (prefix: string) => {
             </div>
 
             {/* 2. Bloom (模糊光暈, 使用 buffer zone 避免 Safari 裁切) */}
-            <div className="absolute -inset-[16px] z-[0] pointer-events-none blur-[8px]">
+            <div className="absolute -inset-[16px] z-[0] pointer-events-none blur-[4px]">
               <div
                 className="absolute inset-[15px] w-[calc(100%-30px)] h-[calc(100%-30px)] rounded-[1.95rem]"
                 style={{
@@ -636,7 +636,7 @@ const handlePrefixClick = (prefix: string) => {
                   <div
                     className="w-full h-full animate-[spin_8s_linear_infinite]"
                     style={{
-                      background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.6) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                      background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
                     }}
                   />
                 </div>
