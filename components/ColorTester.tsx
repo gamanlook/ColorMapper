@@ -615,10 +615,10 @@ const handlePrefixClick = (prefix: string) => {
                 }}
               />
             </div>
-            {/* Bloom (masked to be just a ring) */}
-            <div className="absolute -inset-[1px] z-[0] pointer-events-none blur-[4px]">
+            {/* Bloom (masked to be just a ring, using a -16px buffer zone to prevent Safari blur clipping) */}
+            <div className="absolute -inset-[16px] z-[0] pointer-events-none blur-[4px]">
               <div
-                className="w-full h-full rounded-[1.95rem] opacity-100"
+                className="absolute inset-[15px] w-[calc(100%-30px)] h-[calc(100%-30px)] rounded-[1.95rem] opacity-100"
                 style={{
                   background: `conic-gradient(from var(--angle) at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
                   animation: 'rotate-gradient 8s linear infinite',
