@@ -616,7 +616,7 @@ const handlePrefixClick = (prefix: string) => {
               />
             </div>
             {/* Bloom (masked to be just a ring) */}
-            <div className="absolute -inset-[1px] z-[0] pointer-events-none blur-[5px]">
+            <div className="absolute -inset-[1px] z-[0] pointer-events-none blur-[4px]">
               <div
                 className="w-full h-full rounded-[1.95rem] opacity-100"
                 style={{
