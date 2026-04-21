@@ -59,6 +59,8 @@ const INSPIRATIONS =[
   "能聽得懂⋯就是好名字"
 ];
 
+const GLOW_GRADIENT = `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.1) 40deg, rgba(255,255,255,0.5) 90deg, rgba(255,255,255,0.1) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.15) 250deg, rgba(255,255,255,0.15) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`;
+
 const CHALLENGE_MESSAGES =[
   "很棒！來挑戰自己發明一個詞吧",
   "抓到訣竅了！這題交給你自由發揮",
@@ -108,9 +110,24 @@ const ColorTester: React.FC<ColorTesterProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const visualStageRef = useRef<HTMLDivElement>(null);
+  const glowContainerRef = useRef<HTMLDivElement>(null);
 
   const[svgFontSize, setSvgFontSize] = useState(3);
   const hasInteractedRef = useRef(false);
+
+  useEffect(() => {
+    // 監聽 isInputGlowing 來動態改變 CSS animation 的播放速率
+    if (glowContainerRef.current) {
+      const animatedElements = glowContainerRef.current.querySelectorAll('.animate-\\[spin_8s_linear_infinite\\]');
+      animatedElements.forEach((el) => {
+        const animations = el.getAnimations();
+        animations.forEach((animation) => {
+          // 當發光時，把播放速度調快
+          animation.playbackRate = isInputGlowing ? 6 : 1;
+        });
+      });
+    }
+  }, [isInputGlowing]);
 
   useEffect(() => {
     // 初始化洗牌
@@ -597,8 +614,11 @@ const handlePrefixClick = (prefix: string) => {
           
           {/* Animated Glow Border */}
           <div
-            className={`absolute inset-0 z-[0] pointer-events-none transition-opacity duration-[2000ms] ease-out ${
-              hasBeenFocused ? "opacity-0" : "opacity-100"
+            ref={glowContainerRef}
+            className={`absolute inset-0 z-[0] pointer-events-none transition-opacity ease-out ${
+              (!hasBeenFocused || isInputGlowing)
+                ? "opacity-40 lg:opacity-100 duration-300"
+                : "opacity-0 duration-[2000ms]"
             }`}
           >
             {/* 1. Base line (實體清晰線) */}
@@ -615,7 +635,7 @@ const handlePrefixClick = (prefix: string) => {
                 <div
                   className="w-full h-full animate-[spin_8s_linear_infinite]"
                   style={{
-                    background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.0) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.0) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.0) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.0) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                    background: GLOW_GRADIENT,
                   }}
                 />
               </div>
@@ -636,7 +656,7 @@ const handlePrefixClick = (prefix: string) => {
                   <div
                     className="w-full h-full animate-[spin_8s_linear_infinite]"
                     style={{
-                      background: `conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.0) 0deg, rgba(255,255,255,0.05) 40deg, rgba(255,255,255,0.2) 90deg, rgba(255,255,255,0.05) 140deg, rgba(255,255,255,0.0) 180deg, rgba(255,255,255,0.05) 220deg, rgba(255,255,255,0.1) 250deg, rgba(255,255,255,0.1) 290deg, rgba(255,255,255,0.05) 330deg, rgba(255,255,255,0.0) 1turn)`,
+                      background: GLOW_GRADIENT,
                     }}
                   />
                 </div>
@@ -646,8 +666,11 @@ const handlePrefixClick = (prefix: string) => {
 
           <div 
             className={`
-              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all duration-300 pl-6 pr-2 py-2
-              ${isInputGlowing ? "bg-white/30 ring-white/60 shadow-[0_0_48px_rgba(255,255,255,0.4)]" : ""}
+              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all ease-out pl-6 pr-2 py-2
+              ${isInputGlowing 
+                ? "bg-white/30 shadow-[0_0_48px_rgba(255,255,255,0.4)] duration-300" 
+                : "duration-[2000ms]"
+              }
             `}
           >
             <div className="grid flex-1 min-w-0 relative items-center self-stretch">
