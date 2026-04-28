@@ -1,6 +1,6 @@
 ## Semantic Color Mapper <sub><sup>顏色命名實驗<sup><sub>
 
-<img width="1200" height="440" alt="image" src="https://github.com/user-attachments/assets/bda90565-3e33-42de-b58e-aa69125705d3" />
+<img width="1200" height="440" alt="image" src="https://github.com/user-attachments/assets/0ac060b8-c8d2-4533-9f76-7fc60148b1e3" />
 
 <br>
 
