@@ -1,24 +1,21 @@
 ## Semantic Color Mapper <sub><sup>顏色命名實驗<sup><sub>
 
-> 你會怎麼稱呼這個顏色？
+<img width="1200" height="440" alt="image" src="https://github.com/user-attachments/assets/bda90565-3e33-42de-b58e-aa69125705d3" />
+
+<br>
+
+👉 [點擊遊玩 Live Demo](https://color-mapper.vercel.app/)
+
 
 這是一個研究實驗，探索「顏色數值」與「語言描述」的關聯。\
 透過蒐集使用者的命名數據，建立起色彩辭典，並試圖回答一個問題：\
 「在人類眼中，黃色是在哪裡變成了橘色？深藍色又是在哪裡變成了黑色？」
 
-
-
-👉 [點擊遊玩 Color Mapper](https://color-mapper.vercel.app/)
+而你，又會怎麼稱呼這個顏色呢？
 
 <br>
 
-<img width="600" height="315" alt="image" src="https://github.com/user-attachments/assets/fa95eb49-6e4c-453f-be71-07fc7665c397" />
-
-<br>
-
-<br>
-
-**核心功能（Features）**
+## 核心功能（Features）
 
 - **😎 色彩測驗**\
   系統會在 OKLch 色彩空間中隨機生成顏色，讓使用者進行命名
@@ -34,7 +31,7 @@
 
 <br>
 
-**技術棧（Tech Stack）**
+## 技術棧（Tech Stack）
 
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, clsx
