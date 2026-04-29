@@ -1,4 +1,4 @@
-## Semantic Color Mapper
+# Semantic Color Mapper
 
 <img width="1200" height="440" alt="image" src="https://github.com/user-attachments/assets/0ac060b8-c8d2-4533-9f76-7fc60148b1e3" />
 
