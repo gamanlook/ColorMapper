@@ -167,7 +167,7 @@
 - 不收錄改成哭哭臉，比較好笑
 - 追加了icon動畫，還會微微彈跳
 <br>
-<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/c2a53845-ad12-4a11-8da1-a905ddb90776" />
+<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/19978c16-1254-4318-8d9c-d25b24be7b06" />
 <br>
 <br>
 
@@ -286,7 +286,7 @@
   - 題目以體感亮度 L:0.7 當作基準，亮底題目顯示黑字(55% alpha)；暗底題目顯示白字(70% alpha)
     - 有根據APCA+我的超級色準眼做保證
 <br>
-<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/ec43180e-33fe-424a-ab4c-8144628096ba" />
+<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/1f37eaa6-9159-4915-86de-31a963207d3b" />
 <br>
 <br>
 
@@ -295,7 +295,7 @@
   - 圓角變圓、變大、更現代，根據情況顯示對應按鈕，減少空間浪費
   - 閒置太久會出現提示文字「跳過」
 <br>
-<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/4b5e3a17-ec28-4be4-a266-f09a05cb70d0" />
+<img width="672" height="357" alt="image" src="https://github.com/user-attachments/assets/23d9fe5d-689d-4f31-b494-c84a0162f53f" />
 <br>
 <br>
 
