@@ -287,8 +287,8 @@ function App() {
 
   const renderHeader = (pane: "left" | "right") => (
     <header
-      className={`relative flex justify-between items-end ${
-        pane === "right" ? "hidden lg:flex" : ""
+      className={`relative w-full flex items-end min-h-10 ${
+        pane === "right" ? "hidden lg:flex lg:justify-end" : "justify-between"
       }`}
     >
       <div
@@ -296,7 +296,7 @@ function App() {
           isProfileExpanded 
             ? "opacity-0 duration-300 delay-0 min-[480px]:opacity-100 pointer-events-none min-[480px]:pointer-events-auto" 
             : "opacity-100 duration-500 delay-300"
-        } ${pane === "right" ? "invisible pointer-events-none select-none" : ""}`}
+        } ${pane === "right" ? "hidden" : ""}`}
         aria-hidden={pane === "right" ? "true" : undefined}
       >
         <h1 className="text-xl/5 font-bold tracking-tight text-theme-text-main">
