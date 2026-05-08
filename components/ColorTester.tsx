@@ -617,7 +617,7 @@ const handlePrefixClick = (prefix: string) => {
             ref={glowContainerRef}
             className={`absolute inset-0 z-[0] pointer-events-none transition-opacity ease-out ${
               (!hasBeenFocused || isInputGlowing)
-                ? "opacity-40 lg:opacity-100 duration-300"
+                ? "opacity-60 duration-300"
                 : "opacity-0 duration-[2000ms]"
             }`}
           >

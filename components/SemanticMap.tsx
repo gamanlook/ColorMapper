@@ -12,6 +12,7 @@ interface SemanticMapProps {
   width?: number;
   height?: number;
   lastValidSubmission?: ColorEntry | null;
+  variant?: "default" | "mini";
 }
 
 interface SemanticCluster {
@@ -29,6 +30,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
   width = 360,
   height = 360,
   lastValidSubmission,
+  variant = "default",
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   
@@ -182,7 +184,9 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
-    const margin = { top: 20, right: 40, bottom: 40, left: 40 };
+    const margin = variant === "mini" 
+      ? { top: 0, right: 0, bottom: 0, left: 0 } 
+      : { top: 20, right: 40, bottom: 40, left: 40 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
@@ -237,11 +241,11 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .attr("fill", "none")
         .attr("stroke", "var(--color-chart-gamut)")
         .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4 4")
+        .attr("stroke-dasharray", variant === "mini" ? "2 2" : "4 4")
         .attr("pointer-events", "none");
     }
 
-    if (semanticClusters.length === 0) {
+    if (semanticClusters.length === 0 && variant !== "mini") {
       layerLabels
         .append("text")
         .attr("x", chartWidth / 2)
@@ -250,7 +254,7 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .attr("fill", "var(--color-chart-axis)")
         .attr("font-family", "inherit")
         .text("No data for this hue yet");
-    } else {
+    } else if (semanticClusters.length > 0) {
       const points: [number, number][] = semanticClusters.map((d) => [
         xScale(d.c),
         yScale(d.l),
@@ -275,104 +279,112 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
 
         const cellG = layerCells
           .append("g")
-          .attr("class", "cursor-pointer transition-opacity duration-200")
-          .on("mouseenter", () => setHoveredCluster(cluster))
-          .on("mouseleave", () => setHoveredCluster(null));
+          .attr("class", variant === "mini" ? "" : "cursor-pointer transition-opacity duration-200");
 
-        cellG
+        if (variant !== "mini") {
+          cellG
+            .on("mouseenter", () => setHoveredCluster(cluster))
+            .on("mouseleave", () => setHoveredCluster(null));
+        }
+
+        const pathEl = cellG
           .append("path")
           .attr("d", path)
           .attr("fill", cellColor)
           .attr("stroke", "var(--color-chart-grid)")
           .attr("stroke-width", 1)
-          .attr("opacity", 0.6)
-          .on("mouseover", function () {
-            const el = d3.select(this);
-            el.attr("opacity", 0.9);
-            
-            // Draw hover stroke in layerHover
-            layerHover
-              .append("path")
-              .attr("d", el.attr("d"))
-              .attr("fill", "none")
-              .attr("stroke", "rgba(255,255,255,0.8)")
-              .attr("stroke-width", 2)
-              .attr("pointer-events", "none");
-            
-            // Hide base label
-            d3.select(`#label-${hue}-${i}`).attr("opacity", 0);
+          .attr("opacity", 0.6);
 
-            // Draw 3-layer text in layerHover
-            layerHover
-              .append("text")
-              .attr("x", labelX)
-              .attr("y", labelY)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("font-size", "12px")
-              .attr("font-weight", "500")
-              .attr("font-family", "inherit")
-              .attr("fill", "white")
-              .style("filter", "drop-shadow(0px 1px 4px rgba(0,0,0,0.2))")
-              .style("mix-blend-mode", "multiply")
-              .text(cluster.displayLabel)
-              .attr("pointer-events", "none");
+        if (variant !== "mini") {
+          pathEl
+            .on("mouseover", function () {
+              const el = d3.select(this);
+              el.attr("opacity", 0.9);
+              
+              // Draw hover stroke in layerHover
+              layerHover
+                .append("path")
+                .attr("d", el.attr("d"))
+                .attr("fill", "none")
+                .attr("stroke", "rgba(255,255,255,0.8)")
+                .attr("stroke-width", 2)
+                .attr("pointer-events", "none");
+              
+              // Hide base label
+              d3.select(`#label-${hue}-${i}`).attr("opacity", 0);
 
-            layerHover
-              .append("text")
-              .attr("x", labelX)
-              .attr("y", labelY)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("font-size", "12px")
-              .attr("font-weight", "500")
-              .attr("font-family", "inherit")
-              .attr("fill", "white")
-              .style("filter", "drop-shadow(0px 1px 4px rgba(85,85,85,0.6))")
-              .style("mix-blend-mode", "color-burn")
-              .text(cluster.displayLabel)
-              .attr("pointer-events", "none");
+              // Draw 3-layer text in layerHover
+              layerHover
+                .append("text")
+                .attr("x", labelX)
+                .attr("y", labelY)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("font-weight", "500")
+                .attr("font-family", "inherit")
+                .attr("fill", "white")
+                .style("filter", "drop-shadow(0px 1px 4px rgba(0,0,0,0.2))")
+                .style("mix-blend-mode", "multiply")
+                .text(cluster.displayLabel)
+                .attr("pointer-events", "none");
 
-            layerHover
-              .append("text")
-              .attr("x", labelX)
-              .attr("y", labelY)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("font-size", "12px")
-              .attr("font-weight", "500")
-              .attr("font-family", "inherit")
-              .attr("fill", "white")
-              .text(cluster.displayLabel)
-              .attr("pointer-events", "none");
-          })
-          .on("mouseout", function () {
-            d3.select(this).attr("opacity", 0.6);
-            
-            // Clear hover layer
-            layerHover.selectAll("*").remove();
-            
-            // Restore base label
-            d3.select(`#label-${hue}-${i}`).attr("opacity", 1);
-          });
+              layerHover
+                .append("text")
+                .attr("x", labelX)
+                .attr("y", labelY)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("font-weight", "500")
+                .attr("font-family", "inherit")
+                .attr("fill", "white")
+                .style("filter", "drop-shadow(0px 1px 4px rgba(85,85,85,0.6))")
+                .style("mix-blend-mode", "color-burn")
+                .text(cluster.displayLabel)
+                .attr("pointer-events", "none");
 
-        layerLabels
-          .append("text")
-          .attr("id", `label-${hue}-${i}`)
-          .attr("x", labelX)
-          .attr("y", labelY)
-          .attr("dy", "0.35em")
-          .attr("text-anchor", "middle")
-          .attr("font-size", "12px")
-          .attr("font-weight", "500")
-          .attr("font-family", "inherit")
-          .attr("fill", "var(--color-chart-text-cell-dark)")
-          .text(cluster.displayLabel)
-          .attr("pointer-events", "none");
+              layerHover
+                .append("text")
+                .attr("x", labelX)
+                .attr("y", labelY)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .attr("font-size", "12px")
+                .attr("font-weight", "500")
+                .attr("font-family", "inherit")
+                .attr("fill", "white")
+                .text(cluster.displayLabel)
+                .attr("pointer-events", "none");
+            })
+            .on("mouseout", function () {
+              d3.select(this).attr("opacity", 0.6);
+              
+              // Clear hover layer
+              layerHover.selectAll("*").remove();
+              
+              // Restore base label
+              d3.select(`#label-${hue}-${i}`).attr("opacity", 1);
+            });
+
+          layerLabels
+            .append("text")
+            .attr("id", `label-${hue}-${i}`)
+            .attr("x", labelX)
+            .attr("y", labelY)
+            .attr("dy", "0.35em")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("font-weight", "500")
+            .attr("font-family", "inherit")
+            .attr("fill", "var(--color-chart-text-cell-dark)")
+            .text(cluster.displayLabel)
+            .attr("pointer-events", "none");
+        }
       });
     }
 
-    if (hueData.length > 0) {
+    if (variant !== "mini" && hueData.length > 0) {
       layerDots
         .append("g")
         .selectAll("circle")
@@ -390,22 +402,26 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .attr("pointer-events", "none");
     }
 
-    if (currentColor && currentColor.h === hue) {
+    if (currentColor && currentColor.h === Math.round(hue) && variant !== "mini") {
       const cx = xScale(currentColor.c);
       const cy = yScale(currentColor.l);
 
+      const dotRadius = variant === "mini" ? 5 : 7;
+      const dotStrokeWidth = variant === "mini" ? 1.5 : 2;
+
       layerTarget
         .append("circle")
+        .attr("class", variant === "mini" ? "current-color-dot" : "")
         .attr("cx", cx)
         .attr("cy", cy)
-        .attr("r", 7)
+        .attr("r", dotRadius)
         .attr("fill", toCss(currentColor))
         .attr("stroke", "white")
-        .attr("stroke-width", 2)
+        .attr("stroke-width", dotStrokeWidth)
         .attr("filter", "drop-shadow(0px 2px 8px rgba(255,255,255,0.5))");
     }
 
-    if (lastValidSubmission && lastValidSubmission.color.h === hue) {
+    if (variant !== "mini" && lastValidSubmission && lastValidSubmission.color.h === hue) {
       const cx = xScale(lastValidSubmission.color.c);
       const cy = yScale(lastValidSubmission.color.l);
 
@@ -455,40 +471,42 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
         .text("上題");
     }
 
-    const yAxis = d3
-      .axisLeft(yScale)
-      .ticks(5)
-      .tickFormat((d) => `${(d as number) * 100}`);
-    const xAxis = d3.axisBottom(xScale).ticks(5);
+    if (variant !== "mini") {
+      const yAxis = d3
+        .axisLeft(yScale)
+        .ticks(5)
+        .tickFormat((d) => `${(d as number) * 100}`);
+      const xAxis = d3.axisBottom(xScale).ticks(5);
 
-    const yAxisGroup = layerAxes
-      .append("g")
-      .attr("transform", "translate(-1, 0)")
-      .call(yAxis)
-      .attr("class", "select-none")
-      .attr("color", "var(--color-chart-axis)")
-      .attr("font-family", "inherit");
+      const yAxisGroup = layerAxes
+        .append("g")
+        .attr("transform", "translate(-1, 0)")
+        .call(yAxis)
+        .attr("class", "select-none")
+        .attr("color", "var(--color-chart-axis)")
+        .attr("font-family", "inherit");
 
-    yAxisGroup.select(".domain").remove();
+      yAxisGroup.select(".domain").remove();
 
-    const xAxisGroup = layerAxes
-      .append("g")
-      .attr("transform", `translate(0,${chartHeight + 1})`)
-      .call(xAxis)
-      .attr("class", "select-none")
-      .attr("color", "var(--color-chart-axis)")
-      .attr("font-family", "inherit");
+      const xAxisGroup = layerAxes
+        .append("g")
+        .attr("transform", `translate(0,${chartHeight + 1})`)
+        .call(xAxis)
+        .attr("class", "select-none")
+        .attr("color", "var(--color-chart-axis)")
+        .attr("font-family", "inherit");
 
-    xAxisGroup.select(".domain").remove();
+      xAxisGroup.select(".domain").remove();
 
-    xAxisGroup
-      .append("line")
-      .attr("x1", chartWidth)
-      .attr("x2", chartWidth)
-      .attr("y1", 0)
-      .attr("y2", 6)
-      .attr("stroke", "currentColor");
-  }, [hue, hueData, currentColor, width, height, semanticClusters]);
+      xAxisGroup
+        .append("line")
+        .attr("x1", chartWidth)
+        .attr("x2", chartWidth)
+        .attr("y1", 0)
+        .attr("y2", 6)
+        .attr("stroke", "currentColor");
+    }
+  }, [hue, hueData, currentColor, width, height, semanticClusters, lastValidSubmission, variant]);
 
   const MAX_TOOLTIP_ITEMS = 7;
   const showCollapse = tooltipData ? tooltipData.composition.length > MAX_TOOLTIP_ITEMS + 1 : false;
@@ -496,19 +514,19 @@ const SemanticMap: React.FC<SemanticMapProps> = ({
   const hiddenItems = tooltipData ? (showCollapse ? tooltipData.composition.slice(MAX_TOOLTIP_ITEMS) : []) : [];
 
   return (
-    <div className="relative flex justify-center w-full" style={{ maxWidth: 'min(480px, max(360px, 55.5vh))' }}>
-    {/* 圖表舞台（有對應的圓形舞台，圓形14:圖表15） */}
-      <div className="isolate w-full">
+    <div className={`relative flex justify-center w-full ${variant === "mini" ? "" : ""}`} style={{ maxWidth: variant === "mini" ? undefined : 'min(480px, max(360px, 55.5vh))' }}>
+      {/* 圖表舞台（有對應的圓形舞台，圓形14:圖表15） */}
+      <div className={`isolate ${variant === "mini" ? "w-full h-full flex items-center justify-center rounded-lg overflow-hidden relative" : "w-full"}`}>
         <svg
           ref={svgRef}
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-auto"
+          className={variant === "mini" ? "w-full h-full" : "w-full h-auto"}
           style={{ overflow: "visible" }}
         />
       </div>
 
       {/* Tooltip */}
-      {isTooltipRendered && tooltipData && (
+      {variant !== "mini" && isTooltipRendered && tooltipData && (
         <div 
           className={`
             absolute -bottom-4 -right-2 z-10 pointer-events-none 

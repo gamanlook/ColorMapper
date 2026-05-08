@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { HUES, SEED_DATA_POINTS } from "./constants";
+import { HUES, SEED_DATA_POINTS, MAX_CHROMA } from "./constants";
 import { generateRandomColor, generateSeedData, toCss } from "./utils";
 import { ColorEntry, HueDefinition, OklchColor } from "./types";
 import SemanticMap from "./components/SemanticMap";
@@ -19,6 +19,7 @@ function App() {
   const[currentHueIndex, setCurrentHueIndex] = useState<number>(0);
   const [currentColor, setCurrentColor] = useState<OklchColor | null>(null);
   const [isFirstQuestion, setIsFirstQuestion] = useState(true);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [quizFilter, setQuizFilter] = useState<number | "all">("all");
   const [viewHueAngle, setViewHueAngle] = useState<number>(HUES[0].angle);
   const [showHex, setShowHex] = useState(false);
@@ -26,6 +27,18 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
   const [lastValidSubmission, setLastValidSubmission] = useState<ColorEntry | null>(null);
+
+  const [layoutDirectionPref, setLayoutDirectionPref] = useState<"vertical" | "horizontal">("vertical");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const currentLayoutDirection = isMobile ? "vertical" : layoutDirectionPref;
+  const isHorizontalLayout = currentLayoutDirection === "horizontal";
 
   useEffect(() => {
     const checkFirebase = () => {
@@ -285,48 +298,61 @@ function App() {
 
   const oklchValues = currentColor ? `${currentColor.l} ${currentColor.c} ${currentColor.h}` : "0 0 0";
 
-  const renderHeader = (pane: "left" | "right") => (
-    <header
-      className={`relative w-full flex items-end min-h-10 ${
-        pane === "right" ? "hidden lg:flex lg:justify-end" : "justify-between"
-      }`}
-    >
-      <div
-        className={`flex flex-col gap-1 transition-opacity transform-gpu will-change-[opacity] ${
-          isProfileExpanded 
-            ? "opacity-0 duration-300 delay-0 min-[480px]:opacity-100 pointer-events-none min-[480px]:pointer-events-auto" 
-            : "opacity-100 duration-500 delay-300"
-        } ${pane === "right" ? "hidden" : ""}`}
-        aria-hidden={pane === "right" ? "true" : undefined}
-      >
-        <h1 className="text-xl/5 font-bold tracking-tight text-theme-text-main">
-          Semantic Color Mapper
-        </h1>
-        <div className="flex items-center gap-1.5">
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              pane === "left" && isCloudMode
-                ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"
-                : "bg-white/30"
-            }`}
-          ></span>
-          <span className="text-[0.625rem] tracking-wider text-white/50 uppercase">
-            {isCloudMode ? "Live" : "Local"} · 顏色命名實驗 · 已蒐集 {humanEntries} 組
-          </span>
-        </div>
-      </div>
+  const renderHeader = (pane: "left" | "right") => {
+    if (!isHorizontalLayout && pane === "right") return null;
 
-      <div
-        className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-10 ${
-          isProfileExpanded
-            ? "max-w-[500px] gap-1"
-            : "max-w-10 gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
-        } ${pane === "left" ? "lg:hidden" : ""}`}
-        style={{
-          background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), oklch(${oklchValues} / 0.1)`
-        }}
+    return (
+      <header
+        className={`relative w-full flex items-end min-h-10 justify-between`}
       >
-        <button
+        {isHorizontalLayout && pane === "right" ? (
+          <button
+            onClick={() => setLayoutDirectionPref("vertical")}
+            className="w-10 h-10 rounded-full bg-white/0 ring-1 ring-inset ring-white/0 hover:ring-white/10 hover:bg-white/20 transition-all flex justify-center items-center group cursor-pointer shrink-0"
+            title="收合"
+          >
+            <svg className="w-5 h-5 text-theme-text-muted group-hover:text-theme-text-main transition-all -translate-x-2.5 group-hover:translate-x-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M 8 20 L 8 4 L 18 4 A 3 3 0 0 1 21 7 L 21 17 A 3 3 0 0 1 18 20 L 8 20 L 6 20 A 3 3 0 0 1 3 17 L 3 7 A 3 3 0 0 1 6 4 L 8 4" />
+              <polyline points="13 9 16 12 13 15" strokeWidth="1.9" />
+            </svg>
+          </button>
+        ) : (
+          <div
+            className={`flex flex-col gap-1 transition-opacity transform-gpu will-change-[opacity] ${
+              isProfileExpanded 
+                ? "opacity-0 duration-300 delay-0 min-[480px]:opacity-100 pointer-events-none min-[480px]:pointer-events-auto" 
+                : "opacity-100 duration-500 delay-300"
+            }`}
+          >
+            <h1 className="text-xl/5 font-bold tracking-tight text-theme-text-main">
+              Semantic Color Mapper
+            </h1>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  pane === "left" && isCloudMode
+                    ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                    : "bg-white/30"
+                }`}
+              ></span>
+              <span className="text-[0.625rem] tracking-wider text-theme-text-muted uppercase">
+                {isCloudMode ? "Live" : "Local"} · 顏色命名實驗 · 已蒐集 {humanEntries} 組
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div
+          className={`absolute right-0 top-0 min-[480px]:relative z-50 flex items-center ring-1 ring-inset ring-white/10 rounded-full transition-all duration-500 ease-out overflow-hidden h-10 p-1 pl-2.5 min-w-10 ${
+            isProfileExpanded
+              ? "max-w-[500px] gap-1"
+              : "max-w-10 gap-0 min-[480px]:max-w-[500px] min-[480px]:gap-1"
+          } ${(isHorizontalLayout && pane === "left") ? "hidden" : ""}`}
+          style={{
+            background: `linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), oklch(${oklchValues} / 0.1)`
+          }}
+        >
+          <button
           onClick={() => setIsProfileExpanded(!isProfileExpanded)}
           className={`shrink-0 rounded-full overflow-hidden focus:outline-none min-[480px]:cursor-default flex items-center justify-center transition-transform duration-500 ease-out origin-center w-5 h-5 ${
             isProfileExpanded ? "scale-100" : "scale-[2] min-[480px]:scale-100"
@@ -378,7 +404,7 @@ function App() {
             href="https://github.com/gamanlook/ColorMapper"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-white shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-theme-text-main shrink-0"
             title="GitHub"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -389,7 +415,7 @@ function App() {
             href="https://www.youtube.com/@gaman_look"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-white shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-theme-text-main shrink-0"
             title="YouTube"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -410,7 +436,7 @@ function App() {
             href="https://drive.google.com/file/d/1z5BYq5XMvQnxo-jtU_t4YVrG7uF9fCcG/view?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-white shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-theme-text-soft hover:text-theme-text-main shrink-0"
             title="Portfolio"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -431,7 +457,7 @@ function App() {
           </a>
           <button
             onClick={() => setIsProfileExpanded(false)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full bg-white/5 transition-colors text-white/60 hover:text-white shrink-0 min-[480px]:hidden ml-1`}
+            className={`w-8 h-8 flex items-center justify-center rounded-full bg-white/5 transition-colors text-white/60 hover:text-theme-text-main shrink-0 min-[480px]:hidden ml-1`}
             title="收合"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -447,7 +473,8 @@ function App() {
         </div>
       </div>
     </header>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-theme-page text-white relative overflow-hidden selection:bg-white/30">
@@ -483,18 +510,119 @@ function App() {
         accept="application/json"
         style={{ display: "none" }}
       />
-
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row">
+      
+      <div className={`relative z-10 w-full mx-auto min-h-screen flex ${isHorizontalLayout ? "max-w-[1440px] flex-row" : "flex-col w-full"}`}>
         
         {/* ======================= Left Pane ======================= */}
-        <div className="w-full lg:w-1/2 min-h-[100svh] lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 lg:border-r border-white/10">
+        <div className={`w-full relative border-white/10 ${isHorizontalLayout ? "w-1/2 border-r border-b-0" : "border-b border-r-0"}`}>
           
-          {/* Header */}
-          {renderHeader("left")}
+          {/* Mini-map HUD at top right of Left Pane */}
+          {!isHorizontalLayout && currentColor && (
+            <div className="absolute top-6 right-6 z-50 pointer-events-none hidden lg:block">
+              {/* The Hover Trigger Button */}
+              <div 
+                className="relative w-10 h-10 z-20 pointer-events-auto cursor-pointer group"
+                onMouseEnter={() => setIsMapExpanded(true)}
+                onMouseLeave={() => setIsMapExpanded(false)}
+                onClick={() => {
+                  setIsMapExpanded(false);
+                  setLayoutDirectionPref("horizontal");
+                  setViewHueAngle(currentHueDef.angle);
+                }}
+                title="展開"
+              >
+                {/* Expand Icon - visible only on hover */}
+                <div className="absolute inset-0 bg-white/20 rounded-full text-theme-text-main ring-1 ring-inset ring-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M 8 20 L 8 4 L 18 4 A 3 3 0 0 1 21 7 L 21 17 A 3 3 0 0 1 18 20 L 8 20 L 6 20 A 3 3 0 0 1 3 17 L 3 7 A 3 3 0 0 1 6 4 L 8 4" />
+                    <polyline points="16 9 13 12 16 15" strokeWidth="1.9" />
+                  </svg>
+                </div>
+              </div>
 
-          <div className="flex-1 flex flex-col pt-8 pb-8 lg:pb-16 relative justify-center items-center">
+              {/* The Animated Map Container */}
+              <div 
+                className={`absolute top-0 right-0 z-10 pointer-events-none flex flex-col items-center transform-gpu ${isMapExpanded ? 'expanded' : 'collapsed'}`}
+                style={{
+                  transform: isMapExpanded ? "translateY(3rem)" : "translateY(0)",
+                  transitionProperty: "transform",
+                  transitionDuration: "300ms",
+                  transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                  transitionDelay: isMapExpanded ? "0ms" : "150ms"
+                }}
+              >
+                {/* 增加 relative 容器來疊加地圖與高光點 */}
+                <div className="relative">
+                  {/* The Map itself */}
+                  <div
+                    className="bg-theme-bg ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden flex-shrink-0"
+                    style={{
+                      width: isMapExpanded ? "120px" : "40px",
+                      height: isMapExpanded ? "120px" : "40px",
+                      transitionProperty: "width, height",
+                      transitionDuration: "300ms",
+                      transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                      transitionDelay: isMapExpanded ? "150ms" : "0ms"
+                    }}
+                  >
+                    <SemanticMap
+                      hue={Math.round(currentColor.h)}
+                      data={entries}
+                      currentColor={currentColor}
+                      variant="mini"
+                      width={120}
+                      height={120}
+                    />
+                  </div>
+
+                  {/* The Unclipped Dot */}
+                  {currentColor && (
+                    <div
+                      className="absolute rounded-full border border-white"
+                      style={{
+                        left: `${(currentColor.c / MAX_CHROMA) * 100}%`,
+                        top: `${(1 - currentColor.l) * 100}%`,
+                        transform: "translate(-50%, -50%)",
+                        backgroundColor: toCss({
+                          l: currentColor.l,
+                          c: currentColor.c,
+                          h: Math.round(currentColor.h),
+                        }),
+                        width: isMapExpanded ? "10px" : "8px",
+                        height: isMapExpanded ? "10px" : "8px",
+                        borderWidth: "1.5px",
+                        boxShadow: "0 2px 8px rgba(255,255,255,0.5)",
+                        transitionProperty: "width, height, border-width",
+                        transitionDuration: "300ms",
+                        transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+                        transitionDelay: isMapExpanded ? "150ms" : "0ms",
+                      }}
+                    />
+                  )}
+                </div>
+                
+                {/* Helpful label */}
+                <div 
+                  className={`absolute bottom-full left-0 mb-2 text-[0.625rem] tracking-wider text-theme-text-muted transition-all whitespace-nowrap ${
+                    isMapExpanded 
+                      ? "opacity-100 translate-y-0 duration-500 delay-300" 
+                      : "opacity-0 translate-y-1 duration-150 delay-0"
+                  }`}
+                >
+                  展開色相分布
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={`flex flex-col justify-between p-6 ${isHorizontalLayout ? "w-full min-h-screen" : "w-full max-w-[720px] mx-auto min-h-[100svh]"}`}>
             
-            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[42rem]">
+            {/* Header */}
+            {renderHeader("left")}
+
+          <div className={`flex-1 flex flex-col pt-8 relative justify-center items-center ${isHorizontalLayout ? "pb-16" : "pb-8"}`}>
+            
+            <div className={`w-full flex flex-col justify-start max-h-[42rem] ${isHorizontalLayout ? "flex-1" : ""}`}>
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
@@ -511,7 +639,7 @@ function App() {
                   <button
                     onClick={() => setShowHex(!showHex)}
                     className="relative p-0.5 rounded-full bg-white/5 ring-1 ring-inset ring-white/10 transition-colors hover:bg-white/10"
-                    title={showHex ? "切換回 OKLch" : "切換顯示 Hex 色碼"}
+                    title={showHex ? "切換回 OKLCH" : "切換顯示 HEX 色碼"}
                   >
                     {/* Sliding Background */}
                     <div
@@ -586,16 +714,20 @@ function App() {
                 </div>
               </div>
 
-              {currentColor && (
-                <ColorTester
-                  color={currentColor}
-                  hueDef={currentHueDef}
-                  onSubmit={handleSubmit}
-                  onSkip={handleNextColor}
-                  showHex={showHex}
-                  entries={entries}
-                />
-              )}
+              <div className="w-full flex justify-center items-center">
+                <div className="relative w-full mx-auto flex justify-center" style={{ maxWidth: 'min(448px, max(336px, 51.8vh))' }}>
+                  {currentColor && (
+                    <ColorTester
+                      color={currentColor}
+                      hueDef={currentHueDef}
+                      onSubmit={handleSubmit}
+                      onSkip={handleNextColor}
+                      showHex={showHex}
+                      entries={entries}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -604,20 +736,20 @@ function App() {
             <span>OKLch Color Space</span>
             <span>AI Verified</span>
           </div>
+          </div>
         </div>
 
 
         {/* ======================= Right Pane ======================= */}
-        {/* 手機版設定：h-auto 已經確保了「內容有多少就長多高，Hug content」。
-            電腦版設定：保留 lg:min-h-screen 來跟左邊切齊。 */}
-        <div id="consensus-pane" className="w-full lg:w-1/2 h-auto lg:min-h-screen flex flex-col justify-between p-6 lg:px-12 bg-theme-pane border-t lg:border-t-0 lg:border-l border-white/5 relative">
-          
-          {/* Invisible Header for alignment on desktop */}
-          {renderHeader("right")}
-
-          <div className="flex-1 flex flex-col pt-0 pb-20 lg:pt-8 lg:pb-16 relative lg:justify-center lg:items-center">
+        <div id="consensus-pane" className={`w-full relative bg-theme-pane ${isHorizontalLayout ? "w-1/2" : ""}`}>
+          <div className={`flex flex-col justify-between p-6 ${isHorizontalLayout ? "w-full min-h-screen" : "w-full max-w-[720px] mx-auto h-auto"}`}>
             
-            <div className="w-full flex flex-col justify-start lg:h-full lg:max-h-[42rem]">
+            {/* Invisible Header for alignment on desktop */}
+            {renderHeader("right")}
+
+          <div className={`flex-1 flex flex-col relative ${isHorizontalLayout ? "pt-8 pb-16 justify-center items-center" : "pt-0 pb-20"}`}>
+            
+            <div className={`w-full flex flex-col justify-start max-h-[42rem] ${isHorizontalLayout ? "flex-1" : ""}`}>
               
               <div className="flex justify-between items-end mb-8 gap-2 shrink-0">
                 <div className="min-w-0 flex-1">
@@ -716,31 +848,40 @@ function App() {
           </div>
 
           {/* Invisible Footer for alignment on desktop */}
-          <div className="hidden lg:flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase invisible pointer-events-none select-none" aria-hidden="true">
-            <span>OKLch Color Space</span>
-            <span>AI Verified</span>
-          </div>
+          {isHorizontalLayout && (
+            <div className="flex justify-between items-center text-[0.625rem] font-mono tracking-widest text-white/30 uppercase invisible pointer-events-none select-none" aria-hidden="true">
+              <span>OKLch Color Space</span>
+              <span>AI Verified</span>
+            </div>
+          )}
 
           {/* Admin / Debug Tools */}
           <div className="absolute bottom-4 right-4 flex flex-wrap gap-2 opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity z-50">
             <button
-              onClick={() => triggerToastTest(false)}
-              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+              onClick={() => setLayoutDirectionPref(prev => prev === "horizontal" ? "vertical" : "horizontal")}
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-wider rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
             >
-              Test Success
+              V/H
+            </button>
+            <button
+              onClick={() => triggerToastTest(false)}
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-wider rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+            >
+              Pass
             </button>
             <button
               onClick={() => triggerToastTest(true)}
-              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-wider rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
             >
-              Test Reject
+              Reject
             </button>
             <button
               onClick={handlePrune}
-              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-widest rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
+              className="px-3 py-1.5 text-[0.625rem] font-mono tracking-wider rounded-full border border-white/20 bg-black/50 hover:bg-white/10 transition-colors"
             >
               Prune Data
             </button>
+          </div>
           </div>
         </div>
       </div>
