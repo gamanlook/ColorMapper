@@ -557,8 +557,8 @@ function App() {
                   <div
                     className="bg-theme-bg ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden flex-shrink-0"
                     style={{
-                      width: isMapExpanded ? "120px" : "40px",
-                      height: isMapExpanded ? "120px" : "40px",
+                      width: isMapExpanded ? "7.5rem" : "2.5rem",
+                      height: isMapExpanded ? "7.5rem" : "2.5rem",
                       transitionProperty: "width, height",
                       transitionDuration: "300ms",
                       transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
