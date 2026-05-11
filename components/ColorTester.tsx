@@ -617,7 +617,7 @@ const handlePrefixClick = (prefix: string) => {
             ref={glowContainerRef}
             className={`absolute inset-0 z-[0] pointer-events-none transition-opacity ease-out ${
               (!hasBeenFocused || isInputGlowing)
-                ? "opacity-60 duration-300"
+                ? "opacity-70 duration-300"
                 : "opacity-0 duration-[2000ms]"
             }`}
           >
@@ -666,7 +666,7 @@ const handlePrefixClick = (prefix: string) => {
 
           <div 
             className={`
-              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition-all ease-out pl-6 pr-2 py-2
+              relative z-10 flex items-end gap-3 w-full rounded-[1.875rem] bg-white/10 ring-white/10 ring-1 ring-inset transition ease-out pl-6 pr-2 py-2
               ${isInputGlowing 
                 ? "bg-white/30 shadow-[0_0_48px_rgba(255,255,255,0.4)] duration-300" 
                 : "duration-[2000ms]"
