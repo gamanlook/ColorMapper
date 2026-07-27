@@ -3,6 +3,9 @@
 import { OklchColor } from "../types";
 import { oklchToHex } from "../utils";
 
+let nsfwCount = 0;
+let errorCount = 0;
+
 // Define the response shape for TypeScript
 interface ValidationResponse {
   reason?: string;
@@ -64,17 +67,48 @@ export const validateColorName = async (
     const isGoogleSafetyBlock = blockKeywords.some(keyword => errMsg.includes(keyword));
 
     if (isGoogleSafetyBlock) {
+      // 雌小鬼 NSFW 嘲諷語錄 (5 階段)
+      const nsfwMessages = [
+        "不會吧不會吧？打出這種變態又噁心的字，你該不會還自以為很幽默吧？懶得理你🙃",
+        "哈？你還繼續寫這些骯髒的東西啊？是不是現實中沒人理你，只能來這裡找存在感呀？😰",
+        "噫⋯你的腦袋裡只裝得下這些廢料嗎？別再用可悲的骯髒小頭思考了🙄",
+        "真的好噁心⋯！你這樣是很興奮嗎？再怎麼試也不會理你的，快點放棄吧🙂‍↔️",
+        "快閉嘴，沒腦袋的穢物😍你跟你的言論都進垃圾桶囉，掰掰～👋🗑️" // 第 5 次之後永遠卡在這一句
+      ];
+
+      // 選擇對應的訊息，如果超過陣列長度，就一直顯示最後一個
+      const messageIndex = Math.min(nsfwCount, nsfwMessages.length - 1);
+      const selectedMessage = nsfwMessages[messageIndex];
+      
+      // 將次數加 1
+      nsfwCount++;
+
       return {
         reason: "NSFW/Blocked" as any,
-        feedback: "不會吧不會吧？打出這種變態又噁心的字，你該不會還自以為很幽默吧？真的懶得理你🙃",
+        feedback: selectedMessage,
         isSuspicious: true,
       };
     }
 
     // 2. 網路/伺服器異常：一樣安全優先，預設阻擋
+     const errorMessages = [
+      "目前 AI 伺服器大塞車🚦暫時沒辦法玩🥲",
+      "哇⋯你真的是有點堅持耶，等等再來玩嘛！🥺",
+      "🚙🚕🚗系統還在塞車中！要不晚點再來？",
+      "系統還是沒回應耶⋯🥹先休息一下好不好！！",
+      "系統現在真的動不了，晚點再來試試看好嗎？😭" // 第 5 次之後永遠卡在這一句
+    ];
+
+    // 選擇對應的訊息，如果超過陣列長度，就一直顯示最後一個
+    const messageIndex = Math.min(errorCount, errorMessages.length - 1);
+    const selectedMessage = errorMessages[messageIndex];
+    
+    // 將次數加 1
+    errorCount++;
+
     return {
       reason: "AI unavailable" as any,
-      feedback: "目前 AI 伺服器大塞車🚦暫時沒辦法玩🥲",
+      feedback: selectedMessage,
       isSuspicious: true,
     };
   }
