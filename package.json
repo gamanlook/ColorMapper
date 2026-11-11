@@ -1,5 +1,6 @@
 {
   "name": "color-mapper",
+  "type": "module",
   "version": "1.0.0",
   "description": "Semantic Color Mapper",
   "main": "index.tsx",
