@@ -1,58 +1,37 @@
+import { GoogleGenAI, Type } from '@google/genai';
 
-// 這裡使用舊版的 SDK 寫法，因為你目前是用這個版本
-import { GoogleGenerativeAI } from '@google/generative-ai';
+export default async function handler(req, res) {
+  // 設定 CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-// ✨ 關鍵：啟用 Vercel Edge Runtime，消除冷啟動延遲
-export const config = {
-  runtime: 'edge',
-};
-
-export default async function handler(req) {
-  // 1. 設定 CORS Headers (Edge Runtime 需要手動組裝 Response)
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
-    'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Content-Type',
-  };
-
-  // 處理預檢請求 (OPTIONS)
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 200, headers });
+    return res.status(200).end();
   }
 
-  // 2. 限制只能用 POST
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
-      status: 405,
-      headers: { ...headers, 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // 3. 取得 API Key (Edge 環境同樣從 process.env 讀取)
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
       throw new Error('Server API Key not configured');
     }
 
-    // 4. 解析前端傳來的「參數」
-    const { inputName, color, hueName, hexReference } = await req.json();
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { inputName, color, hexReference } = body;
 
-    // 安全防護：字數過長直接擋掉
     if (inputName && inputName.length > 30) {
       const mockAiResponse = JSON.stringify({
-         reason: "INPUT_TOO_LONG",
-         feedback: "這名字太長長長長長了吧...！",
-         isSuspicious: true
+        reason: "INPUT_TOO_LONG",
+        feedback: "這名字太長長長長長了吧...！",
+        isSuspicious: true
       });
-      return new Response(JSON.stringify({ text: mockAiResponse }), {
-        status: 200,
-        headers: { ...headers, 'Content-Type': 'application/json' }
-      });
+      return res.status(200).json({ text: mockAiResponse });
     }
 
-
-    // 5. System Instruction (靜態規則：人設、哲學、邏輯)
     const systemInstructionText = `
       # ROLE & TONE (人設與語氣)
 
@@ -132,81 +111,74 @@ export default async function handler(req) {
       Return JSON.
     `;
 
-    // 6. User Prompt (動態內容：當下的顏色與輸入)
     const userPrompt = `
       # THE DATA (Format: OKLCH):
-      - L: ${color.l.toFixed(3)} (0=Black, 1=White)
-      - C: ${color.c.toFixed(3)} (0=Gray, ~0.32=Max Vivid)
-      - H: ${color.h}°
+      - L: ${Number(color.l).toFixed(3)} (0=Black, 1=White)
+      - C: ${Number(color.c).toFixed(3)} (0=Gray, ~0.32=Max Vivid)
+      - H: ${Number(color.h).toFixed(1)}°
       - RGB Hex (sRGB Approx): ${hexReference} (This may be clamped; use L/C to judge darkness/vividness)
 
       # THE INPUT:
       - User says: "${inputName}"
     `;
 
-    // 7. 定義 Schema
     const schema = {
-      type: "OBJECT",
+      type: Type.OBJECT,
       properties: {
         thought_1_gut_reaction: {
-          type: "STRING",
+          type: Type.STRING,
           description: "[內心獨白] 看到這詞的第一秒，我腦中浮現了什麼畫面？讀取對方的潛台詞與動機（認真/搞笑/搗蛋？）後，我的真實情緒是什麼？"
         },
         thought_2_format_and_logic: {
-          type: "STRING",
+          type: Type.STRING,
           description: "[內心獨白] 審查漏斗第一關：先單看使用者輸入的詞彙（遮住題目顏色），這是名詞短語還是閒聊句子？有無名字自相矛盾？是好聯想還是太狹義或廣義？"
         },
         thought_3_knowledge_and_visual: {
-          type: "STRING",
+          type: Type.STRING,
           description: "[內心獨白] 審查漏斗第二關：如果認識該詞，套用「寬容濾鏡」後，與提供的數值相符嗎？"
         },
         reason: {
-          type: "STRING",
+          type: Type.STRING,
           description: "簡短說明最終判斷依據給前端看 (最多50字)"
         },
         isSuspicious: {
-          type: "BOOLEAN",
+          type: Type.BOOLEAN,
           description: "最終判斷 (若未通過審查漏斗的任一關卡，或觸發知識盲區，則為 true)"
         },
         feedback: {
-          type: "STRING",
+          type: Type.STRING,
           description: "短、機智、符合人設的30字內回覆。請根據 isSuspicious 的結果選用 FEEDBACK STRATEGY，並自然融入 thought_1 的靈感來生成對話，無需使用句號"
         }
       },
       required: ["thought_1_gut_reaction", "thought_2_format_and_logic", "thought_3_knowledge_and_visual", "reason", "isSuspicious", "feedback"]
     };
 
-    // 8. 初始化 Gemini 並帶入 System Instruction
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-     // 使用你指定的模型
+    const ai = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+
+    const response = await ai.models.generateContent({
       model: "gemini-flash-lite-latest",
-      systemInstruction: systemInstructionText,
-      generationConfig: {
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemInstructionText,
         responseMimeType: "application/json",
         responseSchema: schema,
       },
     });
 
-    // 9. 呼叫 Google (只傳送 User Prompt)
-    const result = await model.generateContent(userPrompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // 10. 回傳結果
-    return new Response(JSON.stringify({ text }), {
-      status: 200,
-      headers: { ...headers, 'Content-Type': 'application/json' },
-    });
-
+    const text = response.text || '';
+    return res.status(200).json({ text });
   } catch (error) {
     console.error('Gemini API Error:', error);
-    return new Response(JSON.stringify({
-      error: error.message || 'Failed to fetch from Gemini',
-      details: error.toString()
-    }), {
-      status: 500,
-      headers: { ...headers, 'Content-Type': 'application/json' },
+    return res.status(500).json({
+      error: error?.message || 'Failed to fetch from Gemini',
+      details: error ? error.toString() : 'Unknown error'
     });
   }
 }
