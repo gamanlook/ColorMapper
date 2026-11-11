@@ -163,7 +163,7 @@ export default async function handler(req, res) {
     });
 
     const response = await ai.models.generateContent({
-      model: "gemini-flash-lite-latest",
+      model: "gemini-3.5-flash-lite",
       contents: userPrompt,
       config: {
         systemInstruction: systemInstructionText,
